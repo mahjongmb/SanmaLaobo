@@ -127,7 +127,13 @@
         } else if (typeof window.MBSanmaMatchLog.getStoredLogs === "function"){
           logs = window.MBSanmaMatchLog.getStoredLogs();
         }
-        return Array.isArray(logs) ? logs.filter((item)=> item && typeof item === "object" && item.endedAt) : [];
+        return Array.isArray(logs)
+          ? logs.filter((item)=> {
+              if (!item || typeof item !== "object" || !item.endedAt) return false;
+              const matchMode = String(item && item.meta && item.meta.matchMode || "").toLowerCase();
+              return matchMode === "app_play" || matchMode === "normal" || matchMode === "manual";
+            })
+          : [];
       }
     }catch(e){}
     return [];

@@ -16,7 +16,8 @@
   const MATCH_LOG_IDB_STORE = "completed_match_logs";
   const MATCH_LOG_IDB_VERSION = 1;
   const LEGACY_MIGRATION_KEY_PREFIX = "mbsanma_app_match_logs_migrated_";
-  const MAX_STORED_MATCHES = 40;
+  const MAX_STORED_MATCHES = 300;
+  const MAX_STORED_BATCH_MATCHES = 10000;
 
   let currentLog = null;
   let dbPromise = null;
@@ -333,6 +334,20 @@
     };
   }
 
+  function stripAnalysisStartSnapshotForStorage(snapshot){
+    const src = snapshot && typeof snapshot === "object" ? snapshot : {};
+    return {
+      roundWind: src.roundWind || "",
+      roundNumber: Number(src.roundNumber) || 0,
+      honba: Number(src.honba) || 0,
+      eastSeatIndex: Number.isInteger(src.eastSeatIndex) ? src.eastSeatIndex : 0,
+      kyotakuCount: Number(src.kyotakuCount) || 0,
+      scores: cloneScores(src.scores),
+      doraIndicators: cloneTileArray(src.doraIndicators),
+      uraDoraIndicators: cloneTileArray(src.uraDoraIndicators)
+    };
+  }
+
   function stripExternalDataFromCpuSeatMeta(cpuSeats){
     const src = cpuSeats && typeof cpuSeats === "object" ? cpuSeats : {};
     const out = {};
@@ -438,26 +453,111 @@
       type === "cpu_api_bridge_response";
   }
 
+  function getNormalizedMatchModeForStorage(meta){
+    const raw = String(meta && meta.matchMode || "").toLowerCase();
+    if (raw === "cpu_batch" || raw === "batch") return "batch";
+    if (raw === "app_play" || raw === "normal" || raw === "play" || raw === "manual") return "normal";
+    return raw || "unknown";
+  }
+
+  function shouldUseAnalysisStorageShape(meta){
+    return getNormalizedMatchModeForStorage(meta) === "batch";
+  }
+
+  function isAnalysisEventTypeForStorage(type){
+    return type === "draw" ||
+      type === "discard" ||
+      type === "riichi" ||
+      type === "pon" ||
+      type === "minkan" ||
+      type === "kakan";
+  }
+
+  function stripAnalysisEventPayloadForStorage(type, payload){
+    const src = payload && typeof payload === "object" ? payload : {};
+    const eventType = String(type || "");
+
+    if (eventType === "draw" || eventType === "discard" || eventType === "pon" || eventType === "minkan" || eventType === "kakan"){
+      return {
+        seatIndex: Number.isInteger(src.seatIndex) ? src.seatIndex : null
+      };
+    }
+
+    if (eventType === "riichi"){
+      const tenpai = src.tenpai && typeof src.tenpai === "object" ? src.tenpai : {};
+      return {
+        seatIndex: Number.isInteger(src.seatIndex) ? src.seatIndex : null,
+        junme: Number(src.junme) || 0,
+        tenpai: {
+          waitTileCount: Number(tenpai.waitTileCount) || 0,
+          waitTypeCount: Number(tenpai.waitTypeCount) || 0,
+          waitTypeKeys: Array.isArray(tenpai.waitTypeKeys) ? tenpai.waitTypeKeys.slice() : [],
+          waitCodes: Array.isArray(tenpai.waitCodes) ? tenpai.waitCodes.slice() : [],
+          isRyanmenWait: typeof tenpai.isRyanmenWait === "boolean" ? tenpai.isRyanmenWait : null
+        }
+      };
+    }
+
+    return null;
+  }
+
+  function buildStoredKyokuEvents(src, useAnalysisShape){
+    if (!Array.isArray(src && src.events)) return [];
+    return src.events
+      .filter((event)=> {
+        const type = String(event && event.type || "");
+        if (isHeavyEventTypeForStorage(type)) return false;
+        if (!useAnalysisShape) return true;
+        return isAnalysisEventTypeForStorage(type);
+      })
+      .map((event)=> {
+        const type = String(event && event.type || "event");
+        const payload = useAnalysisShape
+          ? stripAnalysisEventPayloadForStorage(type, event && event.payload)
+          : stripEventPayloadForStorage(type, event && event.payload);
+        return {
+          seq: Number(event && event.seq) || 0,
+          at: event && typeof event.at === "string" ? event.at : "",
+          type,
+          payload
+        };
+      })
+      .filter((event)=> event && (!useAnalysisShape || event.payload));
+  }
+
+  function getStoredMatchLimitForLog(log){
+    const mode = getNormalizedMatchModeForStorage(log && log.meta);
+    if (mode === "batch") return MAX_STORED_BATCH_MATCHES;
+    return MAX_STORED_MATCHES;
+  }
+
+  function trimStoredLogsForLimits(list){
+    const keptByMode = Object.create(null);
+    return sortStoredLogs(list).filter((item)=> {
+      if (!item || typeof item !== "object" || !item.matchId) return false;
+      const mode = getNormalizedMatchModeForStorage(item.meta);
+      const limit = mode === "batch" ? MAX_STORED_BATCH_MATCHES : MAX_STORED_MATCHES;
+      const count = keptByMode[mode] || 0;
+      if (count >= limit) return false;
+      keptByMode[mode] = count + 1;
+      return true;
+    });
+  }
+
   function buildStorageOptimizedLog(log){
     if (!log || typeof log !== "object") return null;
+    const useAnalysisShape = shouldUseAnalysisStorageShape(log.meta);
 
     const kyokus = Array.isArray(log.kyokus) ? log.kyokus.map((kyoku)=> {
       const src = kyoku && typeof kyoku === "object" ? kyoku : {};
-      const events = Array.isArray(src.events)
-        ? src.events.filter((event)=> !isHeavyEventTypeForStorage(String(event && event.type || ""))).map((event)=> ({
-            seq: Number(event && event.seq) || 0,
-            at: event && typeof event.at === "string" ? event.at : "",
-            type: String(event && event.type || "event"),
-            payload: stripEventPayloadForStorage(String(event && event.type || "event"), event && event.payload)
-          }))
-        : [];
+      const events = buildStoredKyokuEvents(src, useAnalysisShape);
 
       return {
         kyokuId: src.kyokuId || "",
         kyokuIndex: Number(src.kyokuIndex) || 0,
         startedAt: src.startedAt || "",
         endedAt: src.endedAt || "",
-        start: stripHeavyStartSnapshotForStorage(src.start),
+        start: useAnalysisShape ? stripAnalysisStartSnapshotForStorage(src.start) : stripHeavyStartSnapshotForStorage(src.start),
         events,
         settlement: cloneSettlement(src.settlement),
         summary: clonePlainData(src.summary)
@@ -518,7 +618,7 @@
 
     try{
       const list = readStoredListFromLocalStorage(storageKey);
-      const next = sortStoredLogs([optimizedLog, ...list.filter((item)=> item && item.matchId !== optimizedLog.matchId)]).slice(0, MAX_STORED_MATCHES);
+      const next = trimStoredLogsForLimits([optimizedLog, ...list.filter((item)=> item && item.matchId !== optimizedLog.matchId)]);
       localStorage.setItem(storageKey, JSON.stringify(next));
       scopeCacheMap.set(storageKey, next);
       return true;
@@ -699,7 +799,8 @@
     if (!db) return;
 
     const list = await readStoredListAsync(key);
-    const overflow = list.slice(MAX_STORED_MATCHES);
+    const keptIds = new Set(trimStoredLogsForLimits(list).map((item)=> item && item.matchId).filter(Boolean));
+    const overflow = list.filter((item)=> item && item.matchId && !keptIds.has(item.matchId));
     if (!overflow.length) return;
 
     await new Promise((resolve)=> {
@@ -746,7 +847,7 @@
       });
 
       const existing = scopeCacheMap.get(key) || [];
-      const next = sortStoredLogs([optimizedLog, ...existing.filter((item)=> item && item.matchId !== optimizedLog.matchId)]).slice(0, MAX_STORED_MATCHES);
+      const next = trimStoredLogsForLimits([optimizedLog, ...existing.filter((item)=> item && item.matchId !== optimizedLog.matchId)]);
       scopeCacheMap.set(key, next);
       trimStoredMatchesAsync(key).catch(()=>{});
       return true;

@@ -133,11 +133,16 @@
   }
 
   function shouldIncludeByFilter(log){
+    const matchMode = String(log && log.meta && log.meta.matchMode || "").toLowerCase();
+    if (!(matchMode === "app_play" || matchMode === "normal" || matchMode === "manual")) return false;
     if (activeFilter === "all") return true;
     if (activeFilter === "local"){
       return !(log && log.session && log.session.mode === "account" && log.session.accountId);
     }
-    return String(log && log.meta && log.meta.matchMode || "") === activeFilter;
+    if (activeFilter === "app_play" || activeFilter === "normal" || activeFilter === "manual"){
+      return matchMode === "app_play" || matchMode === "normal" || matchMode === "manual";
+    }
+    return matchMode === String(activeFilter || "").toLowerCase();
   }
 
   async function getStoredLogsAsync(){
@@ -285,8 +290,8 @@
       const empty = document.createElement("div");
       empty.className = "emptyCard";
       empty.innerHTML = completedLogs.length
-        ? "条件に合う半荘ログがありません。フィルタを変えると表示される場合があります。"
-        : "まだ保存された半荘ログがありません。<br>半荘が終わると、その時点で一覧へ追加されます。";
+        ? "条件に合う対局モードの半荘ログがありません。表示条件を広げると見つかる場合があります。"
+        : "まだ保存された対局モードの半荘ログがありません。<br>対局モードで半荘が終わると、その時点で一覧へ追加されます。検証モードの集計は分析ページ側で確認できます。";
       replayListRoot.appendChild(empty);
       return;
     }
