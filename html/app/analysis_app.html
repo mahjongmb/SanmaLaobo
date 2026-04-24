@@ -813,6 +813,24 @@
         if (result.summaryKyokuCount != null){
           lines.push(`集計対象局数: ${Number(result.summaryKyokuCount) || 0}`);
         }
+        const snapshot = result.summarySnapshot && typeof result.summarySnapshot === "object" ? result.summarySnapshot : null;
+        if (snapshot){
+          lines.push("");
+          lines.push("実集計サマリー:");
+          lines.push(`リーチ率: ${formatRate(snapshot.riichiRate)}`);
+          lines.push(`副露率: ${formatRate(snapshot.openRate)}`);
+          lines.push(`和了率: ${formatRate(snapshot.agariRate)}`);
+          lines.push(`放銃率: ${formatRate(snapshot.hojuRate)}`);
+          lines.push(`被ツモ率: ${formatRate(snapshot.hitByTsumoRate)}`);
+          lines.push(`流局率: ${formatRate(snapshot.ryukyokuRate)}`);
+          lines.push(`平均打点: ${formatAvgPoint(snapshot.averagePoint)}`);
+          lines.push(`平均進行巡目: ${formatAvgJunme(snapshot.averageJunmePerKyoku)}`);
+          lines.push(`平均ドラ枚数: ${formatAvgCount(snapshot.averageDoraCount, "枚")}`);
+          lines.push(`平均リーチ巡目: ${formatAvgJunme(snapshot.riichiAverageJunme)}`);
+          lines.push(`リーチ時平均打点: ${formatAvgPoint(snapshot.riichiAveragePoint)}`);
+          lines.push(`リーチ時和了率: ${formatRate(snapshot.riichiAgariRate)}`);
+          lines.push(`副露時和了率: ${formatRate(snapshot.openAgariRate)}`);
+        }
         return lines.join("\n");
       }
 

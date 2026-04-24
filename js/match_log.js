@@ -1143,6 +1143,7 @@
 
     let summaryMs = null;
     let summaryKyokuCount = null;
+    let summarySnapshot = null;
     if (global.MBSanmaLogMetrics && typeof global.MBSanmaLogMetrics.buildAnalysisSummary === "function"){
       const summaryStarted = Date.now();
       const summary = global.MBSanmaLogMetrics.buildAnalysisSummary(storedLogs, {
@@ -1154,6 +1155,21 @@
       });
       summaryMs = Date.now() - summaryStarted;
       summaryKyokuCount = summary && summary.overall ? Number(summary.overall.kyokuCount) || 0 : 0;
+      summarySnapshot = summary ? {
+        riichiRate: Number(summary.riichi && summary.riichi.rate),
+        openRate: Number(summary.open && summary.open.rate),
+        agariRate: Number(summary.agari && summary.agari.rate),
+        hojuRate: Number(summary.hoju && summary.hoju.rate),
+        hitByTsumoRate: Number(summary.hitByTsumo && summary.hitByTsumo.rate),
+        ryukyokuRate: Number(summary.ryukyoku && summary.ryukyoku.rate),
+        averagePoint: Number(summary.overall && summary.overall.averagePoint),
+        averageJunmePerKyoku: Number(summary.overall && summary.overall.averageJunmePerKyoku),
+        averageDoraCount: Number(summary.overall && summary.overall.averageDoraCount),
+        riichiAverageJunme: Number(summary.riichi && summary.riichi.averageJunme),
+        riichiAveragePoint: Number(summary.riichi && summary.riichi.averagePoint),
+        openAgariRate: Number(summary.agari && summary.agari.openAgariRate),
+        riichiAgariRate: Number(summary.agari && summary.agari.riichiAgariRate)
+      } : null;
     }
 
     return {
@@ -1170,7 +1186,8 @@
       writeMs,
       readMs,
       summaryMs,
-      summaryKyokuCount
+      summaryKyokuCount,
+      summarySnapshot
     };
   }
 
