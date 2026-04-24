@@ -573,6 +573,8 @@
                 <a class="backBtn" href="index_app.html">トップに戻る</a>
                 <button id="analysisRefreshBtn" type="button" class="refreshBtn">再読み込み</button>
                 <button id="analysisHintBtn" type="button" class="hintBtn">見方</button>
+                <button id="analysisBenchBtn" type="button" class="hintBtn">10kベンチ</button>
+                <button id="analysisBenchClearBtn" type="button" class="hintBtn">ベンチ消去</button>
               </div>
               <div class="topActionsRight">
                 <aside class="statusCard" aria-label="分析対象">
@@ -611,6 +613,7 @@
               和了しやすさ、放銃の出やすさ、打点の傾向などを、ひと目で確認できます。<br />
               ルールや設定を変えたときの違いを見比べたいときに向いています。
             </p>
+            <div id="analysisBenchResult"></div>
           </div>
         </div>
 
@@ -648,6 +651,9 @@
 
       const refreshBtn = document.getElementById("analysisRefreshBtn");
       const hintBtn = document.getElementById("analysisHintBtn");
+      const benchBtn = document.getElementById("analysisBenchBtn");
+      const benchClearBtn = document.getElementById("analysisBenchClearBtn");
+      const benchResultRoot = document.getElementById("analysisBenchResult");
       const root = document.getElementById("analysisAppRoot");
       const badgeEl = document.getElementById("analysisSessionBadge");
 
@@ -780,6 +786,54 @@
             badgeEl.classList.add("isLocal");
           }
         }
+      }
+
+      function formatBenchmarkBytes(bytes){
+        const n = Number(bytes) || 0;
+        if (n >= 1024 * 1024) return `${(n / (1024 * 1024)).toFixed(1)} MB`;
+        if (n >= 1024) return `${(n / 1024).toFixed(1)} KB`;
+        return `${n} B`;
+      }
+
+      function formatBenchmarkResult(result){
+        if (!result || typeof result !== "object") return "ベンチ結果を取得できませんでした。";
+        const lines = [
+          `保存先: ${result.storageBackend === "indexeddb" ? "IndexedDB" : "localStorage"}`,
+          `投入件数: ${Number(result.writtenMatchCount) || 0} / 要求 ${Number(result.requestedMatchCount) || 0} 半荘`,
+          `1半荘あたり局数: ${Number(result.kyokuPerMatch) || 0}`,
+          `推定サイズ: ${formatBenchmarkBytes(result.estimatedBytes)}`,
+          `生成: ${Number(result.buildMs) || 0} ms`,
+          `旧ベンチ消去: ${Number(result.clearMs) || 0} ms`,
+          `保存: ${Number(result.writeMs) || 0} ms`,
+          `読込: ${Number(result.readMs) || 0} ms`
+        ];
+        if (result.summaryMs != null){
+          lines.push(`分析集計: ${Number(result.summaryMs) || 0} ms`);
+        }
+        if (result.summaryKyokuCount != null){
+          lines.push(`集計対象局数: ${Number(result.summaryKyokuCount) || 0}`);
+        }
+        return lines.join("\n");
+      }
+
+      function renderBenchmarkResult(kind, title, body){
+        if (!benchResultRoot) return;
+        benchResultRoot.innerHTML = "";
+        const card = document.createElement("section");
+        card.className = "messageCard";
+        if (kind === "ok") card.classList.add("isOk");
+        if (kind === "warn") card.classList.add("isWarn");
+        if (kind === "error") card.classList.add("isError");
+
+        const titleEl = document.createElement("div");
+        titleEl.className = "messageTitle";
+        titleEl.textContent = title || "";
+        const bodyEl = document.createElement("div");
+        bodyEl.className = "messageBody";
+        bodyEl.innerHTML = String(body || "").replace(/\n/g, "<br>");
+        card.appendChild(titleEl);
+        card.appendChild(bodyEl);
+        benchResultRoot.appendChild(card);
       }
 
       async function getStoredLogsAsync(){
@@ -1195,6 +1249,52 @@
             "",
             "自分の半荘成績を見たい場合は、成績管理ページを使ってください。"
           ].join("\n"));
+        });
+      }
+
+      if (benchBtn){
+        benchBtn.addEventListener("click", async ()=> {
+          if (!window.MBSanmaMatchLog || typeof window.MBSanmaMatchLog.runBatchBenchmarkAsync !== "function"){
+            renderBenchmarkResult("error", "10kベンチを利用できません", "このページではベンチ機能を呼び出せません。");
+            return;
+          }
+          const before = benchBtn.textContent;
+          benchBtn.disabled = true;
+          benchBtn.textContent = "実測中...";
+          renderBenchmarkResult("warn", "10kベンチを実行しています", "10000半荘相当の軽量batchログを別スコープへ保存し、保存・読込・分析集計の時間を測っています。");
+          try{
+            const result = await window.MBSanmaMatchLog.runBatchBenchmarkAsync({
+              matchCount: 10000,
+              kyokuPerMatch: 8
+            });
+            renderBenchmarkResult("ok", "10000半荘ベンチが完了しました", `${formatBenchmarkResult(result)}\n\nこのベンチは実データとは別スコープへ保存しています。`);
+          }catch(e){
+            renderBenchmarkResult("error", "10kベンチに失敗しました", e && e.message ? e.message : String(e || ""));
+          }finally{
+            benchBtn.disabled = false;
+            benchBtn.textContent = before;
+          }
+        });
+      }
+
+      if (benchClearBtn){
+        benchClearBtn.addEventListener("click", async ()=> {
+          if (!window.MBSanmaMatchLog || typeof window.MBSanmaMatchLog.clearBatchBenchmarkAsync !== "function"){
+            renderBenchmarkResult("error", "ベンチ消去を利用できません", "このページではベンチ消去機能を呼び出せません。");
+            return;
+          }
+          const before = benchClearBtn.textContent;
+          benchClearBtn.disabled = true;
+          benchClearBtn.textContent = "消去中...";
+          try{
+            const result = await window.MBSanmaMatchLog.clearBatchBenchmarkAsync();
+            renderBenchmarkResult("ok", "ベンチ用ログを消去しました", `${Number(result && result.removedCount) || 0} 件を削除しました。`);
+          }catch(e){
+            renderBenchmarkResult("error", "ベンチ消去に失敗しました", e && e.message ? e.message : String(e || ""));
+          }finally{
+            benchClearBtn.disabled = false;
+            benchClearBtn.textContent = before;
+          }
         });
       }
 

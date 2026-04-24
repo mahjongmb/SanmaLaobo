@@ -16,6 +16,7 @@
   const MATCH_LOG_IDB_STORE = "completed_match_logs";
   const MATCH_LOG_IDB_VERSION = 1;
   const LEGACY_MIGRATION_KEY_PREFIX = "mbsanma_app_match_logs_migrated_";
+  const BENCHMARK_SCOPE_SUFFIX = "__batch_benchmark_v1";
   const MAX_STORED_MATCHES = 300;
   const MAX_STORED_BATCH_MATCHES = 10000;
 
@@ -792,6 +793,396 @@
     return await readStoredListFromIndexedDb(key);
   }
 
+  function getBenchmarkScopeKey(session){
+    return `${getScopeKeyBySession(session || readActiveSession())}${BENCHMARK_SCOPE_SUFFIX}`;
+  }
+
+  async function clearStoredScopeAsync(scopeKey){
+    const key = String(scopeKey || "");
+    if (!key) return 0;
+
+    scopeCacheMap.delete(key);
+    migrationPromiseMap.delete(key);
+
+    if (!hasIndexedDb()){
+      let removedCount = 0;
+      try{
+        const existing = readStoredListFromLocalStorage(key);
+        removedCount = existing.length;
+      }catch(e){}
+      try{ localStorage.removeItem(key); }catch(e){}
+      return removedCount;
+    }
+
+    const db = await openDatabase();
+    if (!db){
+      let removedCount = 0;
+      try{
+        const existing = readStoredListFromLocalStorage(key);
+        removedCount = existing.length;
+      }catch(e){}
+      try{ localStorage.removeItem(key); }catch(e){}
+      return removedCount;
+    }
+
+    const rows = await new Promise((resolve)=> {
+      try{
+        const tx = db.transaction(MATCH_LOG_IDB_STORE, "readonly");
+        const store = tx.objectStore(MATCH_LOG_IDB_STORE);
+        const index = store.index("scopeKey");
+        const request = index.getAll(IDBKeyRange.only(key));
+        request.onsuccess = ()=> resolve(Array.isArray(request.result) ? request.result : []);
+        request.onerror = ()=> resolve([]);
+      }catch(e){
+        resolve([]);
+      }
+    });
+
+    if (!rows.length) return 0;
+
+    await new Promise((resolve)=> {
+      try{
+        const tx = db.transaction(MATCH_LOG_IDB_STORE, "readwrite");
+        const store = tx.objectStore(MATCH_LOG_IDB_STORE);
+        rows.forEach((row)=> {
+          if (!row || !row.storageId) return;
+          store.delete(row.storageId);
+        });
+        tx.oncomplete = ()=> resolve();
+        tx.onerror = ()=> resolve();
+        tx.onabort = ()=> resolve();
+      }catch(e){
+        resolve();
+      }
+    });
+
+    return rows.length;
+  }
+
+  function buildBenchmarkIso(baseTime, offsetMs){
+    return new Date(baseTime + offsetMs).toISOString();
+  }
+
+  function buildBenchmarkYakuList(riichi, hasOpen, kyokuIndex){
+    const list = [];
+    if (riichi) list.push({ key: "riichi", label: "立直" });
+    if (!hasOpen && kyokuIndex % 2 === 0) list.push({ key: "menzentsumo", label: "門前ツモ" });
+    if (hasOpen) list.push({ key: "tanyao", label: "断么九" });
+    if (kyokuIndex % 3 === 0) list.push({ key: "honitsu", label: "混一色" });
+    if (kyokuIndex % 5 === 0) list.push({ key: "toitoi", label: "対々和" });
+    if (!list.length) list.push({ key: "pinfu", label: "平和" });
+    return list;
+  }
+
+  function buildSyntheticBatchBenchmarkLog(matchIndex, session, kyokuPerMatch, baseTime){
+    const startedBase = baseTime + (matchIndex * 180000);
+    const log = {
+      storageVersion: STORAGE_VERSION,
+      schemaVersion: 1,
+      matchId: `bench_match_${matchIndex + 1}`,
+      startedAt: buildBenchmarkIso(startedBase, 0),
+      endedAt: "",
+      session: clonePlainData(session) || readActiveSession(),
+      meta: {
+        appMode: "app",
+        appTitle: "SANMA LAB",
+        startedFrom: "analysis_benchmark",
+        ruleSetId: "standard",
+        cpuProfileSetId: "current",
+        matchMode: "batch",
+        benchmark: true
+      },
+      kyokus: [],
+      summary: null,
+      updatedAt: ""
+    };
+
+    let scores = [35000, 35000, 35000];
+    let lastSettlement = null;
+
+    for (let kyokuIndex = 0; kyokuIndex < kyokuPerMatch; kyokuIndex++){
+      const eastSeatIndex = (matchIndex + kyokuIndex) % 3;
+      const winnerSeatIndex = (matchIndex + kyokuIndex + 1) % 3;
+      const discarderSeatIndex = (winnerSeatIndex + 1) % 3;
+      const isTsumo = ((matchIndex + kyokuIndex) % 2) === 0;
+      const riichiSeatIndex = kyokuIndex % 3 === 0 ? winnerSeatIndex : null;
+      const hasOpen = kyokuIndex % 4 === 1;
+      const pointValue = 3900 + ((kyokuIndex % 5) * 2000);
+      const chipDelta = [0, 0, 0];
+      const delta = [0, 0, 0];
+
+      if (isTsumo){
+        delta[winnerSeatIndex] = pointValue;
+        delta[(winnerSeatIndex + 1) % 3] = -Math.floor(pointValue / 2);
+        delta[(winnerSeatIndex + 2) % 3] = -(pointValue - Math.floor(pointValue / 2));
+      }else{
+        delta[winnerSeatIndex] = pointValue;
+        delta[discarderSeatIndex] = -pointValue;
+      }
+
+      chipDelta[winnerSeatIndex] = 1;
+      if (!isTsumo) chipDelta[discarderSeatIndex] = -1;
+
+      const afterScores = [
+        scores[0] + delta[0],
+        scores[1] + delta[1],
+        scores[2] + delta[2]
+      ];
+
+      const events = [
+        { seq: 1, at: buildBenchmarkIso(startedBase, (kyokuIndex * 7000) + 300), type: "draw", payload: { seatIndex: 0 } },
+        { seq: 2, at: buildBenchmarkIso(startedBase, (kyokuIndex * 7000) + 600), type: "discard", payload: { seatIndex: 0 } },
+        { seq: 3, at: buildBenchmarkIso(startedBase, (kyokuIndex * 7000) + 900), type: "draw", payload: { seatIndex: 1 } },
+        { seq: 4, at: buildBenchmarkIso(startedBase, (kyokuIndex * 7000) + 1200), type: "discard", payload: { seatIndex: 1 } },
+        { seq: 5, at: buildBenchmarkIso(startedBase, (kyokuIndex * 7000) + 1500), type: "draw", payload: { seatIndex: 2 } },
+        { seq: 6, at: buildBenchmarkIso(startedBase, (kyokuIndex * 7000) + 1800), type: "discard", payload: { seatIndex: 2 } }
+      ];
+
+      if (riichiSeatIndex !== null){
+        events.push({
+          seq: 7,
+          at: buildBenchmarkIso(startedBase, (kyokuIndex * 7000) + 2100),
+          type: "riichi",
+          payload: {
+            seatIndex: riichiSeatIndex,
+            junme: 6 + (kyokuIndex % 5),
+            tenpai: {
+              waitTileCount: 4 + (kyokuIndex % 3),
+              waitTypeCount: 1,
+              waitTypeKeys: [kyokuIndex % 2 === 0 ? "ryanmen" : "kanchan"],
+              waitCodes: [kyokuIndex % 2 === 0 ? "5p" : "7s"],
+              isRyanmenWait: kyokuIndex % 2 === 0
+            }
+          }
+        });
+      }
+
+      if (hasOpen){
+        events.push({
+          seq: 8,
+          at: buildBenchmarkIso(startedBase, (kyokuIndex * 7000) + 2400),
+          type: kyokuIndex % 2 === 0 ? "pon" : "minkan",
+          payload: { seatIndex: (winnerSeatIndex + 2) % 3 }
+        });
+      }
+
+      const settlement = kyokuIndex % 6 === 5
+        ? {
+            type: "ryukyoku",
+            winType: "",
+            beforeScores: scores.slice(),
+            afterScores,
+            delta: delta.slice(),
+            previousKyotakuCount: 0,
+            currentHandKyotakuCount: 0,
+            nextKyotakuCount: 0,
+            tenpaiSeats: [winnerSeatIndex],
+            riichiSeats: riichiSeatIndex !== null ? [riichiSeatIndex] : []
+          }
+        : {
+            type: "agari",
+            winType: isTsumo ? "tsumo" : "ron",
+            winnerSeatIndex,
+            discarderSeatIndex: isTsumo ? null : discarderSeatIndex,
+            beforeScores: scores.slice(),
+            afterScores,
+            delta: delta.slice(),
+            previousKyotakuCount: 0,
+            currentHandKyotakuCount: 0,
+            nextKyotakuCount: 0,
+            tenpaiSeats: [winnerSeatIndex],
+            riichiSeats: riichiSeatIndex !== null ? [riichiSeatIndex] : [],
+            chipInfo: { seatDeltas: chipDelta.slice() },
+            agariEntries: [{
+              winType: isTsumo ? "tsumo" : "ron",
+              winnerSeatIndex,
+              discarderSeatIndex: isTsumo ? null : discarderSeatIndex,
+              pointValue,
+              han: 3 + (kyokuIndex % 3),
+              fu: 30,
+              totalHan: 3 + (kyokuIndex % 3),
+              yakuman: 0,
+              yaku: buildBenchmarkYakuList(riichiSeatIndex === winnerSeatIndex, hasOpen, kyokuIndex),
+              bonus: {
+                dora: 1 + (kyokuIndex % 2),
+                uraDora: riichiSeatIndex === winnerSeatIndex ? 1 : 0,
+                akaDora: kyokuIndex % 2,
+                nukiDora: kyokuIndex % 3
+              },
+              yakuInfo: {
+                isMenzen: !hasOpen,
+                yaku: buildBenchmarkYakuList(riichiSeatIndex === winnerSeatIndex, hasOpen, kyokuIndex)
+              },
+              chipInfo: { seatDeltas: chipDelta.slice() },
+              resultMeta: {
+                isMenzen: !hasOpen,
+                chipInfo: { seatDeltas: chipDelta.slice() }
+              }
+            }]
+          };
+
+      lastSettlement = settlement;
+      log.kyokus.push({
+        kyokuId: `${log.matchId}_kyoku_${kyokuIndex + 1}`,
+        kyokuIndex,
+        startedAt: buildBenchmarkIso(startedBase, kyokuIndex * 7000),
+        endedAt: buildBenchmarkIso(startedBase, (kyokuIndex * 7000) + 3000),
+        start: {
+          roundWind: kyokuIndex < 3 ? "東" : "南",
+          roundNumber: (kyokuIndex % 3) + 1,
+          honba: kyokuIndex % 2,
+          eastSeatIndex,
+          kyotakuCount: 0,
+          scores: scores.slice(),
+          doraIndicators: [],
+          uraDoraIndicators: []
+        },
+        events,
+        settlement,
+        summary: {
+          type: settlement.type || "",
+          winType: settlement.winType || "",
+          winnerSeatIndex: settlement.winnerSeatIndex == null ? null : settlement.winnerSeatIndex,
+          discarderSeatIndex: settlement.discarderSeatIndex == null ? null : settlement.discarderSeatIndex,
+          afterScores: afterScores.slice()
+        }
+      });
+
+      scores = afterScores.slice();
+    }
+
+    log.endedAt = buildBenchmarkIso(startedBase, (kyokuPerMatch * 7000) + 5000);
+    log.updatedAt = log.endedAt;
+    log.summary = {
+      endInfo: {
+        reason: "benchmark_complete",
+        source: "analysis_batch_benchmark"
+      },
+      settlement: cloneSettlement(lastSettlement)
+    };
+    return buildStorageOptimizedLog(log);
+  }
+
+  async function writeStoredLogsBulkAsync(scopeKey, logs){
+    const key = String(scopeKey || "");
+    const list = trimStoredLogsForLimits(Array.isArray(logs) ? logs : []);
+    if (!hasIndexedDb()){
+      localStorage.setItem(key, JSON.stringify(list));
+      scopeCacheMap.set(key, list);
+      return list.length;
+    }
+
+    const db = await openDatabase();
+    if (!db){
+      localStorage.setItem(key, JSON.stringify(list));
+      scopeCacheMap.set(key, list);
+      return list.length;
+    }
+
+    await new Promise((resolve, reject)=> {
+      try{
+        const tx = db.transaction(MATCH_LOG_IDB_STORE, "readwrite");
+        const store = tx.objectStore(MATCH_LOG_IDB_STORE);
+        list.forEach((log)=> {
+          if (!log || !log.matchId) return;
+          store.put(buildStorageRecord(key, log));
+        });
+        tx.oncomplete = ()=> resolve();
+        tx.onerror = ()=> reject(tx.error || new Error("IndexedDB bulk write failed"));
+        tx.onabort = ()=> reject(tx.error || new Error("IndexedDB bulk write aborted"));
+      }catch(e){
+        reject(e);
+      }
+    });
+
+    scopeCacheMap.set(key, list);
+    return list.length;
+  }
+
+  function estimateBenchmarkBytes(logs){
+    const list = Array.isArray(logs) ? logs : [];
+    if (!list.length) return 0;
+    const sampleSize = Math.min(12, list.length);
+    let total = 0;
+    for (let i = 0; i < sampleSize; i++){
+      try{
+        total += JSON.stringify(list[i]).length;
+      }catch(e){}
+    }
+    if (sampleSize <= 0) return 0;
+    return Math.round((total / sampleSize) * list.length);
+  }
+
+  async function runBatchBenchmarkAsync(options){
+    const opts = options && typeof options === "object" ? options : {};
+    const matchCount = Math.max(1, Math.min(MAX_STORED_BATCH_MATCHES, Number(opts.matchCount) || MAX_STORED_BATCH_MATCHES));
+    const kyokuPerMatch = Math.max(1, Math.min(24, Number(opts.kyokuPerMatch) || 8));
+    const scopeKey = getBenchmarkScopeKey(readActiveSession());
+    const baseTime = Date.UTC(2026, 0, 1, 0, 0, 0);
+
+    const buildStarted = Date.now();
+    const syntheticLogs = [];
+    for (let i = 0; i < matchCount; i++){
+      syntheticLogs.push(buildSyntheticBatchBenchmarkLog(i, readActiveSession(), kyokuPerMatch, baseTime));
+    }
+    const buildMs = Date.now() - buildStarted;
+
+    const estimatedBytes = estimateBenchmarkBytes(syntheticLogs);
+
+    const clearStarted = Date.now();
+    const removedBeforeWrite = await clearStoredScopeAsync(scopeKey);
+    const clearMs = Date.now() - clearStarted;
+
+    const writeStarted = Date.now();
+    const writtenCount = await writeStoredLogsBulkAsync(scopeKey, syntheticLogs);
+    const writeMs = Date.now() - writeStarted;
+
+    const readStarted = Date.now();
+    const storedLogs = await readStoredListAsync(scopeKey);
+    const readMs = Date.now() - readStarted;
+
+    let summaryMs = null;
+    let summaryKyokuCount = null;
+    if (global.MBSanmaLogMetrics && typeof global.MBSanmaLogMetrics.buildAnalysisSummary === "function"){
+      const summaryStarted = Date.now();
+      const summary = global.MBSanmaLogMetrics.buildAnalysisSummary(storedLogs, {
+        limit: "all",
+        matchMode: "batch",
+        sessionMode: "all",
+        dealer: "all",
+        ruleSetId: "all"
+      });
+      summaryMs = Date.now() - summaryStarted;
+      summaryKyokuCount = summary && summary.overall ? Number(summary.overall.kyokuCount) || 0 : 0;
+    }
+
+    return {
+      scopeKey,
+      storageBackend: hasIndexedDb() ? "indexeddb" : "localStorage",
+      removedBeforeWrite,
+      requestedMatchCount: matchCount,
+      writtenMatchCount: writtenCount,
+      storedMatchCount: storedLogs.length,
+      kyokuPerMatch,
+      estimatedBytes,
+      buildMs,
+      clearMs,
+      writeMs,
+      readMs,
+      summaryMs,
+      summaryKyokuCount
+    };
+  }
+
+  async function clearBatchBenchmarkAsync(){
+    const scopeKey = getBenchmarkScopeKey(readActiveSession());
+    const removedCount = await clearStoredScopeAsync(scopeKey);
+    return {
+      scopeKey,
+      removedCount
+    };
+  }
+
   async function trimStoredMatchesAsync(scopeKey){
     const key = String(scopeKey || getScopedStorageKey());
     if (!hasIndexedDb()) return;
@@ -1240,6 +1631,8 @@
     getStoredLogs,
     getStoredLogsAsync,
     refreshStoredLogsAsync,
+    runBatchBenchmarkAsync,
+    clearBatchBenchmarkAsync,
     cloneTile,
     cloneTileArray,
     cloneMeldArray,
