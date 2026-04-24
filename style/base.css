@@ -1,0 +1,439 @@
+/* ========= base.css ========= */
+
+/* ===== 共通変数 ===== */
+:root{
+  --centerYOffset: -8px;
+
+  --tile: 52px;
+  --gap: 1px;
+  --cols: 6;
+  --rowsMax: 4;
+
+  --riverW: calc(var(--cols) * var(--tile) + (var(--cols) - 1) * var(--gap));
+  --myRiverH: calc(var(--rowsMax) * var(--tile) + (var(--rowsMax) - 1) * var(--gap));
+
+  --cpuRows: 3;
+  --cpuRiverH: calc(var(--cpuRows) * var(--tile) + (var(--cpuRows) - 1) * var(--gap));
+  --rowStep: calc(var(--tile) + var(--gap));
+
+  --cpuRowsShow: 3;
+  --cpuBoxH: calc(var(--cpuRowsShow) * var(--tile) + (var(--cpuRowsShow) - 1) * var(--gap));
+}
+
+/* ===== ベースレイアウト ===== */
+html,
+body{
+  width: 100%;
+  height: 100%;
+  min-height: 100%;
+  overscroll-behavior: none;
+}
+
+body{
+  font-family: system-ui;
+  margin: 0;
+  background: #143625;
+  color: #111;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+::selection{
+  background: rgba(255,214,102,0.38);
+  color: #1e1402;
+}
+
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    transition-duration: 0.001ms !important;
+    animation-duration: 0.001ms !important;
+  }
+}
+
+h1{
+  font-size: 18px;
+  margin: 0;
+}
+
+h3{
+  font-size: 14px;
+  margin: 8px 0 6px;
+}
+
+button{
+  cursor: pointer;
+}
+
+.app{
+  min-height: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  box-sizing: border-box;
+  gap: 0;
+}
+
+.topbar{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  align-items:center;
+  position: relative;
+  z-index: 20;
+}
+
+.muted{
+  color:#666;
+  font-size:12px;
+}
+
+/* ===== 上部バッジ ===== */
+.badgeTop{
+  display:none;
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(0,0,0,0.15);
+  background: rgba(255,255,255,0.9);
+  font-size: 12px;
+}
+
+/* ===== 左上タイトル＋説明 ===== */
+.topIntro{
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  position: relative;
+  z-index: 20;
+}
+
+.topIntroTitle{
+  font-size: 16px;
+  font-weight: 900;
+  letter-spacing: .03em;
+  color: #f2f2f2;
+}
+
+.topIntroSub{
+  font-size: 12px;
+  color: rgba(255,255,255,0.75);
+  line-height: 1.2;
+}
+
+/* ===== 盤面ステージ ===== */
+.boardStage{
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0;
+  overflow: hidden;
+}
+
+.boardViewport{
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.gameBoard{
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 1600px;
+  height: 900px;
+  min-width: 0;
+  min-height: 0;
+  max-width: none;
+  max-height: none;
+  transform: translate(-50%, -50%) scale(1);
+  transform-origin: center center;
+  background: url("../img/mat.png") center center / cover no-repeat;
+  background-color: #2a6f44;
+  container-type: size;
+  overflow: visible;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+
+  --zoneW: 24%;
+  --zoneH: 48%;
+  --zoneTop: 3.2%;
+  --zoneLeft: calc(50% - (var(--zoneW) / 2));
+  --zoneRight: calc(50% + (var(--zoneW) / 2));
+
+  --cpuRiverYOffset: 0%;
+  --myRiverYOffset: 0%;
+}
+
+.activeAccountBadge{
+  position: absolute;
+  left: 24px;
+  top: 18px;
+  z-index: 21;
+  min-height: 40px;
+  padding: 0 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.18);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.16) 0%, rgba(255,255,255,0.06) 100%),
+    rgba(10, 18, 15, 0.76);
+  color: #f4f5ef;
+  box-shadow:
+    0 12px 24px rgba(0,0,0,0.24),
+    inset 0 1px 0 rgba(255,255,255,0.14);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0.04em;
+  pointer-events: none;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.activeAccountBadge[hidden]{
+  display: none !important;
+}
+
+/* ===== マット内上部コントロール ===== */
+.boardTopControls{
+  position: absolute;
+  left: 50%;
+  top: 2.2%;
+  transform: translateX(-50%);
+  z-index: 20;
+
+  width: min(72%, 920px);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  pointer-events: none;
+}
+
+.boardTopLeftControls,
+.boardTopRightControls,
+.boardTopMainControls{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(8px, 0.95cqw, 14px);
+  pointer-events: auto;
+}
+
+.boardTopLeftControls,
+.boardTopMainControls{
+  flex-wrap: wrap;
+}
+
+.boardTopControls button,
+.topMenuBtn{
+  min-width: clamp(128px, 11.4cqw, 174px);
+  min-height: clamp(48px, 4.5cqw, 62px);
+  padding: clamp(11px, 1.05cqw, 15px) clamp(20px, 1.9cqw, 28px);
+  border-radius: 16px;
+
+  border: 1px solid rgba(255,255,255,0.18);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.08) 100%),
+    rgba(12, 21, 18, 0.72);
+  color: #f4f5ef;
+  box-shadow:
+    0 14px 28px rgba(0,0,0,0.26),
+    inset 0 1px 0 rgba(255,255,255,0.16),
+    inset 0 -1px 0 rgba(0,0,0,0.22);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+
+ font-size: clamp(13px, 1.25cqw, 17px);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: .04em;
+  white-space: nowrap;
+
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+
+  appearance: none;
+  -webkit-appearance: none;
+
+  transition:
+    transform 140ms ease,
+    box-shadow 140ms ease,
+    border-color 140ms ease,
+    background 140ms ease,
+    color 140ms ease;
+}
+
+.boardTopControls button:hover,
+.topMenuBtn:hover{
+  transform: translateY(-1px);
+  border-color: rgba(255,255,255,0.28);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.10) 100%),
+    rgba(18, 30, 26, 0.82);
+  box-shadow:
+    0 18px 32px rgba(0,0,0,0.28),
+    inset 0 1px 0 rgba(255,255,255,0.18),
+    inset 0 -1px 0 rgba(0,0,0,0.18);
+}
+
+.boardTopControls button:active,
+.topMenuBtn:active{
+  transform: translateY(1px);
+  box-shadow:
+    0 8px 16px rgba(0,0,0,0.22),
+    inset 0 1px 0 rgba(255,255,255,0.12),
+    inset 0 -1px 0 rgba(0,0,0,0.24);
+}
+
+.boardTopControls button:focus,
+.topMenuBtn:focus{
+  outline: none;
+}
+
+.boardTopControls button:focus-visible,
+.topMenuBtn:focus-visible{
+  outline: 2px solid rgba(255,214,102,0.88);
+  outline-offset: 2px;
+}
+
+.topMenuBtnPrimary{
+  border-color: rgba(255, 220, 130, 0.34);
+  background:
+    linear-gradient(180deg, rgba(255,220,150,0.18) 0%, rgba(255,196,92,0.08) 100%),
+    rgba(37, 29, 14, 0.76);
+  color: #fff4d3;
+}
+
+.topMenuBtnPrimary:hover{
+  border-color: rgba(255, 230, 150, 0.44);
+  background:
+    linear-gradient(180deg, rgba(255,226,160,0.24) 0%, rgba(255,200,98,0.10) 100%),
+    rgba(46, 35, 16, 0.84);
+}
+
+.topMenuBtnAccent{
+  border-color: rgba(140, 210, 255, 0.32);
+  background:
+    linear-gradient(180deg, rgba(145,220,255,0.16) 0%, rgba(78,160,255,0.08) 100%),
+    rgba(14, 25, 40, 0.78);
+  color: #e9f8ff;
+}
+
+.topMenuBtnAccent:hover{
+  border-color: rgba(160, 222, 255, 0.42);
+  background:
+    linear-gradient(180deg, rgba(160,226,255,0.22) 0%, rgba(90,174,255,0.10) 100%),
+    rgba(18, 31, 48, 0.86);
+}
+
+@media (max-width: 900px){
+  .app{
+    padding: 0;
+    gap: 0;
+  }
+
+  .boardTopControls{
+    width: min(82%, 900px);
+    top: 2%;
+  }
+}
+
+@media (max-width: 640px){
+  .topIntroTitle{
+    font-size: 14px;
+  }
+
+  .topIntroSub{
+    font-size: 11px;
+  }
+
+  .topbar{
+    gap: 6px;
+  }
+
+  .topbar button{
+    font-size: 12px;
+    padding: 6px 10px;
+  }
+
+  .activeAccountBadge{
+    left: 12px;
+    top: 10px;
+    min-height: 32px;
+    padding: 0 12px;
+    font-size: 11px;
+  }
+
+  .boardTopControls{
+    width: min(92%, 100%);
+    top: 1.8%;
+  }
+
+  .boardTopLeftControls,
+  .boardTopRightControls,
+  .boardTopMainControls{
+    gap: 6px;
+  }
+
+  .boardTopControls button,
+  .topMenuBtn{
+    min-width: 126px;
+    min-height: 36px;
+    padding: 8px 12px;
+    font-size: 11px;
+  }
+}
+
+
+@media (orientation: landscape) and (max-height: 520px){
+  .gameBoard{
+    --tile: 52px;
+    --zoneW: 33.5%;
+    --zoneH: 71%;
+    --zoneTop: 2.2%;
+  }
+
+  .activeAccountBadge{
+    left: 16px;
+    top: 10px;
+    min-height: 34px;
+    padding: 0 12px;
+    font-size: 12px;
+  }
+
+  .boardTopControls{
+    top: 0.8%;
+    width: min(86%, 980px);
+  }
+
+  .boardTopLeftControls,
+  .boardTopRightControls,
+  .boardTopMainControls{
+    gap: 8px;
+  }
+
+  .boardTopControls button,
+  .topMenuBtn{
+    min-width: 164px;
+    min-height: 84px;
+    padding: 14px 20px;
+    border-radius: 16px;
+    font-size: 18px;
+    letter-spacing: .02em;
+  }
+}

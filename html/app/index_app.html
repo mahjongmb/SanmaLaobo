@@ -1,0 +1,1623 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SANMA LAB</title>
+  <meta name="description" content="三麻を遊ぶ・成績を見る・牌譜を振り返るためのトップページです。" />
+  <style>
+    :root{
+      --bg:#08120e;
+      --bg2:#103126;
+      --panel:rgba(8, 20, 15, 0.82);
+      --panel2:rgba(255,255,255,0.04);
+      --line:rgba(255,255,255,0.12);
+      --text:#f6f7f3;
+      --muted:rgba(246,247,243,0.74);
+      --gold:#d9bb72;
+      --gold-strong:#f3d78e;
+      --shadow:0 18px 54px rgba(0,0,0,0.34);
+      --danger:#ffb2a3;
+    }
+
+    *{
+      box-sizing:border-box;
+    }
+
+    html,
+    body{
+      margin:0;
+      min-height:100%;
+    }
+
+    body{
+      min-height:100vh;
+      color:var(--text);
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      background:
+        radial-gradient(circle at 50% 14%, rgba(241,212,141,0.18), transparent 22%),
+        radial-gradient(circle at 50% 100%, rgba(31,94,67,0.28), transparent 34%),
+        linear-gradient(180deg, var(--bg2) 0%, var(--bg) 58%, #050c09 100%);
+      overflow-x:hidden;
+    }
+
+    body::before,
+    body::after{
+      content:"";
+      position:fixed;
+      inset:auto;
+      pointer-events:none;
+      border-radius:50%;
+      filter:blur(2px);
+      opacity:0.58;
+    }
+
+    body::before{
+      width:360px;
+      height:360px;
+      top:-120px;
+      left:-120px;
+      background:radial-gradient(circle, rgba(255,255,255,0.08), transparent 68%);
+    }
+
+    body::after{
+      width:320px;
+      height:320px;
+      right:-100px;
+      bottom:-100px;
+      background:radial-gradient(circle, rgba(217,187,114,0.18), transparent 68%);
+    }
+
+    a,
+    button{
+      color:inherit;
+      font:inherit;
+    }
+
+    .appScreen{
+      min-height:100vh;
+      display:grid;
+      place-items:center;
+      padding:24px;
+    }
+
+    .appPanel{
+      width:min(100%, 960px);
+      padding:26px 28px 30px;
+      border-radius:30px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02)),
+        var(--panel);
+      border:1px solid var(--line);
+      box-shadow:var(--shadow);
+      backdrop-filter:blur(10px);
+      position:relative;
+      overflow:hidden;
+    }
+
+    .appPanel::before{
+      content:"";
+      position:absolute;
+      inset:-140px auto auto 50%;
+      width:320px;
+      height:320px;
+      transform:translateX(-50%);
+      border-radius:50%;
+      background:radial-gradient(circle, rgba(217,187,114,0.16), transparent 70%);
+      pointer-events:none;
+    }
+
+    .appInner{
+      position:relative;
+      z-index:1;
+    }
+
+    .topBar{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:14px;
+      margin-bottom:30px;
+      flex-wrap:wrap;
+    }
+
+    .brandBlock{
+      text-align:left;
+    }
+
+    .brandKicker{
+      font-size:12px;
+      font-weight:800;
+      letter-spacing:0.22em;
+      color:var(--gold-strong);
+    }
+
+    .brandTitle{
+      margin-top:8px;
+      font-size:clamp(34px, 7vw, 68px);
+      font-weight:900;
+      line-height:1;
+      letter-spacing:0.06em;
+      text-shadow:0 10px 28px rgba(0,0,0,0.24);
+    }
+
+    .brandSub{
+      margin-top:10px;
+      font-size:clamp(18px, 3vw, 26px);
+      font-weight:800;
+      color:rgba(255,255,255,0.92);
+    }
+
+    .statusCard{
+      min-width:min(100%, 320px);
+      padding:14px 14px 12px;
+      border-radius:18px;
+      background:rgba(255,255,255,0.04);
+      border:1px solid rgba(255,255,255,0.10);
+      text-align:left;
+      display:grid;
+      gap:10px;
+    }
+
+    .statusHead{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .statusLabel{
+      font-size:12px;
+      font-weight:800;
+      letter-spacing:0.12em;
+      color:var(--gold-strong);
+    }
+
+    .statusBadge{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      min-height:34px;
+      padding:0 12px;
+      border-radius:999px;
+      background:rgba(255,255,255,0.06);
+      border:1px solid rgba(255,255,255,0.12);
+      font-size:13px;
+      font-weight:800;
+    }
+
+    .statusBadge.isGuest{
+      color:rgba(255,255,255,0.88);
+    }
+
+    .statusBadge.isAccount{
+      color:#1b1403;
+      background:linear-gradient(180deg, #f2d58f 0%, #d9bb72 100%);
+      border-color:transparent;
+    }
+
+    .statusNote{
+      font-size:13px;
+      line-height:1.7;
+      color:var(--muted);
+    }
+
+    .statusActions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .miniBtn{
+      appearance:none;
+      border:none;
+      cursor:pointer;
+      min-height:42px;
+      padding:0 14px;
+      border-radius:14px;
+      font-size:14px;
+      font-weight:800;
+      line-height:1.2;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      vertical-align:middle;
+      transition:transform 0.16s ease, opacity 0.16s ease, background 0.16s ease, border-color 0.16s ease;
+    }
+
+    .miniBtn:hover,
+    .menuBtn:hover,
+    .subMenuBtn:hover,
+    .dialogActionBtn:hover{
+      transform:translateY(-1px);
+    }
+
+    .miniBtnPrimary{
+      background:linear-gradient(180deg, #f2d58f 0%, #d9bb72 100%);
+      color:#1e1402;
+    }
+
+    .miniBtnGhost{
+      background:rgba(255,255,255,0.05);
+      color:var(--text);
+      border:1px solid rgba(255,255,255,0.12);
+    }
+
+    .leadBlock{
+      margin:8px auto 0;
+      text-align:center;
+    }
+
+    .leadText{
+      margin:0 auto;
+      max-width:42em;
+      font-size:14px;
+      line-height:1.9;
+      color:var(--muted);
+    }
+
+    .menuGrid{
+      margin-top:28px;
+      display:grid;
+      grid-template-columns:repeat(2, minmax(0, 1fr));
+      gap:14px;
+    }
+
+    .menuBtn,
+    .subMenuBtn{
+      appearance:none;
+      border:none;
+      cursor:pointer;
+      width:100%;
+      text-align:left;
+      padding:18px 18px 16px;
+      border-radius:20px;
+      background:var(--panel2);
+      border:1px solid rgba(255,255,255,0.10);
+      color:var(--text);
+      transition:transform 0.16s ease, background 0.16s ease, border-color 0.16s ease;
+    }
+
+    .menuBtnMain{
+      background:linear-gradient(180deg, rgba(242,213,143,0.14), rgba(217,187,114,0.08));
+      border:1px solid rgba(241,212,141,0.22);
+    }
+
+    .menuBtnTitle{
+      display:block;
+      font-size:24px;
+      font-weight:900;
+      line-height:1.2;
+    }
+
+    .menuBtnText{
+      display:block;
+      margin-top:8px;
+      font-size:13px;
+      line-height:1.7;
+      color:var(--muted);
+    }
+
+    .subGrid{
+      margin-top:14px;
+      display:grid;
+      grid-template-columns:repeat(5, minmax(0, 1fr));
+      gap:12px;
+    }
+
+    .subMenuBtn{
+      min-height:72px;
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      align-items:flex-start;
+    }
+
+    .subMenuBtn .menuBtnTitle{
+      font-size:19px;
+    }
+
+    .subMenuBtn .menuBtnText{
+      display:none;
+    }
+
+    .footerNote{
+      margin-top:18px;
+      text-align:center;
+      font-size:12px;
+      color:rgba(255,255,255,0.38);
+      letter-spacing:0.10em;
+    }
+
+    .loginOverlay{
+      position:fixed;
+      inset:0;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:20px;
+      background:rgba(0,0,0,0.62);
+      z-index:40;
+      backdrop-filter:blur(8px);
+    }
+
+    .loginOverlay.isOpen{
+      display:flex;
+    }
+
+    .loginDialog{
+      width:min(100%, 560px);
+      padding:24px 22px 18px;
+      border-radius:24px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03)),
+        rgba(8, 20, 15, 0.96);
+      border:1px solid rgba(255,255,255,0.12);
+      box-shadow:0 22px 58px rgba(0,0,0,0.42);
+      position:relative;
+    }
+
+    .dialogClose{
+      position:absolute;
+      top:14px;
+      right:14px;
+      appearance:none;
+      border:1px solid rgba(255,255,255,0.12);
+      background:rgba(255,255,255,0.06);
+      color:var(--text);
+      border-radius:999px;
+      min-width:38px;
+      height:38px;
+      font-size:12px;
+      font-weight:800;
+      cursor:pointer;
+    }
+
+    .dialogTitle{
+      font-size:28px;
+      font-weight:900;
+      line-height:1.2;
+      margin-bottom:8px;
+    }
+
+    .dialogLead{
+      font-size:13px;
+      line-height:1.8;
+      color:var(--muted);
+      margin-bottom:18px;
+    }
+
+    .dialogField{
+      display:grid;
+      gap:8px;
+      margin-bottom:12px;
+    }
+
+    .dialogLabel{
+      font-size:13px;
+      font-weight:800;
+      color:var(--gold-strong);
+      letter-spacing:0.04em;
+    }
+
+    .dialogInput{
+      width:100%;
+      min-height:52px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,0.14);
+      background:rgba(255,255,255,0.05);
+      color:var(--text);
+      padding:0 14px;
+      font-size:16px;
+      font-weight:700;
+      outline:none;
+    }
+
+    .dialogInput:focus{
+      border-color:rgba(241,212,141,0.42);
+      box-shadow:0 0 0 3px rgba(241,212,141,0.12);
+    }
+
+    .dialogNotice{
+      min-height:22px;
+      margin-bottom:12px;
+      font-size:13px;
+      font-weight:700;
+      color:var(--gold-strong);
+    }
+
+    .dialogNotice.isError{
+      color:var(--danger);
+    }
+
+    .dialogActions{
+      display:grid;
+      gap:10px;
+    }
+
+    .dialogActionBtn{
+      appearance:none;
+      border:1px solid rgba(255,255,255,0.12);
+      border-radius:16px;
+      min-height:52px;
+      padding:0 16px;
+      background:rgba(255,255,255,0.05);
+      color:var(--text);
+      font-size:15px;
+      font-weight:800;
+      cursor:pointer;
+      transition:transform 0.16s ease, background 0.16s ease, border-color 0.16s ease;
+    }
+
+    .dialogActionBtn.isPrimary{
+      background:linear-gradient(180deg, #f2d58f 0%, #d9bb72 100%);
+      color:#1e1402;
+      border-color:transparent;
+    }
+
+    .dialogFootnote{
+      margin-top:14px;
+      font-size:12px;
+      line-height:1.7;
+      color:var(--muted);
+    }
+
+    @media (max-width: 760px){
+      .appScreen{
+        padding:16px;
+      }
+
+      .appPanel{
+        padding:20px 16px 22px;
+        border-radius:24px;
+      }
+
+      .topBar{
+        margin-bottom:24px;
+      }
+
+      .menuGrid,
+      .subGrid{
+        grid-template-columns:1fr;
+      }
+
+      .statusCard{
+        min-width:0;
+        width:100%;
+      }
+
+      .subMenuBtn{
+        min-height:94px;
+      }
+
+      .loginOverlay{
+        padding:14px;
+      }
+
+      .loginDialog{
+        padding:20px 16px 16px;
+        border-radius:20px;
+      }
+
+      .dialogTitle{
+        font-size:24px;
+        padding-right:42px;
+      }
+    }
+
+    /* ===== 共通ポリッシュ（UI改良） ===== */
+    body{
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      text-rendering:optimizeLegibility;
+    }
+
+    ::selection{
+      background:rgba(241,212,141,0.38);
+      color:#1e1402;
+    }
+
+    a:focus-visible,
+    button:focus-visible,
+    input:focus-visible,
+    .subMenuBtn:focus-visible,
+    .menuBtn:focus-visible{
+      outline:2px solid rgba(241,212,141,0.75);
+      outline-offset:3px;
+      border-radius:18px;
+    }
+
+    *{
+      scrollbar-width:thin;
+      scrollbar-color:rgba(255,255,255,0.22) transparent;
+    }
+    *::-webkit-scrollbar{ width:10px; height:10px; }
+    *::-webkit-scrollbar-track{ background:transparent; }
+    *::-webkit-scrollbar-thumb{
+      background:rgba(255,255,255,0.18);
+      border-radius:999px;
+      border:2px solid transparent;
+      background-clip:padding-box;
+    }
+    *::-webkit-scrollbar-thumb:hover{ background:rgba(255,255,255,0.32); background-clip:padding-box; }
+
+    @media (prefers-reduced-motion: reduce){
+      *,*::before,*::after{
+        transition-duration:0.001ms !important;
+        animation-duration:0.001ms !important;
+      }
+    }
+
+    /* メニュー視認性アップ */
+    .menuBtn,
+    .subMenuBtn{
+      position:relative;
+      overflow:hidden;
+      min-height:108px;
+    }
+    .menuBtn::after,
+    .subMenuBtn::after{
+      content:"";
+      position:absolute;
+      right:14px;
+      top:50%;
+      width:22px;
+      height:22px;
+      transform:translateY(-50%);
+      border-right:2px solid rgba(241,212,141,0.55);
+      border-top:2px solid rgba(241,212,141,0.55);
+      border-radius:2px;
+      rotate:45deg;
+      opacity:0.75;
+      transition:right 0.18s ease, opacity 0.18s ease;
+    }
+    .menuBtn:hover::after,
+    .subMenuBtn:hover::after{
+      right:10px;
+      opacity:1;
+    }
+    .menuBtn:hover,
+    .subMenuBtn:hover{
+      background:rgba(255,255,255,0.07);
+      border-color:rgba(255,255,255,0.20);
+    }
+    .menuBtnMain:hover{
+      background:linear-gradient(180deg, rgba(242,213,143,0.22), rgba(217,187,114,0.12));
+      border-color:rgba(241,212,141,0.42);
+      box-shadow:0 14px 32px rgba(0,0,0,0.28), 0 0 0 1px rgba(241,212,141,0.18);
+    }
+    .menuBtn:active,
+    .subMenuBtn:active{
+      transform:translateY(0);
+    }
+
+    /* subGrid を画面幅に応じて可変に */
+    .subGrid{
+      grid-template-columns:repeat(auto-fit, minmax(160px, 1fr));
+    }
+
+    /* ミニボタンも最小タップ領域を確保 */
+    .miniBtn{
+      min-height:44px;
+    }
+
+    @media (max-width: 760px){
+      .menuBtn,
+      .subMenuBtn{
+        min-height:96px;
+      }
+      .subGrid{
+        grid-template-columns:repeat(auto-fit, minmax(150px, 1fr));
+      }
+    }
+
+    /* ===== プレミアムレイヤ（質感強化） ===== */
+    :root{
+      --mincho:"Hiragino Mincho ProN","Hiragino Mincho Pro","Yu Mincho","YuMincho","Noto Serif JP",Georgia,serif;
+      --gold-line:linear-gradient(90deg,transparent 0%,rgba(241,212,141,0.55) 20%,rgba(241,212,141,0.92) 50%,rgba(241,212,141,0.55) 80%,transparent 100%);
+      --panel-elev:0 1px 0 rgba(255,220,150,0.12) inset, 0 -1px 0 rgba(0,0,0,0.34) inset, 0 2px 3px rgba(0,0,0,0.12), 0 18px 36px rgba(0,0,0,0.28), 0 46px 80px rgba(0,0,0,0.38);
+    }
+
+    /* 極薄ノイズの全画面テクスチャ */
+    html::before{
+      content:"";
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      opacity:0.10;
+      mix-blend-mode:overlay;
+      z-index:50;
+      background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.92' numOctaves='2' seed='7'/></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='0.88'/></svg>");
+    }
+
+    /* 書体アップグレード: 明朝でブランド感 */
+    .brandKicker{
+      font-family:var(--mincho);
+      letter-spacing:0.28em;
+      font-weight:700;
+    }
+    .brandTitle{
+      font-family:var(--mincho);
+      font-weight:700;
+      letter-spacing:0.08em;
+      background:linear-gradient(180deg,#fff5d2 0%,#f3d78e 42%,#d9bb72 100%);
+      -webkit-background-clip:text;
+      background-clip:text;
+      color:transparent;
+      text-shadow:0 16px 42px rgba(0,0,0,0.34);
+      position:relative;
+    }
+    .brandTitle::after{
+      content:"";
+      display:block;
+      margin-top:18px;
+      height:1px;
+      width:clamp(140px,22vw,240px);
+      background:var(--gold-line);
+    }
+    .brandSub{
+      font-family:var(--mincho);
+      font-weight:700;
+      letter-spacing:0.05em;
+      color:rgba(255,255,255,0.96);
+    }
+    .menuBtnTitle{
+      font-family:var(--mincho);
+      font-weight:700;
+      letter-spacing:0.06em;
+    }
+    .dialogTitle{
+      font-family:var(--mincho);
+      font-weight:700;
+      letter-spacing:0.04em;
+    }
+
+    /* パネルを本物の立体感に */
+    .appPanel{
+      box-shadow:var(--panel-elev);
+      border-color:rgba(255,220,150,0.14);
+    }
+    .appPanel::after{
+      content:"";
+      position:absolute;
+      top:0; left:10%; right:10%;
+      height:1px;
+      background:var(--gold-line);
+      opacity:0.6;
+      pointer-events:none;
+    }
+
+    /* ステータスカードの質感 */
+    .statusCard{
+      box-shadow:0 1px 0 rgba(255,255,255,0.06) inset, 0 8px 20px rgba(0,0,0,0.24);
+    }
+
+    /* 本格ゴールド: ログインボタンに光沢スイープ */
+    .miniBtnPrimary,
+    .dialogActionBtn.isPrimary{
+      position:relative;
+      overflow:hidden;
+      isolation:isolate;
+      background:linear-gradient(180deg,#fbe7b0 0%,#f2d58f 40%,#d9bb72 100%);
+      box-shadow:0 1px 0 rgba(255,255,255,0.45) inset, 0 -1px 0 rgba(120,80,20,0.35) inset, 0 10px 22px rgba(0,0,0,0.24);
+    }
+    .miniBtnPrimary::after,
+    .dialogActionBtn.isPrimary::after{
+      content:"";
+      position:absolute;
+      top:0; left:-40%;
+      width:30%; height:100%;
+      background:linear-gradient(110deg,transparent 0%,rgba(255,255,255,0.58) 50%,transparent 100%);
+      transform:skewX(-20deg);
+      transition:left 0.9s ease;
+      pointer-events:none;
+    }
+    .miniBtnPrimary:hover::after,
+    .dialogActionBtn.isPrimary:hover::after{
+      left:120%;
+    }
+
+    /* メニューカードのリフトと質感 */
+    .menuBtn,
+    .subMenuBtn{
+      transition:transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease, background 0.22s ease;
+      box-shadow:0 1px 0 rgba(255,255,255,0.06) inset, 0 6px 16px rgba(0,0,0,0.22);
+    }
+    .menuBtn:hover,
+    .subMenuBtn:hover{
+      transform:translateY(-3px);
+      box-shadow:0 1px 0 rgba(255,255,255,0.08) inset, 0 18px 30px rgba(0,0,0,0.34), 0 0 0 1px rgba(241,212,141,0.22);
+    }
+    .menuBtnMain{
+      background:
+        radial-gradient(130% 90% at 100% 0%, rgba(255,245,210,0.22) 0%, transparent 48%),
+        linear-gradient(180deg, rgba(242,213,143,0.18), rgba(217,187,114,0.06));
+      border:1px solid rgba(241,212,141,0.30);
+    }
+    .menuBtnMain:hover{
+      background:
+        radial-gradient(130% 90% at 100% 0%, rgba(255,245,210,0.32) 0%, transparent 52%),
+        linear-gradient(180deg, rgba(242,213,143,0.28), rgba(217,187,114,0.14));
+      border-color:rgba(241,212,141,0.52);
+    }
+    .menuBtnMain .menuBtnTitle{
+      background:linear-gradient(180deg,#fff5d2 0%,#f3d78e 60%,#d9bb72 100%);
+      -webkit-background-clip:text;
+      background-clip:text;
+      color:transparent;
+    }
+
+    /* 入場アニメ */
+    @keyframes premiumFadeInUp{
+      0%  { opacity:0; transform:translateY(14px); filter:blur(4px); }
+      60% { filter:blur(0); }
+      100%{ opacity:1; transform:translateY(0); filter:blur(0); }
+    }
+    .appPanel{
+      animation:premiumFadeInUp 0.7s cubic-bezier(.2,.7,.2,1) both;
+    }
+    .appInner > *{
+      animation:premiumFadeInUp 0.6s cubic-bezier(.2,.7,.2,1) both;
+    }
+    .appInner > *:nth-child(1){ animation-delay:.05s; }
+    .appInner > *:nth-child(2){ animation-delay:.14s; }
+    .appInner > *:nth-child(3){ animation-delay:.22s; }
+    .appInner > *:nth-child(4){ animation-delay:.30s; }
+    .appInner > *:nth-child(5){ animation-delay:.38s; }
+
+    @media (prefers-reduced-motion: reduce){
+      .appPanel,
+      .appInner > *{ animation:none; }
+    }
+
+    /* タイトル周り余白を少し広く */
+    .brandBlock{
+      padding-right:8px;
+    }
+    .topBar{
+      margin-bottom:34px;
+    }
+
+    /* モバイル調整 */
+    @media (max-width: 760px){
+      .brandTitle::after{
+        margin-top:12px;
+        width:120px;
+      }
+      .topBar{ margin-bottom:26px; }
+    }
+
+    /* ボタン形状の差別化 ─ コーナーブラケット */
+    .menuBtnMain{ position:relative; }
+    .menuBtnMain::before{
+      content:"";
+      position:absolute;
+      inset:10px;
+      pointer-events:none;
+      z-index:1;
+      background:
+        linear-gradient(to right, rgba(242,213,143,0.55) 14px, transparent 14px) top left / 14px 1px no-repeat,
+        linear-gradient(to bottom, rgba(242,213,143,0.55) 14px, transparent 14px) top left / 1px 14px no-repeat,
+        linear-gradient(to left, rgba(242,213,143,0.55) 14px, transparent 14px) top right / 14px 1px no-repeat,
+        linear-gradient(to bottom, rgba(242,213,143,0.55) 14px, transparent 14px) top right / 1px 14px no-repeat,
+        linear-gradient(to right, rgba(242,213,143,0.55) 14px, transparent 14px) bottom left / 14px 1px no-repeat,
+        linear-gradient(to top, rgba(242,213,143,0.55) 14px, transparent 14px) bottom left / 1px 14px no-repeat,
+        linear-gradient(to left, rgba(242,213,143,0.55) 14px, transparent 14px) bottom right / 14px 1px no-repeat,
+        linear-gradient(to top, rgba(242,213,143,0.55) 14px, transparent 14px) bottom right / 1px 14px no-repeat;
+      opacity:0.55;
+      transition: inset 0.4s cubic-bezier(.2,.7,.2,1), opacity 0.4s ease;
+    }
+    .menuBtnMain:hover::before{
+      inset:6px;
+      opacity:0.95;
+    }
+
+    /* backBtn系の左矢印グリフ（共通） */
+    .backBtn{ display:inline-flex; align-items:center; gap:8px; }
+    .backBtn::before{
+      content:"";
+      display:inline-block;
+      width:8px; height:8px;
+      border-left:1.6px solid currentColor;
+      border-bottom:1.6px solid currentColor;
+      transform:rotate(45deg);
+      opacity:0.85;
+      transition: transform 0.3s ease, margin-right 0.3s ease;
+      margin-right:2px;
+    }
+    .backBtn:hover::before{
+      transform:rotate(45deg) translate(-2px,2px);
+      opacity:1;
+    }
+
+    @media (prefers-reduced-motion: reduce){
+      .menuBtnMain::before,
+      .backBtn::before{ transition:none; }
+    }
+  </style>
+
+  <script>
+    window.MB_SANMA_SUPABASE_CONFIG = {
+      url: "https://edcsvszqscbfeizfmilp.supabase.co",
+      anonKey: "sb_publishable_vLIhwWFFomM4WwSaupoOxw_UOUNihF0"
+    };
+  </script>
+  <script src="../../js/supabase_client.js"></script>
+</head>
+<body>
+  <main class="appScreen">
+    <section class="appPanel" aria-label="SANMA LAB トップ">
+      <div class="appInner">
+        <div class="topBar">
+          <div class="brandBlock">
+            <div class="brandKicker">ANALYZE — TRAIN — REPLAY</div>
+            <div class="brandTitle">SANMA LAB</div>
+            <div class="brandSub">三麻研究室</div>
+          </div>
+
+          <div class="statusCard">
+            <div class="statusHead">
+              <div class="statusLabel">LOGIN</div>
+              <div id="loginStatusBadge" class="statusBadge isGuest">ゲストモード</div>
+            </div>
+            <div id="loginStatusNote" class="statusNote">
+              そのまま遊べます。成績と牌譜を端末間で持ち出すときだけログイン。
+            </div>
+            <div class="statusActions">
+              <button id="openLoginDialogBtn" type="button" class="miniBtn miniBtnPrimary">ログイン</button>
+              <button id="logoutBtn" type="button" class="miniBtn miniBtnGhost">ログアウト</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="leadBlock">
+          <p class="leadText">
+            打ち、試し、振り返る。<br />
+            対局・検証・牌譜・成績を一つにまとめた、三麻のための研究室。
+          </p>
+        </div>
+
+        <div class="menuGrid">
+          <button id="battleModeBtn" type="button" class="menuBtn menuBtnMain">
+            <span class="menuBtnTitle">対局モード</span>
+            <span class="menuBtnText">自分で打つ通常プレイ。成績と牌譜は自動で保存されます。</span>
+          </button>
+
+          <button id="verifyModeBtn" type="button" class="menuBtn menuBtnMain">
+            <span class="menuBtnTitle">検証モード</span>
+            <span class="menuBtnText">CPU同士で自動対局。ルールの傾向や手役の出やすさを観察。</span>
+          </button>
+        </div>
+
+        <div class="subGrid">
+          <a class="subMenuBtn" href="replay_app.html">
+            <span class="menuBtnTitle">牌譜再生</span>
+            <span class="menuBtnText">半荘を手順で振り返る</span>
+          </a>
+
+          <a class="subMenuBtn" href="records_app.html">
+            <span class="menuBtnTitle">成績管理</span>
+            <span class="menuBtnText">累計・順位・収支</span>
+          </a>
+
+          <a class="subMenuBtn" href="analysis_app.html">
+            <span class="menuBtnTitle">分析</span>
+            <span class="menuBtnText">打牌傾向を可視化</span>
+          </a>
+
+          <a class="subMenuBtn" href="rules_app.html">
+            <span class="menuBtnTitle">ルール変更</span>
+            <span class="menuBtnText">採用ルールを切替</span>
+          </a>
+
+          <a class="subMenuBtn" href="settings_app.html">
+            <span class="menuBtnTitle">設定変更</span>
+            <span class="menuBtnText">操作・表示を調整</span>
+          </a>
+        </div>
+
+        <div class="footerNote">SANMA LAB · TOP</div>
+      </div>
+    </section>
+  </main>
+
+  <div id="loginOverlay" class="loginOverlay" aria-hidden="true">
+    <div class="loginDialog" role="dialog" aria-modal="true" aria-labelledby="loginDialogTitle">
+      <button id="closeLoginDialogBtn" type="button" class="dialogClose">閉じる</button>
+      <div id="loginDialogTitle" class="dialogTitle">ログイン設定</div>
+      <div class="dialogLead">
+        アカウント番号でログインすると、保存した成績や牌譜をこの端末でも呼び出せます。<br />
+        初めて使う場合は、下のボタンからアカウントを発行してください。
+      </div>
+
+      <div class="dialogField">
+        <label class="dialogLabel" for="accountInput">アカウント番号</label>
+        <input id="accountInput" class="dialogInput" type="text" inputmode="latin" autocomplete="off" placeholder="例：MB12345678" />
+      </div>
+
+      <div id="dialogNotice" class="dialogNotice"></div>
+
+      <div class="dialogActions">
+        <button id="loginWithAccountBtn" type="button" class="dialogActionBtn isPrimary">この番号でログイン</button>
+        <button id="issueAccountBtn" type="button" class="dialogActionBtn">アカウント発行</button>
+        <button id="guestModeBtn" type="button" class="dialogActionBtn">ログアウトしてゲストにする</button>
+      </div>
+
+      <div class="dialogFootnote">
+        ログインした状態で対局モードや検証モードを始めると、そのアカウントに保存しながら遊べます。
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function(){
+      const ACTIVE_SESSION_STORAGE_KEY = "mbsanma_app_active_session_v1";
+      const LAST_ACCOUNT_ID_STORAGE_KEY = "mbsanma_app_last_account_id_v1";
+      const ACCOUNT_REGISTRY_STORAGE_KEY = "mbsanma_app_account_registry_v1";
+      const ACCOUNT_KEY_PREFIX = "mbsanma_app_account_";
+      const CURRENT_LOGIN_ACCOUNT_STORAGE_KEY = "mbsanma_app_current_login_account_v1";
+      const CURRENT_LOGIN_ACCOUNT_SESSION_KEY = "mbsanma_app_current_login_account_session_v1";
+      const APP_LAUNCH_MODE_STORAGE_KEY = "mbsanma_app_launch_mode_v1";
+      const APP_PLAYER_MODE_STORAGE_KEY = "mbsanma_app_player_mode_v1";
+      const SETTINGS_UI_STORAGE_KEY = "mbsanma_settings_values_v1";
+      const LEGACY_ACTIVE_SESSION_STORAGE_KEY = "mbsanma_visitor_active_session_v1";
+
+      const LEGACY_LAST_ACCOUNT_ID_STORAGE_KEY = "mbsanma_visitor_last_account_id_v1";
+      const LEGACY_ACCOUNT_REGISTRY_STORAGE_KEY = "mbsanma_visitor_account_registry_v1";
+      const LEGACY_ACCOUNT_KEY_PREFIX = "mbsanma_visitor_account_";
+      const LEGACY_HISTORY_STORAGE_KEY = "mbsanma_visitor_recent_hanchans_v1";
+      const LEGACY_TRACKER_STORAGE_KEY = "mbsanma_visitor_current_hanchan_v1";
+
+      const loginStatusBadge = document.getElementById("loginStatusBadge");
+      const loginStatusNote = document.getElementById("loginStatusNote");
+      const openLoginDialogBtn = document.getElementById("openLoginDialogBtn");
+      const logoutBtn = document.getElementById("logoutBtn");
+      const battleModeBtn = document.getElementById("battleModeBtn");
+      const verifyModeBtn = document.getElementById("verifyModeBtn");
+
+      const loginOverlay = document.getElementById("loginOverlay");
+      const closeLoginDialogBtn = document.getElementById("closeLoginDialogBtn");
+      const accountInput = document.getElementById("accountInput");
+      const dialogNotice = document.getElementById("dialogNotice");
+      const loginWithAccountBtn = document.getElementById("loginWithAccountBtn");
+      const issueAccountBtn = document.getElementById("issueAccountBtn");
+      const guestModeBtn = document.getElementById("guestModeBtn");
+
+      let isBusy = false;
+      let currentLoginAccountCache = "";
+
+      function normalizeAccountId(value){
+        return String(value || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+      }
+
+      function isCloudSyncReady(){
+        return !!(window.MBSanmaSupabase && typeof window.MBSanmaSupabase.isConfigured === "function" && window.MBSanmaSupabase.isConfigured());
+      }
+
+      function copyStorageValueIfMissing(storage, nextKey, legacyKey){
+        try{
+          if (storage.getItem(nextKey) != null) return;
+          const legacyValue = storage.getItem(legacyKey);
+          if (legacyValue != null) storage.setItem(nextKey, legacyValue);
+        }catch(e){}
+      }
+
+      function buildLegacyAccountHistoryKey(accountId){
+        return `${LEGACY_ACCOUNT_KEY_PREFIX}${accountId}_history_v1`;
+      }
+
+      function buildLegacyAccountTrackerKey(accountId){
+        return `${LEGACY_ACCOUNT_KEY_PREFIX}${accountId}_tracker_v1`;
+      }
+
+      function buildAccountHistoryKey(accountId){
+        return `${ACCOUNT_KEY_PREFIX}${accountId}_history_v1`;
+      }
+
+      function buildAccountTrackerKey(accountId){
+        return `${ACCOUNT_KEY_PREFIX}${accountId}_tracker_v1`;
+      }
+
+      function buildAccountRulesSettingsKey(accountId){
+        return `${ACCOUNT_KEY_PREFIX}${accountId}_rules_settings_v1`;
+      }
+
+      function buildAccountRulesPresetsKey(accountId){
+        return `${ACCOUNT_KEY_PREFIX}${accountId}_rules_presets_v1`;
+      }
+
+      function buildAccountRulesActiveKey(accountId){
+        return `${ACCOUNT_KEY_PREFIX}${accountId}_rules_active_v1`;
+      }
+
+      function cacheAccountRulesToLocal(accountId, payload){
+        // payload は save_mbsanma_account_rules / get_mbsanma_account_rules の戻り値
+        // { rules_json, presets_json, active_rule_set_json, not_found? } を想定
+        const normalizedId = normalizeAccountId(accountId);
+        if (!normalizedId) return;
+
+        const src = payload && typeof payload === "object" ? payload : {};
+
+        // サーバ側でアカウント未作成時は not_found を返す想定。
+        // その場合はローカル側のルールデータをそのまま残す（上書きしない）。
+        if (src.not_found === true) return;
+
+        const rulesJson   = (src.rules_json          && typeof src.rules_json          === "object") ? src.rules_json          : null;
+        const presetsJson = (src.presets_json        && typeof src.presets_json        === "object") ? src.presets_json        : null;
+        const activeJson  = (src.active_rule_set_json && typeof src.active_rule_set_json === "object") ? src.active_rule_set_json : null;
+
+        // クラウド値が空オブジェクト（初回）なら上書きしない。
+        try{
+          if (rulesJson && Object.keys(rulesJson).length > 0){
+            localStorage.setItem(buildAccountRulesSettingsKey(normalizedId), JSON.stringify(rulesJson));
+          }
+        }catch(e){}
+
+        try{
+          if (presetsJson && Object.keys(presetsJson).length > 0){
+            localStorage.setItem(buildAccountRulesPresetsKey(normalizedId), JSON.stringify(presetsJson));
+          }
+        }catch(e){}
+
+        try{
+          if (activeJson && Object.keys(activeJson).length > 0){
+            localStorage.setItem(buildAccountRulesActiveKey(normalizedId), JSON.stringify(activeJson));
+          }
+        }catch(e){}
+      }
+
+      async function fetchAndCacheAccountRules(accountId){
+        const normalizedId = normalizeAccountId(accountId);
+        if (!normalizedId) return { ok: false, error: null };
+        if (!isCloudSyncReady()) return { ok: false, error: null };
+        if (!window.MBSanmaSupabase || typeof window.MBSanmaSupabase.fetchAccountRules !== "function"){
+          return { ok: false, error: null };
+        }
+        try{
+          const result = await window.MBSanmaSupabase.fetchAccountRules(normalizedId);
+          if (result.error){
+            return { ok: false, error: result.error };
+          }
+          cacheAccountRulesToLocal(normalizedId, result.data);
+          return { ok: true, error: null };
+        }catch(e){
+          return { ok: false, error: e };
+        }
+      }
+
+      function migrateLegacyAppStorage(){
+        copyStorageValueIfMissing(localStorage, LAST_ACCOUNT_ID_STORAGE_KEY, LEGACY_LAST_ACCOUNT_ID_STORAGE_KEY);
+        copyStorageValueIfMissing(localStorage, ACCOUNT_REGISTRY_STORAGE_KEY, LEGACY_ACCOUNT_REGISTRY_STORAGE_KEY);
+
+        try{
+          const raw = localStorage.getItem(LEGACY_ACCOUNT_REGISTRY_STORAGE_KEY);
+          if (!raw) return;
+          const registry = JSON.parse(raw);
+          if (!registry || typeof registry !== "object") return;
+          Object.keys(registry).forEach((accountId)=>{
+            const normalized = normalizeAccountId(accountId);
+            if (!normalized) return;
+            copyStorageValueIfMissing(localStorage, buildAccountHistoryKey(normalized), buildLegacyAccountHistoryKey(normalized));
+            copyStorageValueIfMissing(localStorage, buildAccountTrackerKey(normalized), buildLegacyAccountTrackerKey(normalized));
+          });
+        }catch(e){}
+      }
+
+      function loadAccountRegistry(){
+        try{
+          const raw = localStorage.getItem(ACCOUNT_REGISTRY_STORAGE_KEY);
+          if (!raw) return {};
+          const parsed = JSON.parse(raw);
+          return parsed && typeof parsed === "object" ? parsed : {};
+        }catch(e){
+          return {};
+        }
+      }
+
+      function saveAccountRegistry(registry){
+        try{
+          localStorage.setItem(ACCOUNT_REGISTRY_STORAGE_KEY, JSON.stringify(registry && typeof registry === "object" ? registry : {}));
+        }catch(e){}
+      }
+
+      function loadLastAccountId(){
+        try{
+          return normalizeAccountId(localStorage.getItem(LAST_ACCOUNT_ID_STORAGE_KEY) || "");
+        }catch(e){
+          return "";
+        }
+      }
+
+      function saveLastAccountId(accountId){
+        const normalized = normalizeAccountId(accountId);
+        try{
+          if (normalized){
+            localStorage.setItem(LAST_ACCOUNT_ID_STORAGE_KEY, normalized);
+          } else {
+            localStorage.removeItem(LAST_ACCOUNT_ID_STORAGE_KEY);
+          }
+        }catch(e){}
+      }
+
+      function loadCurrentLoginAccount(){
+        if (currentLoginAccountCache){
+          return currentLoginAccountCache;
+        }
+
+        let normalized = "";
+        try{
+          normalized = normalizeAccountId(localStorage.getItem(CURRENT_LOGIN_ACCOUNT_STORAGE_KEY) || "");
+        }catch(e){}
+
+        if (normalized){
+          currentLoginAccountCache = normalized;
+          try{
+            sessionStorage.setItem(CURRENT_LOGIN_ACCOUNT_SESSION_KEY, normalized);
+          }catch(e){}
+          return normalized;
+        }
+
+        try{
+          normalized = normalizeAccountId(sessionStorage.getItem(CURRENT_LOGIN_ACCOUNT_SESSION_KEY) || "");
+        }catch(e){}
+
+        if (normalized){
+          currentLoginAccountCache = normalized;
+          try{
+            localStorage.setItem(CURRENT_LOGIN_ACCOUNT_STORAGE_KEY, normalized);
+          }catch(e){}
+          return normalized;
+        }
+
+        try{
+          const raw = sessionStorage.getItem(ACTIVE_SESSION_STORAGE_KEY) || sessionStorage.getItem(LEGACY_ACTIVE_SESSION_STORAGE_KEY) || "";
+          if (raw){
+            const parsed = JSON.parse(raw);
+            if (parsed && parsed.mode === "account"){
+              normalized = normalizeAccountId(parsed.accountId || "");
+            }
+          }
+        }catch(e){}
+
+        if (normalized){
+          currentLoginAccountCache = normalized;
+          try{
+            sessionStorage.setItem(CURRENT_LOGIN_ACCOUNT_SESSION_KEY, normalized);
+          }catch(e){}
+          try{
+            localStorage.setItem(CURRENT_LOGIN_ACCOUNT_STORAGE_KEY, normalized);
+          }catch(e){}
+          return normalized;
+        }
+
+        return "";
+      }
+
+      function saveCurrentLoginAccount(accountId){
+        const normalized = normalizeAccountId(accountId);
+        currentLoginAccountCache = normalized;
+
+        try{
+          if (normalized){
+            localStorage.setItem(CURRENT_LOGIN_ACCOUNT_STORAGE_KEY, normalized);
+          } else {
+            localStorage.removeItem(CURRENT_LOGIN_ACCOUNT_STORAGE_KEY);
+          }
+        }catch(e){}
+
+        try{
+          if (normalized){
+            sessionStorage.setItem(CURRENT_LOGIN_ACCOUNT_SESSION_KEY, normalized);
+          } else {
+            sessionStorage.removeItem(CURRENT_LOGIN_ACCOUNT_SESSION_KEY);
+          }
+        }catch(e){}
+      }
+
+      function normalizeTrackerShape(src){
+        const next = {
+          kyokuCount: 0,
+          furoKyokuCount: 0,
+          riichiAgariCount: 0,
+          furoAgariCount: 0,
+          damaAgariCount: 0,
+          lastRoundSignature: "",
+          lastSavedHanchanSignature: ""
+        };
+        if (src && typeof src === "object"){
+          if (Number.isFinite(src.kyokuCount)) next.kyokuCount = Math.max(0, src.kyokuCount | 0);
+          if (Number.isFinite(src.furoKyokuCount)) next.furoKyokuCount = Math.max(0, src.furoKyokuCount | 0);
+          if (Number.isFinite(src.riichiAgariCount)) next.riichiAgariCount = Math.max(0, src.riichiAgariCount | 0);
+          if (Number.isFinite(src.furoAgariCount)) next.furoAgariCount = Math.max(0, src.furoAgariCount | 0);
+          if (Number.isFinite(src.damaAgariCount)) next.damaAgariCount = Math.max(0, src.damaAgariCount | 0);
+          if (typeof src.lastRoundSignature === "string") next.lastRoundSignature = src.lastRoundSignature;
+          if (typeof src.lastSavedHanchanSignature === "string") next.lastSavedHanchanSignature = src.lastSavedHanchanSignature;
+        }
+        return next;
+      }
+
+      function normalizeSnapshot(snapshot){
+        const src = snapshot && typeof snapshot === "object" ? snapshot : {};
+        return {
+          history: Array.isArray(src.history_json) ? src.history_json : [],
+          tracker: normalizeTrackerShape(src.tracker_json),
+          createdAt: src.created_at || new Date().toISOString(),
+          updatedAt: src.updated_at || new Date().toISOString()
+        };
+      }
+
+      function cacheAccountSnapshotToLocal(accountId, snapshot){
+        const normalized = normalizeSnapshot(snapshot);
+
+        try{
+          localStorage.setItem(buildAccountHistoryKey(accountId), JSON.stringify(normalized.history));
+        }catch(e){}
+
+        try{
+          localStorage.setItem(buildAccountTrackerKey(accountId), JSON.stringify(normalized.tracker));
+        }catch(e){}
+
+        const registry = loadAccountRegistry();
+        registry[accountId] = {
+          createdAt: normalized.createdAt,
+          updatedAt: normalized.updatedAt,
+          cloud: isCloudSyncReady()
+        };
+        saveAccountRegistry(registry);
+      }
+
+      function migrateLegacyDataToAccount(accountId){
+        if (!accountId) return;
+
+        copyStorageValueIfMissing(localStorage, buildAccountHistoryKey(accountId), buildLegacyAccountHistoryKey(accountId));
+        copyStorageValueIfMissing(localStorage, buildAccountTrackerKey(accountId), buildLegacyAccountTrackerKey(accountId));
+
+        try{
+          if (!localStorage.getItem(buildAccountHistoryKey(accountId))){
+            const legacyHistory = localStorage.getItem(LEGACY_HISTORY_STORAGE_KEY);
+            if (legacyHistory) localStorage.setItem(buildAccountHistoryKey(accountId), legacyHistory);
+          }
+        }catch(e){}
+
+        try{
+          if (!localStorage.getItem(buildAccountTrackerKey(accountId))){
+            const legacyTracker = localStorage.getItem(LEGACY_TRACKER_STORAGE_KEY);
+            if (legacyTracker) localStorage.setItem(buildAccountTrackerKey(accountId), legacyTracker);
+          }
+        }catch(e){}
+      }
+
+      function setBusyState(nextBusy){
+        isBusy = !!nextBusy;
+        [accountInput, loginWithAccountBtn, issueAccountBtn, guestModeBtn, closeLoginDialogBtn, openLoginDialogBtn, logoutBtn, battleModeBtn, verifyModeBtn].forEach((el)=>{
+          if (!el) return;
+          el.disabled = isBusy;
+        });
+      }
+
+      function setActiveSession(mode, accountId){
+        const payload = {
+          mode: mode === "account" ? "account" : "local",
+          accountId: mode === "account" ? normalizeAccountId(accountId) : ""
+        };
+        try{
+          const serialized = JSON.stringify(payload);
+          sessionStorage.setItem(ACTIVE_SESSION_STORAGE_KEY, serialized);
+          sessionStorage.setItem(LEGACY_ACTIVE_SESSION_STORAGE_KEY, serialized);
+        }catch(e){}
+
+        try{
+          if (payload.accountId){
+            sessionStorage.setItem(CURRENT_LOGIN_ACCOUNT_SESSION_KEY, payload.accountId);
+          } else {
+            sessionStorage.removeItem(CURRENT_LOGIN_ACCOUNT_SESSION_KEY);
+          }
+        }catch(e){}
+      }
+
+      function syncActiveSessionWithLoginState(){
+        const accountId = loadCurrentLoginAccount();
+        if (accountId){
+          setActiveSession("account", accountId);
+          return;
+        }
+        setActiveSession("local", "");
+      }
+
+      function readSettingsUiState(){
+        try{
+          const raw = localStorage.getItem(SETTINGS_UI_STORAGE_KEY);
+          if (!raw) return {};
+          const parsed = JSON.parse(raw);
+          return parsed && typeof parsed === "object" ? parsed : {};
+        }catch(e){
+          return {};
+        }
+      }
+
+      function getVerifyPlayerModeFromSettings(){
+        const settingsState = readSettingsUiState();
+        return String(settingsState["verify-player-control"] || "").toLowerCase() === "manual" ? "manual" : "auto";
+      }
+
+      function setLaunchConfig(launchMode){
+        const normalizedLaunchMode = launchMode === "verify" ? "verify" : "battle";
+        const playerMode = normalizedLaunchMode === "verify"
+          ? getVerifyPlayerModeFromSettings()
+          : "manual";
+
+        try{
+          sessionStorage.setItem(APP_LAUNCH_MODE_STORAGE_KEY, normalizedLaunchMode);
+        }catch(e){}
+
+        try{
+          sessionStorage.setItem(APP_PLAYER_MODE_STORAGE_KEY, playerMode);
+        }catch(e){}
+      }
+
+      function showDialogNotice(message, isError){
+        if (!dialogNotice) return;
+        dialogNotice.textContent = message || "";
+        dialogNotice.classList.toggle("isError", !!isError);
+      }
+
+      function updateLoginStatusView(){
+        syncActiveSessionWithLoginState();
+        const accountId = loadCurrentLoginAccount();
+        if (accountId){
+          loginStatusBadge.textContent = accountId;
+          loginStatusBadge.classList.remove("isGuest");
+          loginStatusBadge.classList.add("isAccount");
+          loginStatusNote.textContent = "ログイン中です。成績や牌譜をこのアカウントで保存しながら遊べます。";
+          logoutBtn.style.display = "inline-flex";
+          return;
+        }
+
+        loginStatusBadge.textContent = "ゲストモード";
+        loginStatusBadge.classList.remove("isAccount");
+        loginStatusBadge.classList.add("isGuest");
+        loginStatusNote.textContent = "ログインしていなくても遊べます。成績や牌譜を残したい場合はログインしてください。";
+        logoutBtn.style.display = "inline-flex";
+      }
+
+      function openLoginDialog(){
+        if (!loginOverlay) return;
+        if (accountInput) accountInput.value = loadLastAccountId();
+        showDialogNotice("", false);
+        loginOverlay.classList.add("isOpen");
+        loginOverlay.setAttribute("aria-hidden", "false");
+        window.setTimeout(()=>{
+          try{ if (accountInput) accountInput.focus(); }catch(e){}
+        }, 0);
+      }
+
+      function closeLoginDialog(){
+        if (!loginOverlay || isBusy) return;
+        loginOverlay.classList.remove("isOpen");
+        loginOverlay.setAttribute("aria-hidden", "true");
+      }
+
+      function getFriendlyErrorMessage(error){
+        const message = String(error && error.message || "");
+        if (message === "account_not_found") return "そのアカウント番号はまだ発行されていません。";
+        if (message === "account_exists") return "アカウント発行に失敗しました。もう一度試してください。";
+        if (message === "rpc_timeout") return "通信がタイムアウトしました。時間をおいて試してください。";
+        if (message === "supabase_not_configured") return "クラウド保存の設定がまだ入っていません。";
+        return "通信に失敗しました。接続状況を確認して、もう一度試してください。";
+      }
+
+      async function loginWithAccount(accountId){
+        const normalized = normalizeAccountId(accountId);
+        if (!normalized){
+          showDialogNotice("アカウント番号を入力してください。", true);
+          return false;
+        }
+
+        setBusyState(true);
+        try{
+          if (isCloudSyncReady()){
+            showDialogNotice("成績を読み込んでいます…", false);
+            const result = await window.MBSanmaSupabase.fetchAccountSnapshot(normalized);
+            if (result.error){
+              showDialogNotice(getFriendlyErrorMessage(result.error), true);
+              return false;
+            }
+            cacheAccountSnapshotToLocal(normalized, result.data);
+
+            // クラウドのルール／プリセット／アクティブルールもここで取り込む。
+            // 失敗しても成績読み込みまでは済んでいるのでログイン自体は通す。
+            showDialogNotice("ルール設定を読み込んでいます…", false);
+            await fetchAndCacheAccountRules(normalized);
+          } else {
+            const registry = loadAccountRegistry();
+            if (!registry[normalized]){
+              showDialogNotice("そのアカウント番号はまだ発行されていません。", true);
+              return false;
+            }
+          }
+
+          saveLastAccountId(normalized);
+          saveCurrentLoginAccount(normalized);
+          syncActiveSessionWithLoginState();
+          updateLoginStatusView();
+          showDialogNotice(`${normalized} でログインしました。`, false);
+          return true;
+        } finally {
+          setBusyState(false);
+        }
+      }
+
+      async function issueAccount(){
+        setBusyState(true);
+        try{
+          const registry = loadAccountRegistry();
+          let accountId = "";
+
+          for (let i = 0; i < 100; i++){
+            const next = `MB${String(Math.floor(Math.random() * 100000000)).padStart(8, "0")}`;
+
+            if (isCloudSyncReady()){
+              const result = await window.MBSanmaSupabase.issueAccount(next);
+              if (!result.error){
+                accountId = next;
+                cacheAccountSnapshotToLocal(accountId, result.data);
+                break;
+              }
+              if (String(result.error.message || "") === "account_exists"){
+                continue;
+              }
+              showDialogNotice(getFriendlyErrorMessage(result.error), true);
+              return false;
+            }
+
+            if (!registry[next]){
+              accountId = next;
+              break;
+            }
+          }
+
+          if (!accountId){
+            showDialogNotice("アカウント発行に失敗しました。もう一度試してください。", true);
+            return false;
+          }
+
+          if (!isCloudSyncReady()){
+            registry[accountId] = {
+              createdAt: new Date().toISOString(),
+              cloud: false
+            };
+            saveAccountRegistry(registry);
+            migrateLegacyDataToAccount(accountId);
+          }
+
+          saveLastAccountId(accountId);
+          saveCurrentLoginAccount(accountId);
+          syncActiveSessionWithLoginState();
+          if (accountInput) accountInput.value = accountId;
+          updateLoginStatusView();
+          showDialogNotice(`${accountId} を発行してログインしました。`, false);
+          return true;
+        } finally {
+          setBusyState(false);
+        }
+      }
+
+      function switchToGuest(){
+        if (isBusy) return;
+        saveCurrentLoginAccount("");
+        setActiveSession("local", "");
+        syncActiveSessionWithLoginState();
+        updateLoginStatusView();
+        showDialogNotice("ゲストモードに戻しました。", false);
+      }
+
+      async function startMode(launchMode){
+        if (isBusy) return;
+
+        const accountId = loadCurrentLoginAccount();
+        setLaunchConfig(launchMode);
+
+        if (accountId){
+          setBusyState(true);
+          try{
+            if (isCloudSyncReady()){
+              const result = await window.MBSanmaSupabase.fetchAccountSnapshot(accountId);
+              if (result.error){
+                alert(getFriendlyErrorMessage(result.error));
+                return;
+              }
+              cacheAccountSnapshotToLocal(accountId, result.data);
+
+              // 最新のルール／プリセットもクラウドから落としてから卓に入る。
+              // ルール取得失敗は致命ではないのでそのまま続行。
+              await fetchAndCacheAccountRules(accountId);
+            }
+            setActiveSession("account", accountId);
+            location.href = "play_app.html";
+          } finally {
+            setBusyState(false);
+          }
+          return;
+        }
+
+        setActiveSession("local", "");
+        location.href = "play_app.html";
+      }
+
+      if (openLoginDialogBtn){
+        openLoginDialogBtn.addEventListener("click", openLoginDialog);
+      }
+
+      if (closeLoginDialogBtn){
+        closeLoginDialogBtn.addEventListener("click", closeLoginDialog);
+      }
+
+      if (loginOverlay){
+        loginOverlay.addEventListener("click", (ev)=>{
+          if (ev.target === loginOverlay) closeLoginDialog();
+        });
+      }
+
+      if (accountInput){
+        accountInput.addEventListener("input", ()=>{
+          accountInput.value = normalizeAccountId(accountInput.value);
+          saveLastAccountId(accountInput.value);
+          if (dialogNotice && dialogNotice.textContent) showDialogNotice("", false);
+        });
+
+        accountInput.addEventListener("keydown", async (ev)=>{
+          if (ev.key === "Enter"){
+            ev.preventDefault();
+            const ok = await loginWithAccount(accountInput.value);
+            if (ok) closeLoginDialog();
+          }
+        });
+      }
+
+      if (loginWithAccountBtn){
+        loginWithAccountBtn.addEventListener("click", async ()=>{
+          const ok = await loginWithAccount(accountInput ? accountInput.value : "");
+          if (ok) closeLoginDialog();
+        });
+      }
+
+      if (issueAccountBtn){
+        issueAccountBtn.addEventListener("click", async ()=>{
+          const ok = await issueAccount();
+          if (ok) closeLoginDialog();
+        });
+      }
+
+      if (guestModeBtn){
+        guestModeBtn.addEventListener("click", ()=>{
+          switchToGuest();
+          closeLoginDialog();
+        });
+      }
+
+      if (logoutBtn){
+        logoutBtn.addEventListener("click", switchToGuest);
+      }
+
+      if (battleModeBtn){
+        battleModeBtn.addEventListener("click", ()=> startMode("battle"));
+      }
+
+      if (verifyModeBtn){
+        verifyModeBtn.addEventListener("click", ()=> startMode("verify"));
+      }
+
+      document.addEventListener("keydown", (ev)=>{
+        if (ev.key === "Escape") closeLoginDialog();
+      });
+
+      migrateLegacyAppStorage();
+      syncActiveSessionWithLoginState();
+      updateLoginStatusView();
+      if (accountInput) accountInput.value = loadLastAccountId();
+    })();
+  </script>
+</body>
+</html>

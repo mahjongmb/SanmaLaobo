@@ -1,0 +1,66 @@
+/* ========= river.css ========= */
+
+/* ===== 自分の捨て牌 ===== */
+.river-wrap{
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  top: 47.5%;
+
+  display: flex;
+  justify-content: center;
+  width: max-content;
+  margin: 0;
+  pointer-events: none;
+  z-index: 4;
+}
+
+#river{
+  --myRiverTile: 54px;
+
+  width: calc(var(--cols) * var(--myRiverTile) + (var(--cols) - 1) * var(--gap));
+  display: grid;
+  grid-template-columns: repeat(var(--cols), var(--myRiverTile));
+  gap: var(--gap);
+  align-content: start;
+
+  min-height: calc(var(--myRiverTile) * var(--rowsMax) + (var(--rowsMax) - 1) * var(--gap));
+
+  margin: 0;
+}
+
+#river img{
+  width: var(--myRiverTile);
+  height: auto;
+  display: block;
+  border-radius: 6px;
+}
+
+#river img.riichiDeclare{
+  transform: rotate(90deg) scale(1);
+  transform-origin: 50% 50%;
+}
+
+/* ===== 点数表示の微調整 ===== */
+#scoreLeft{
+  left: -8%;
+}
+
+#scoreRight{
+  right: -8%;
+}
+
+
+@media (orientation: landscape) and (max-height: 520px){
+  .river-wrap{
+    top: 47.2%;
+  }
+
+  #river{
+    --myRiverTile: 56px;
+  }
+
+  #river img{
+    border-radius: 7px;
+  }
+}

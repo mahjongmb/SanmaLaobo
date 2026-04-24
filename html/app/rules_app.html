@@ -1,0 +1,5047 @@
+<!DOCTYPE html>
+
+<html lang="ja">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<title>ルール変更</title>
+<style>
+    :root{
+      --bg-top:#103126;
+      --bg-bottom:#08120e;
+      --panel-bg:rgba(8,20,15,0.84);
+      --panel-border:rgba(255,255,255,0.12);
+      --panel-soft:rgba(255,255,255,0.04);
+      --panel-soft-2:rgba(255,255,255,0.06);
+      --text:#f6f7f3;
+      --muted:rgba(246,247,243,0.76);
+      --muted-2:rgba(246,247,243,0.56);
+      --gold-1:#f2d58f;
+      --gold-2:#d9bb72;
+      --gold-text:#1e1402;
+      --accent:#8fdcc1;
+      --accent-2:#2f8f74;
+      --danger:#e6a6a6;
+      --shadow:0 18px 50px rgba(0,0,0,0.28);
+      --radius-xl:28px;
+      --radius-lg:22px;
+      --radius-md:16px;
+      --radius-sm:12px;
+      --content-w:1120px;
+    }
+
+    *{
+      box-sizing:border-box;
+    }
+
+    html,body{
+      margin:0;
+      min-height:100%;
+    }
+
+    body{
+      min-height:100vh;
+      background:linear-gradient(180deg,var(--bg-top) 0%,var(--bg-bottom) 100%);
+      color:var(--text);
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      padding:24px;
+    }
+
+    button,
+    input{
+      font:inherit;
+    }
+
+    .page{
+      width:min(100%,var(--content-w));
+      margin:0 auto;
+      display:grid;
+      gap:18px;
+    }
+
+    .hero,
+    .tabsWrap{
+      padding:22px;
+      border-radius:var(--radius-xl);
+      background:var(--panel-bg);
+      border:1px solid var(--panel-border);
+      box-shadow:var(--shadow);
+    }
+
+    .hero{
+      display:grid;
+      gap:16px;
+    }
+
+    .heroTop{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:16px;
+      flex-wrap:wrap;
+    }
+
+    .heroTitle{
+      display:grid;
+      gap:10px;
+    }
+
+    .eyebrow{
+      display:inline-flex;
+      align-items:center;
+      width:max-content;
+      min-height:28px;
+      padding:0 12px;
+      border-radius:999px;
+      background:rgba(143,220,193,0.14);
+      border:1px solid rgba(143,220,193,0.22);
+      color:var(--accent);
+      font-size:13px;
+      font-weight:800;
+      letter-spacing:0.04em;
+    }
+
+    h1{
+      margin:0;
+      font-size:34px;
+      line-height:1.15;
+    }
+
+    .heroText{
+      margin:0;
+      max-width:780px;
+      color:var(--muted);
+      line-height:1.8;
+      font-size:15px;
+    }
+
+    .heroActions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-height:48px;
+      padding:0 18px;
+      border-radius:14px;
+      text-decoration:none;
+      font-weight:800;
+      font-size:14px;
+      border:1px solid transparent;
+      transition:transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+      cursor:pointer;
+    }
+
+    .btn:hover{
+      transform:translateY(-1px);
+    }
+
+    .btnPrimary{
+      background:linear-gradient(180deg,var(--gold-1) 0%,var(--gold-2) 100%);
+      color:var(--gold-text);
+    }
+
+    .btnGhost{
+      background:rgba(255,255,255,0.04);
+      color:var(--text);
+      border-color:rgba(255,255,255,0.10);
+    }
+
+    .heroMeta{
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:12px;
+    }
+
+    .metaCard{
+      display:grid;
+      gap:8px;
+      padding:16px 18px;
+      border-radius:18px;
+      background:var(--panel-soft);
+      border:1px solid rgba(255,255,255,0.08);
+    }
+
+    .metaLabel{
+      font-size:12px;
+      font-weight:800;
+      color:var(--muted-2);
+      letter-spacing:0.04em;
+    }
+
+    .metaValue{
+      font-size:18px;
+      font-weight:800;
+      line-height:1.5;
+    }
+
+    .metaText{
+      font-size:13px;
+      color:var(--muted);
+      line-height:1.7;
+    }
+
+    .tabsWrap{
+      display:grid;
+      gap:16px;
+    }
+
+    .tabsHeaderRow{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+
+    .presetBar{
+      display:grid;
+      gap:14px;
+      padding:18px 20px;
+      border-radius:24px;
+      background:
+        linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.015)),
+        linear-gradient(135deg,rgba(143,220,193,0.06),rgba(242,213,143,0.04)),
+        var(--panel-soft);
+      border:1px solid rgba(255,255,255,0.09);
+      box-shadow:0 1px 0 rgba(255,255,255,0.04) inset, 0 16px 34px rgba(0,0,0,0.18);
+    }
+
+    .presetBarTop{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+
+    .presetBarTitleBox{
+      display:grid;
+      gap:8px;
+      min-width:0;
+      flex:1 1 420px;
+    }
+
+    .presetBarTitleRow{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .presetBarTitle{
+      font-size:18px;
+      font-weight:800;
+      line-height:1.3;
+    }
+
+    .presetHelpBtn{
+      appearance:none;
+      width:24px;
+      height:24px;
+      padding:0;
+      border:none;
+      border-radius:999px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      background:rgba(255,255,255,0.06);
+      border:1px solid rgba(255,255,255,0.16);
+      color:var(--text);
+      font-size:12px;
+      font-weight:800;
+      line-height:1;
+      cursor:pointer;
+      transition:transform 0.15s ease,background 0.15s ease,border-color 0.15s ease,color 0.15s ease;
+    }
+
+    .presetHelpBtn:hover{
+      transform:translateY(-1px);
+      background:rgba(143,220,193,0.12);
+      border-color:rgba(143,220,193,0.34);
+      color:var(--accent);
+    }
+
+    .presetHelpBtn[aria-expanded="true"]{
+      background:rgba(143,220,193,0.16);
+      border-color:rgba(143,220,193,0.40);
+      color:var(--accent);
+    }
+
+    .presetHelpBox{
+      display:none;
+      max-width:760px;
+      padding:12px 14px;
+      border-radius:16px;
+      background:rgba(143,220,193,0.08);
+      border:1px solid rgba(143,220,193,0.18);
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.8;
+    }
+
+    .presetHelpBox.isOpen{
+      display:block;
+    }
+
+    .presetBarLead{
+      display:none;
+    }
+
+    .presetStatus{
+      display:inline-flex;
+      align-items:center;
+      justify-content:flex-end;
+      min-height:38px;
+      padding:0 14px;
+      border-radius:999px;
+      background:rgba(255,255,255,0.04);
+      border:1px solid rgba(255,255,255,0.08);
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.4;
+      text-align:right;
+      white-space:nowrap;
+    }
+
+    .presetStatus.isDirty{
+      color:var(--gold-1);
+      border-color:rgba(255,227,160,0.34);
+      box-shadow:inset 0 0 0 1px rgba(255,227,160,0.12);
+    }
+
+    .presetRow{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+
+    .presetSlotBtn{
+      appearance:none;
+      border:none;
+      min-height:44px;
+      padding:0 14px;
+      border-radius:999px;
+      background:rgba(255,255,255,0.05);
+      border:1px solid rgba(255,255,255,0.08);
+      color:var(--text);
+      font-size:14px;
+      font-weight:800;
+      cursor:pointer;
+      transition:background 0.15s ease,border-color 0.15s ease,transform 0.15s ease,color 0.15s ease;
+    }
+
+    .presetSlotBtn:hover{
+      transform:translateY(-1px);
+    }
+
+    .presetSlotBtn.isActive{
+      background:linear-gradient(180deg,var(--gold-1) 0%,var(--gold-2) 100%);
+      color:var(--gold-text);
+      border-color:transparent;
+    }
+
+    .presetSlotBtn.isApplied:not(.isActive){
+      border-color:rgba(255,227,160,0.48);
+      box-shadow:inset 0 0 0 1px rgba(255,227,160,0.22);
+    }
+
+    .presetSlotBtn.isEmpty:not(.isActive){
+      color:var(--muted);
+      border-style:dashed;
+    }
+
+    .presetInlineSaveBtn{
+      margin-left:auto;
+      min-height:44px;
+      padding:0 18px;
+      border-radius:13px;
+      border:1px solid rgba(255,255,255,0.10);
+      background:linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.03));
+      color:rgba(246,247,243,0.72);
+      box-shadow:none;
+      transition:background 0.18s ease,border-color 0.18s ease,color 0.18s ease,box-shadow 0.18s ease,transform 0.15s ease,opacity 0.18s ease;
+    }
+
+    .presetInlineSaveBtn:hover{
+      border-color:rgba(255,255,255,0.18);
+      color:var(--text);
+    }
+
+    .presetInlineSaveBtn.isDirty{
+      border-color:rgba(242,213,143,0.32);
+      background:linear-gradient(180deg,rgba(242,213,143,0.20),rgba(217,187,114,0.12));
+      color:#fff7df;
+      box-shadow:0 12px 24px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.10);
+    }
+
+    .presetInlineSaveBtn.isDirty:hover{
+      border-color:rgba(242,213,143,0.48);
+      background:linear-gradient(180deg,rgba(242,213,143,0.28),rgba(217,187,114,0.18));
+      color:#fffaf0;
+    }
+
+    .presetActions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+      max-height:0;
+      overflow:hidden;
+      opacity:0;
+      transform:translateY(-4px);
+      pointer-events:none;
+      transition:max-height 0.24s ease,opacity 0.18s ease,transform 0.18s ease,padding-top 0.18s ease,margin-top 0.18s ease;
+    }
+
+    .presetActions.isVisible{
+      max-height:80px;
+      opacity:1;
+      transform:translateY(0);
+      pointer-events:auto;
+    }
+
+    .presetActions .presetActionBtn{
+      min-height:44px;
+      padding:0 18px;
+      border-radius:13px;
+      border:1px solid rgba(143,220,193,0.18);
+      background:linear-gradient(180deg,rgba(16,49,38,0.98),rgba(10,28,22,0.98));
+      color:#edf8f2;
+      box-shadow:0 10px 24px rgba(0,0,0,0.20), inset 0 1px 0 rgba(255,255,255,0.05);
+      letter-spacing:0.01em;
+    }
+
+    .presetActions .presetActionBtn:hover{
+      background:linear-gradient(180deg,rgba(20,63,49,0.98),rgba(12,37,29,0.98));
+      border-color:rgba(143,220,193,0.36);
+      color:#b8f0dc;
+      box-shadow:0 14px 28px rgba(0,0,0,0.24), inset 0 1px 0 rgba(255,255,255,0.08);
+    }
+
+    .presetActions .presetActionBtn:disabled{
+      opacity:0.42;
+      box-shadow:none;
+      transform:none;
+    }
+
+    .topTabs{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      flex:1 1 auto;
+    }
+
+    .tabResetWrap{
+      display:flex;
+      justify-content:flex-end;
+      margin-left:auto;
+      flex:0 0 auto;
+    }
+
+    .topTabBtn{
+      appearance:none;
+      border:none;
+      min-height:46px;
+      padding:0 16px;
+      border-radius:999px;
+      background:rgba(255,255,255,0.05);
+      border:1px solid rgba(255,255,255,0.08);
+      color:var(--text);
+      font-size:14px;
+      font-weight:800;
+      letter-spacing:0.01em;
+      cursor:pointer;
+      transition:background 0.15s ease,border-color 0.15s ease,transform 0.15s ease,color 0.15s ease;
+    }
+
+    .topTabBtn:hover,
+    .tabActionBtn:hover,
+    .switch:hover{
+      transform:translateY(-1px);
+    }
+
+    .topTabBtn[aria-selected="true"]{
+      background:linear-gradient(180deg,var(--gold-1) 0%,var(--gold-2) 100%);
+      color:var(--gold-text);
+      border-color:transparent;
+    }
+
+    .panelToolbar{
+      display:none;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      flex-wrap:wrap;
+      padding:16px 18px;
+      border-radius:18px;
+      background:var(--panel-soft);
+      border:1px solid rgba(255,255,255,0.08);
+    }
+
+    .panelToolbarText{
+      display:grid;
+      gap:6px;
+    }
+
+    .panelToolbarTitle{
+      font-size:22px;
+      font-weight:800;
+      line-height:1.35;
+    }
+
+    .panelToolbarLead{
+      font-size:14px;
+      color:var(--muted);
+      line-height:1.7;
+    }
+
+    .toolbarActions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .tabActionBtn{
+      appearance:none;
+      border:1px solid rgba(255,255,255,0.10);
+      background:rgba(255,255,255,0.04);
+      color:var(--text);
+      min-height:40px;
+      padding:0 14px;
+      border-radius:999px;
+      font-size:13px;
+      font-weight:800;
+      cursor:pointer;
+      transition:background 0.15s ease,border-color 0.15s ease,transform 0.15s ease;
+    }
+
+    .tabActionBtn:disabled{
+      opacity:0.45;
+      cursor:default;
+      transform:none;
+    }
+
+    .mainPanels,
+    .mainPanel{
+      display:grid;
+      gap:16px;
+    }
+
+    .mainPanel{
+      display:none;
+    }
+
+    .mainPanel.isActive{
+      display:grid;
+    }
+
+    .sectionCard{
+      display:grid;
+      gap:14px;
+      padding:20px;
+      border-radius:22px;
+      background:var(--panel-soft);
+      border:1px solid rgba(255,255,255,0.08);
+    }
+
+    .sectionHead{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:14px;
+      flex-wrap:wrap;
+    }
+
+    .sectionTitleBox{
+      display:grid;
+      gap:6px;
+    }
+
+    .sectionTitle{
+      margin:0;
+      font-size:20px;
+      line-height:1.3;
+    }
+
+    .sectionLead{
+      display:none;
+      margin:0;
+      color:var(--muted);
+      font-size:14px;
+      line-height:1.7;
+    }
+
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      min-height:30px;
+      padding:0 12px;
+      border-radius:999px;
+      font-size:12px;
+      font-weight:800;
+      letter-spacing:0.02em;
+      border:1px solid rgba(255,255,255,0.08);
+      background:rgba(255,255,255,0.06);
+      color:var(--text);
+      white-space:nowrap;
+    }
+
+    .pillAccent{
+      color:var(--accent);
+      background:rgba(143,220,193,0.12);
+      border-color:rgba(143,220,193,0.18);
+    }
+
+    .settingList{
+      display:grid;
+      gap:12px;
+    }
+
+    .settingRow{
+      display:grid;
+      grid-template-columns:minmax(0,1.4fr) minmax(240px,0.8fr);
+      gap:14px;
+      align-items:center;
+      padding:16px;
+      border-radius:18px;
+      background:rgba(0,0,0,0.16);
+      border:1px solid rgba(255,255,255,0.08);
+    }
+
+    .settingRowFull{
+      grid-template-columns:1fr;
+      align-items:start;
+    }
+
+    .settingRowFull .settingControl{
+      width:100%;
+      justify-content:flex-start;
+    }
+
+    .settingMeta{
+      display:grid;
+      gap:6px;
+      min-width:0;
+    }
+
+    .settingLabelRow{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      flex-wrap:wrap;
+      min-width:0;
+    }
+
+    .settingLabel{
+      font-size:15px;
+      font-weight:800;
+      line-height:1.4;
+    }
+
+    .ruleHelpBtn{
+      appearance:none;
+      width:22px;
+      height:22px;
+      padding:0;
+      border:none;
+      border-radius:999px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      background:rgba(255,255,255,0.06);
+      border:1px solid rgba(255,255,255,0.16);
+      color:var(--text);
+      font-size:12px;
+      font-weight:800;
+      line-height:1;
+      cursor:pointer;
+      flex:0 0 auto;
+      transition:transform 0.15s ease,background 0.15s ease,border-color 0.15s ease,color 0.15s ease;
+    }
+
+    .ruleHelpBtn:hover{
+      transform:translateY(-1px);
+      background:rgba(143,220,193,0.12);
+      border-color:rgba(143,220,193,0.34);
+      color:var(--accent);
+    }
+
+    .ruleHelpBtn[aria-expanded="true"]{
+      background:rgba(143,220,193,0.16);
+      border-color:rgba(143,220,193,0.40);
+      color:var(--accent);
+    }
+
+    .ruleHelpBox{
+      display:none;
+      padding:11px 12px;
+      border-radius:14px;
+      background:rgba(143,220,193,0.08);
+      border:1px solid rgba(143,220,193,0.18);
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.7;
+    }
+
+    .ruleHelpBox.isOpen{
+      display:block;
+    }
+
+    .settingDesc{
+      display:none;
+      font-size:13px;
+      color:var(--muted);
+      line-height:1.7;
+    }
+
+    .settingControl{
+      display:flex;
+      justify-content:flex-end;
+      align-items:center;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+
+    .switchWrap{
+      display:flex;
+      align-items:center;
+      gap:12px;
+    }
+
+    .switchLabel{
+      font-size:13px;
+      font-weight:800;
+      color:var(--muted);
+      min-width:48px;
+      text-align:right;
+    }
+
+    .choiceToggleLabel{
+      min-width:64px;
+    }
+
+    .switch{
+      position:relative;
+      width:62px;
+      height:34px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,0.10);
+      background:rgba(255,255,255,0.10);
+      cursor:pointer;
+      transition:background 0.15s ease,border-color 0.15s ease,transform 0.15s ease;
+      flex:0 0 auto;
+    }
+
+    .switch::after{
+      content:"";
+      position:absolute;
+      top:3px;
+      left:3px;
+      width:26px;
+      height:26px;
+      border-radius:50%;
+      background:#ffffff;
+      box-shadow:0 4px 10px rgba(0,0,0,0.24);
+      transition:left 0.15s ease, background 0.15s ease;
+    }
+
+    .switch.isOn{
+      background:rgba(242,213,143,0.28);
+      border-color:rgba(242,213,143,0.24);
+    }
+
+    .switch.isOn::after{
+      left:31px;
+      background:linear-gradient(180deg,var(--gold-1) 0%,var(--gold-2) 100%);
+    }
+
+    .numInputWrap{
+      display:flex;
+      align-items:center;
+      justify-content:flex-end;
+      gap:8px;
+      width:auto;
+      max-width:none;
+      margin-left:auto;
+      flex:0 0 auto;
+    }
+
+    .numInput{
+      width:calc(8ch + 24px);
+      min-width:calc(8ch + 24px);
+      flex:0 0 calc(8ch + 24px);
+      height:44px;
+      padding:0 14px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,0.10);
+      background:rgba(255,255,255,0.05);
+      color:var(--text);
+      text-align:right;
+      outline:none;
+    }
+
+    .numInput.numInputLong{
+      width:calc(10ch + 24px);
+      min-width:calc(10ch + 24px);
+      flex:0 0 calc(10ch + 24px);
+    }
+
+    .numInput:focus{
+      border-color:rgba(143,220,193,0.34);
+      box-shadow:0 0 0 3px rgba(143,220,193,0.10);
+    }
+
+    .unit{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-width:52px;
+      height:44px;
+      padding:0 12px;
+      border-radius:14px;
+      background:rgba(255,255,255,0.05);
+      border:1px solid rgba(255,255,255,0.08);
+      color:var(--muted);
+      font-size:13px;
+      font-weight:800;
+      white-space:nowrap;
+    }
+
+    .choiceGroup{
+      display:flex;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+      gap:8px;
+      width:100%;
+      max-width:440px;
+      margin-left:auto;
+    }
+
+    .choiceBtn{
+      appearance:none;
+      border:1px solid rgba(255,255,255,0.10);
+      background:rgba(255,255,255,0.05);
+      color:var(--muted);
+      min-height:44px;
+      padding:0 16px;
+      border-radius:14px;
+      font-size:13px;
+      font-weight:800;
+      cursor:pointer;
+      transition:background 0.15s ease,border-color 0.15s ease,transform 0.15s ease,color 0.15s ease,box-shadow 0.15s ease;
+      white-space:nowrap;
+    }
+
+    .choiceBtn:hover{
+      transform:translateY(-1px);
+    }
+
+    .choiceBtn.isSelected{
+      background:linear-gradient(180deg,var(--gold-1) 0%,var(--gold-2) 100%);
+      color:var(--gold-text);
+      border-color:transparent;
+      box-shadow:0 10px 18px rgba(0,0,0,0.18);
+    }
+    .yakuGroupStack{
+      display:grid;
+      gap:12px;
+    }
+
+    .yakuGroupBox{
+      display:grid;
+      gap:12px;
+      padding:16px;
+      border-radius:18px;
+      background:rgba(0,0,0,0.16);
+      border:1px solid rgba(255,255,255,0.08);
+    }
+
+    .yakuGroupTitle{
+      font-size:16px;
+      font-weight:800;
+      line-height:1.4;
+    }
+
+    .yakuChipList{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+    }
+
+    .yakuChipBtn{
+      appearance:none;
+      border:1px solid rgba(255,255,255,0.10);
+      background:rgba(255,255,255,0.05);
+      color:var(--muted);
+      min-height:40px;
+      padding:0 16px;
+      border-radius:999px;
+      font-size:13px;
+      font-weight:800;
+      cursor:pointer;
+      transition:background 0.15s ease,border-color 0.15s ease,transform 0.15s ease,color 0.15s ease,box-shadow 0.15s ease,opacity 0.15s ease;
+      white-space:nowrap;
+    }
+
+    .yakuChipBtn:hover{
+      transform:translateY(-1px);
+    }
+
+    .yakuChipBtn.isSelected{
+      background:linear-gradient(180deg,var(--gold-1) 0%,var(--gold-2) 100%);
+      color:var(--gold-text);
+      border-color:transparent;
+      box-shadow:0 10px 18px rgba(0,0,0,0.18);
+    }
+
+    .yakuChipBtn:not(.isSelected){
+      opacity:0.78;
+    }
+
+    .localYakuList{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+    }
+
+
+    .pairInputs{
+      display:flex;
+      align-items:center;
+      justify-content:flex-end;
+      gap:10px;
+      width:auto;
+      max-width:none;
+      margin-left:auto;
+      flex-wrap:wrap;
+    }
+
+    .pairField{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      flex:0 0 auto;
+    }
+
+    .pairLabel{
+      font-size:13px;
+      font-weight:800;
+      color:var(--muted);
+      white-space:nowrap;
+    }
+
+    .noteInline{
+      display:inline-flex;
+      align-items:center;
+      min-height:44px;
+      padding:0 14px;
+      border-radius:14px;
+      background:rgba(255,255,255,0.05);
+      border:1px solid rgba(255,255,255,0.08);
+      color:var(--muted);
+      font-size:13px;
+      font-weight:800;
+      white-space:nowrap;
+    }
+
+
+    .comboChoiceInput{
+      display:flex;
+      align-items:center;
+      justify-content:flex-end;
+      gap:10px;
+      width:auto;
+      max-width:none;
+      margin-left:auto;
+      flex-wrap:wrap;
+    }
+
+    .comboChoiceInput .choiceGroup{
+      width:auto;
+      max-width:none;
+      margin-left:0;
+      justify-content:flex-start;
+    }
+
+    .comboChoiceInput .numInputWrap{
+      width:auto;
+      max-width:none;
+      margin-left:0;
+      justify-content:flex-start;
+    }
+
+    .chipTargetTileList{
+      width:100%;
+      display:grid;
+      gap:10px;
+    }
+
+    .chipTargetTileEmpty{
+      display:flex;
+      align-items:center;
+      min-height:44px;
+      padding:0 14px;
+      border-radius:14px;
+      background:rgba(255,255,255,0.05);
+      border:1px dashed rgba(255,255,255,0.16);
+      color:var(--muted);
+      font-size:13px;
+      font-weight:800;
+      line-height:1.7;
+    }
+
+    .chipTargetTileRow{
+      width:100%;
+      display:flex;
+      align-items:center;
+      gap:14px;
+      flex-wrap:nowrap;
+      padding:12px 14px;
+      border-radius:16px;
+      background:rgba(0,0,0,0.16);
+      border:1px solid rgba(255,255,255,0.08);
+      overflow-x:visible;
+    }
+
+    .chipTargetTileMain{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width:0;
+      margin-right:6px;
+      flex:0 0 auto;
+    }
+
+    .chipTargetTileImgWrap{
+      width:38px;
+      min-width:38px;
+      height:52px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      border-radius:10px;
+      background:rgba(255,255,255,0.04);
+      overflow:hidden;
+    }
+
+    .chipTargetTileImg{
+      width:32px;
+      height:auto;
+      object-fit:contain;
+      display:block;
+    }
+
+    .chipTargetTileInfo{
+      display:grid;
+      gap:2px;
+      min-width:112px;
+    }
+
+    .chipTargetTileCode{
+      font-size:14px;
+      font-weight:800;
+      line-height:1.4;
+      word-break:break-all;
+    }
+
+    .chipTargetTileMeta{
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.5;
+    }
+
+    .chipTargetInlineField{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      min-width:0;
+      flex:0 0 auto;
+      white-space:nowrap;
+    }
+
+    .chipTargetInlineLabel{
+      font-size:12px;
+      font-weight:800;
+      color:var(--muted);
+      line-height:1.4;
+      white-space:nowrap;
+    }
+
+    .chipTargetInlineInput{
+      width:64px;
+      min-width:64px;
+      height:38px;
+      padding:0 10px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,0.10);
+      background:rgba(255,255,255,0.05);
+      color:var(--text);
+      text-align:right;
+      outline:none;
+    }
+
+    .chipTargetInlineInput:focus{
+      border-color:rgba(143,220,193,0.34);
+      box-shadow:0 0 0 3px rgba(143,220,193,0.10);
+    }
+
+    .chipTargetSwitch{
+      width:52px;
+      height:30px;
+    }
+
+    .chipTargetSwitch::after{
+      top:2px;
+      left:2px;
+      width:24px;
+      height:24px;
+    }
+
+    .chipTargetSwitch.isOn::after{
+      left:26px;
+    }
+
+    .chipTargetModeGroup{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      flex:0 0 auto;
+    }
+
+    .chipTargetModeBtn{
+      appearance:none;
+      border:1px solid rgba(255,255,255,0.10);
+      background:rgba(255,255,255,0.05);
+      color:var(--muted);
+      min-height:34px;
+      padding:0 12px;
+      border-radius:12px;
+      font-size:12px;
+      font-weight:800;
+      cursor:pointer;
+      transition:background 0.15s ease,border-color 0.15s ease,transform 0.15s ease,color 0.15s ease;
+      white-space:nowrap;
+    }
+
+    .chipTargetModeBtn:hover,
+    .chipTargetDetailBtn:hover,
+    .chipTargetDetailCloseBtn:hover{
+      transform:translateY(-1px);
+    }
+
+    .chipTargetModeBtn.isSelected{
+      background:linear-gradient(180deg,var(--gold-1) 0%,var(--gold-2) 100%);
+      color:var(--gold-text);
+      border-color:transparent;
+    }
+
+    .chipTargetDetailBtn{
+      appearance:none;
+      border:1px solid rgba(255,255,255,0.10);
+      background:rgba(255,255,255,0.04);
+      color:var(--text);
+      min-height:36px;
+      padding:0 12px;
+      border-radius:12px;
+      font-size:12px;
+      font-weight:800;
+      cursor:pointer;
+      transition:background 0.15s ease,border-color 0.15s ease,transform 0.15s ease;
+      white-space:nowrap;
+      flex:0 0 auto;
+      margin-left:auto;
+    }
+
+    .chipTargetDetailOverlay{
+      position:fixed;
+      inset:0;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:20px;
+      background:rgba(0,0,0,0.56);
+      z-index:4100;
+    }
+
+    .chipTargetDetailOverlay.isOpen{
+      display:flex;
+    }
+
+    .chipTargetDetailPanel{
+      width:min(760px, 96vw);
+      display:grid;
+      gap:14px;
+      padding:18px;
+      border-radius:24px;
+      background:rgba(8,20,15,0.96);
+      border:1px solid rgba(255,255,255,0.10);
+      box-shadow:var(--shadow);
+    }
+
+    .chipTargetDetailHead{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+
+    .chipTargetDetailTitleWrap{
+      display:grid;
+      gap:6px;
+    }
+
+    .chipTargetDetailTitle{
+      font-size:20px;
+      font-weight:800;
+      line-height:1.35;
+    }
+
+    .chipTargetDetailLead{
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.7;
+    }
+
+    .chipTargetDetailCloseBtn{
+      appearance:none;
+      border:1px solid rgba(255,255,255,0.10);
+      background:rgba(255,255,255,0.04);
+      color:var(--text);
+      min-height:40px;
+      padding:0 14px;
+      border-radius:999px;
+      font-size:13px;
+      font-weight:800;
+      cursor:pointer;
+      transition:background 0.15s ease,border-color 0.15s ease,transform 0.15s ease;
+    }
+
+    .chipTargetDetailTileHead{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      flex-wrap:wrap;
+      padding:12px 14px;
+      border-radius:16px;
+      background:rgba(255,255,255,0.04);
+      border:1px solid rgba(255,255,255,0.08);
+    }
+
+    .chipTargetDetailTileInfo{
+      display:grid;
+      gap:2px;
+    }
+
+    .chipTargetDetailTileCode{
+      font-size:16px;
+      font-weight:800;
+      line-height:1.4;
+    }
+
+    .chipTargetDetailTileMeta{
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.6;
+    }
+
+    .chipTargetDetailLines{
+      display:grid;
+      gap:10px;
+    }
+
+    .chipTargetDetailLine{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      flex-wrap:wrap;
+      padding:12px 14px;
+      border-radius:16px;
+      background:rgba(0,0,0,0.16);
+      border:1px solid rgba(255,255,255,0.08);
+    }
+
+    .chipTargetDetailLeadLabel{
+      font-size:13px;
+      font-weight:800;
+      color:var(--text);
+      white-space:nowrap;
+      min-width:40px;
+    }
+
+    .placeholderBox{
+      display:flex;
+      align-items:center;
+      min-height:44px;
+      padding:0 14px;
+      border-radius:14px;
+      background:rgba(255,255,255,0.05);
+      border:1px dashed rgba(255,255,255,0.16);
+      color:var(--muted);
+      font-size:13px;
+      font-weight:800;
+    }
+
+    .settingChoiceWithExplain{
+      width:100%;
+      display:flex;
+      flex-direction:column;
+      align-items:flex-end;
+      gap:10px;
+    }
+
+    .settingChoiceWithExplain .choiceGroup{
+      width:100%;
+      max-width:440px;
+    }
+
+    .settingExplainInline{
+      width:100%;
+      max-width:440px;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.8;
+      text-align:right;
+    }
+
+    .footerNote{
+      display:none;
+      padding:16px 18px;
+      border-radius:18px;
+      background:var(--panel-soft);
+      border:1px solid rgba(255,255,255,0.08);
+      color:var(--muted);
+      line-height:1.8;
+      font-size:13px;
+    }
+
+    .tileCompositionSummary{
+      width:100%;
+      display:grid;
+      gap:12px;
+    }
+
+    .tileCompositionSummaryBody{
+      width:100%;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+
+    .tileCompositionSummaryText{
+      min-width:0;
+      flex:1 1 auto;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .tileCompositionSummaryItem{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      min-height:46px;
+      padding:6px 10px;
+      border-radius:14px;
+      background:rgba(0,0,0,0.16);
+      border:1px solid rgba(255,255,255,0.08);
+    }
+
+    .tileCompositionSummaryImgWrap{
+      width:28px;
+      min-width:28px;
+      height:40px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      border-radius:8px;
+      background:rgba(255,255,255,0.04);
+      overflow:hidden;
+    }
+
+    .tileCompositionSummaryImg{
+      width:24px;
+      height:auto;
+      object-fit:contain;
+      display:block;
+    }
+
+    .tileCompositionSummaryCount{
+      font-size:13px;
+      font-weight:800;
+      line-height:1.4;
+      color:var(--text);
+      white-space:nowrap;
+    }
+
+    .tileCompositionSummaryEmpty{
+      display:inline-flex;
+      align-items:center;
+      min-height:46px;
+      padding:0 12px;
+      border-radius:14px;
+      background:rgba(255,255,255,0.05);
+      border:1px dashed rgba(255,255,255,0.16);
+      color:var(--muted);
+      font-size:13px;
+      font-weight:800;
+      line-height:1.7;
+    }
+
+    .tileCompositionSummaryActions{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+      flex:0 0 auto;
+    }
+
+    .tileCompositionOverlay{
+      position:fixed;
+      inset:0;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:20px;
+      background:rgba(0,0,0,0.56);
+      z-index:4000;
+    }
+
+    .tileCompositionOverlay.isOpen{
+      display:flex;
+    }
+
+    .tileCompositionPanel{
+      width:min(1120px, 96vw);
+      max-height:min(90vh, 900px);
+      display:grid;
+      grid-template-rows:auto minmax(0, 1fr) auto;
+      gap:14px;
+      padding:18px;
+      border-radius:24px;
+      background:rgba(8,20,15,0.96);
+      border:1px solid rgba(255,255,255,0.10);
+      box-shadow:var(--shadow);
+    }
+
+    .tileCompositionPanelHead{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+
+    .tileCompositionPanelTitleWrap{
+      display:grid;
+      gap:0;
+    }
+
+    .tileCompositionPanelTitle{
+      font-size:22px;
+      font-weight:800;
+      line-height:1.35;
+    }
+
+    .tileCompositionPanelLead{
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.8;
+    }
+
+    .tileCompositionPanelBody{
+      min-height:0;
+      display:grid;
+      grid-template-columns:minmax(0, 1.3fr) minmax(300px, 0.9fr);
+      gap:12px;
+    }
+
+    .tileCompositionListCard,
+    .tileCompositionEditorCard{
+      min-height:0;
+      display:grid;
+      gap:12px;
+      padding:14px;
+      border-radius:18px;
+      background:rgba(255,255,255,0.04);
+      border:1px solid rgba(255,255,255,0.08);
+    }
+
+    .tileCompositionCardTitle{
+      font-size:16px;
+      font-weight:800;
+      line-height:1.4;
+    }
+
+    .tileCompositionGrid{
+      min-height:0;
+      overflow:auto;
+      display:grid;
+      grid-template-columns:repeat(6, minmax(0, 1fr));
+      gap:8px;
+      padding-right:4px;
+    }
+
+    .tileCompositionTileBtn{
+      appearance:none;
+      width:100%;
+      display:grid;
+      gap:6px;
+      align-content:start;
+      padding:8px;
+      border-radius:16px;
+      border:1px solid rgba(255,255,255,0.08);
+      background:rgba(0,0,0,0.16);
+      color:var(--text);
+      cursor:pointer;
+      text-align:left;
+      transition:transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+    }
+
+    .tileCompositionTileBtn:hover{
+      transform:translateY(-1px);
+    }
+
+    .tileCompositionTileBtn.isActive{
+      border-color:rgba(242,213,143,0.40);
+      background:rgba(242,213,143,0.10);
+    }
+
+    .tileCompositionTileImgWrap{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      min-height:64px;
+      border-radius:12px;
+      background:rgba(255,255,255,0.04);
+    }
+
+    .tileCompositionTileImg{
+      width:44px;
+      height:auto;
+      object-fit:contain;
+      display:block;
+    }
+
+    .tileCompositionTileCode{
+      font-size:13px;
+      font-weight:800;
+      line-height:1.4;
+    }
+
+    .tileCompositionTileMeta{
+      display:none;
+    }
+
+    .tileCompositionEditorEmpty{
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.8;
+    }
+
+    .tileCompositionEditorMain{
+      display:grid;
+      gap:12px;
+      align-content:start;
+    }
+
+    .tileCompositionEditorHeader{
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+
+    .tileCompositionEditorHeader .tileCompositionTileImgWrap{
+      width:64px;
+      min-height:84px;
+      flex:0 0 64px;
+    }
+
+    .tileCompositionEditorInfo{
+      display:grid;
+      gap:0;
+    }
+
+    .tileCompositionEditorCode{
+      font-size:18px;
+      font-weight:800;
+      line-height:1.4;
+    }
+
+    .tileCompositionEditorLabel{
+      display:none;
+    }
+
+    .tileCompositionCountList{
+      display:grid;
+      gap:8px;
+    }
+
+    .tileCompositionCountRow{
+      display:grid;
+      grid-template-columns:minmax(0,1fr) auto;
+      gap:10px;
+      align-items:center;
+      padding:8px 12px;
+      border-radius:14px;
+      background:rgba(0,0,0,0.16);
+      border:1px solid rgba(255,255,255,0.08);
+    }
+
+    .tileCompositionCountMeta{
+      display:grid;
+      gap:0;
+    }
+
+    .tileCompositionCountLabel{
+      font-size:13px;
+      font-weight:800;
+      line-height:1.4;
+    }
+
+    .tileCompositionCountDesc{
+      display:none;
+    }
+
+    .tileCompositionCountInput{
+      width:calc(4ch + 24px);
+      min-width:calc(4ch + 24px);
+      height:42px;
+      padding:0 12px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,0.10);
+      background:rgba(255,255,255,0.05);
+      color:var(--text);
+      text-align:right;
+      outline:none;
+    }
+
+    .tileCompositionCountInput:focus{
+      border-color:rgba(143,220,193,0.34);
+      box-shadow:0 0 0 3px rgba(143,220,193,0.10);
+    }
+
+    .tileCompositionEditorHint{
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.7;
+    }
+
+    .tileCompositionPanelFoot{
+      display:flex;
+      justify-content:flex-end;
+      align-items:center;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+
+    .tileCompositionPanelNote{
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.7;
+    }
+
+    @media (max-width: 900px){
+      .tileCompositionPanelBody{
+        grid-template-columns:1fr;
+      }
+
+      .tileCompositionGrid{
+        grid-template-columns:repeat(4, minmax(0, 1fr));
+      }
+
+      .tileCompositionSummaryBody{
+        justify-content:flex-start;
+      }
+
+      .tileCompositionSummaryActions,
+      .tileCompositionPanelFoot{
+        justify-content:flex-start;
+      }
+    }
+
+    @media (max-width: 640px){
+      .tileCompositionOverlay{
+        padding:12px;
+      }
+
+      .tileCompositionPanel{
+        width:min(100%, 96vw);
+        padding:14px;
+      }
+
+      .tileCompositionGrid{
+        grid-template-columns:repeat(3, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 900px){
+      .heroMeta,
+      .settingRow{
+        grid-template-columns:1fr;
+      }
+
+      .settingControl{
+        justify-content:flex-start;
+      }
+
+      .numInputWrap,
+      .choiceGroup,
+      .pairInputs{
+        max-width:none;
+        margin-left:0;
+        justify-content:flex-start;
+      }
+
+      .settingChoiceWithExplain{
+        align-items:flex-start;
+      }
+
+      .settingExplainInline{
+        max-width:none;
+        text-align:left;
+      }
+    }
+
+    @media (max-width: 640px){
+      body{
+        padding:14px;
+      }
+
+      .hero,
+      .tabsWrap{
+        padding:16px;
+      }
+
+      h1{
+        font-size:28px;
+      }
+
+      .panelToolbarTitle{
+        font-size:20px;
+      }
+
+      .topTabBtn,
+      .tabActionBtn{
+        width:100%;
+        justify-content:center;
+      }
+
+      .presetStatus{
+        width:100%;
+        text-align:left;
+      }
+
+      .tabResetWrap{
+        width:100%;
+        margin-left:0;
+      }
+
+      .settingRow,
+      .sectionCard{
+        padding:16px;
+      }
+
+      .numInputWrap,
+      .choiceGroup,
+      .pairInputs{
+        width:100%;
+      }
+      .comboChoiceInput{
+        width:100%;
+        max-width:none;
+        margin-left:0;
+        justify-content:flex-start;
+      }
+
+      .comboChoiceInput .choiceGroup{
+        width:100%;
+      }
+
+      .comboChoiceInput .numInputWrap{
+        width:100%;
+        max-width:none;
+      }
+
+
+      .choiceBtn{
+        flex:1 1 calc(50% - 8px);
+        justify-content:center;
+      }
+
+      .pairField{
+        flex:1 1 100%;
+      }
+
+      .yakuChipList,
+      .localYakuList{
+        width:100%;
+      }
+
+      .yakuChipBtn{
+        justify-content:center;
+      }
+
+      .yakuChipList .yakuChipBtn,
+      .localYakuList .yakuChipBtn{
+        flex:0 0 auto;
+      }
+
+      .yakuGroupBox{
+        padding:14px;
+      }
+
+      .chipTargetTileRow{
+        align-items:flex-start;
+        flex-wrap:wrap;
+      }
+
+      .chipTargetTileMain{
+        width:100%;
+        margin-right:0;
+      }
+
+      .chipTargetInlineField,
+      .chipTargetModeGroup{
+        flex-wrap:wrap;
+      }
+
+      .chipTargetDetailBtn{
+        margin-left:0;
+      }
+
+      .chipTargetDetailLine{
+        gap:10px;
+      }
+    }
+
+    /* ===== 共通ポリッシュ（UI改良） ===== */
+    body{
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      text-rendering:optimizeLegibility;
+    }
+    ::selection{
+      background:rgba(242,213,143,0.38);
+      color:#1e1402;
+    }
+    button:focus-visible,
+    input:focus-visible,
+    a:focus-visible,
+    select:focus-visible,
+    .topTabBtn:focus-visible,
+    .tabActionBtn:focus-visible,
+    .choiceBtn:focus-visible{
+      outline:2px solid rgba(242,213,143,0.75);
+      outline-offset:3px;
+    }
+    *{
+      scrollbar-width:thin;
+      scrollbar-color:rgba(255,255,255,0.22) transparent;
+    }
+    *::-webkit-scrollbar{ width:10px; height:10px; }
+    *::-webkit-scrollbar-track{ background:transparent; }
+    *::-webkit-scrollbar-thumb{
+      background:rgba(255,255,255,0.18);
+      border-radius:999px;
+      border:2px solid transparent;
+      background-clip:padding-box;
+    }
+    *::-webkit-scrollbar-thumb:hover{ background:rgba(255,255,255,0.32); background-clip:padding-box; }
+    @media (prefers-reduced-motion: reduce){
+      *,*::before,*::after{
+        transition-duration:0.001ms !important;
+        animation-duration:0.001ms !important;
+      }
+    }
+
+    /* タブヘッダーをスクロール追従 */
+    .tabsHeaderRow{
+      position:sticky;
+      top:8px;
+      z-index:5;
+      padding:10px 12px;
+      margin:-10px -12px 4px;
+      border-radius:18px;
+      background:linear-gradient(180deg, rgba(8,20,15,0.72), rgba(8,20,15,0.56));
+      backdrop-filter:blur(8px);
+      -webkit-backdrop-filter:blur(8px);
+    }
+
+    /* 選択中タブの存在感を少し強く */
+    .topTabBtn[aria-selected="true"]{
+      box-shadow:0 10px 22px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.22);
+    }
+
+    /* セクション内のホバー反応 */
+    .sectionCard{
+      box-shadow:0 8px 20px rgba(0,0,0,0.18);
+    }
+    .settingRow{
+      transition:background 0.15s ease, border-color 0.15s ease;
+    }
+    .settingRow:hover{
+      background:rgba(0,0,0,0.22);
+      border-color:rgba(255,255,255,0.14);
+    }
+
+    .choiceBtn.isSelected{
+      transform:translateY(-1px);
+    }
+
+    @media (max-width: 640px){
+      .tabsHeaderRow{
+        top:4px;
+        padding:8px 10px;
+        margin:-8px -10px 4px;
+      }
+    }
+
+    /* ===== プレミアムレイヤ ===== */
+    :root{
+      --mincho:"Hiragino Mincho ProN","Hiragino Mincho Pro","Yu Mincho","YuMincho","Noto Serif JP",Georgia,serif;
+      --gold-line:linear-gradient(90deg,transparent 0%,rgba(242,213,143,0.55) 20%,rgba(242,213,143,0.92) 50%,rgba(242,213,143,0.55) 80%,transparent 100%);
+      --panel-elev:0 1px 0 rgba(255,220,150,0.12) inset, 0 -1px 0 rgba(0,0,0,0.34) inset, 0 2px 3px rgba(0,0,0,0.12), 0 18px 36px rgba(0,0,0,0.28), 0 42px 72px rgba(0,0,0,0.34);
+    }
+
+    html::before{
+      content:"";
+      position:fixed; inset:0; pointer-events:none;
+      opacity:0.10; mix-blend-mode:overlay; z-index:50;
+      background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.92' numOctaves='2' seed='7'/></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='0.88'/></svg>");
+    }
+
+    body{
+      background:
+        radial-gradient(circle at 50% -6%, rgba(241,212,141,0.16), transparent 32%),
+        radial-gradient(circle at 50% 112%, rgba(31,94,67,0.28), transparent 40%),
+        linear-gradient(180deg,var(--bg-top) 0%,var(--bg-bottom) 100%);
+    }
+
+    h1,
+    .eyebrow,
+    .sectionTitle,
+    .panelToolbarTitle{
+      font-family:var(--mincho);
+      letter-spacing:0.05em;
+    }
+    h1{
+      font-weight:700;
+      background:linear-gradient(180deg,#fff5d2 0%,#f3d78e 45%,#d9bb72 100%);
+      -webkit-background-clip:text;
+      background-clip:text;
+      color:transparent;
+      text-shadow:0 10px 28px rgba(0,0,0,0.24);
+      position:relative;
+      padding-bottom:14px;
+    }
+    h1::after{
+      content:"";
+      position:absolute;
+      bottom:0; left:0;
+      width:clamp(120px,20vw,200px);
+      height:1px;
+      background:var(--gold-line);
+    }
+    .eyebrow{
+      letter-spacing:0.18em;
+      font-weight:700;
+    }
+
+    .hero,
+    .tabsWrap{
+      box-shadow:var(--panel-elev);
+      border-color:rgba(255,220,150,0.14);
+      position:relative;
+    }
+    .hero::after,
+    .tabsWrap::after{
+      content:"";
+      position:absolute;
+      top:0; left:10%; right:10%;
+      height:1px;
+      background:var(--gold-line);
+      opacity:0.55;
+      pointer-events:none;
+    }
+
+    .topTabs{
+      padding:6px;
+      background:linear-gradient(180deg, rgba(0,0,0,0.28), rgba(0,0,0,0.14));
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,0.06);
+      box-shadow:inset 0 2px 4px rgba(0,0,0,0.32), inset 0 -1px 0 rgba(255,255,255,0.04);
+      gap:4px;
+    }
+    .topTabBtn{
+      background:transparent;
+      border:1px solid transparent;
+      font-family:var(--mincho);
+      letter-spacing:0.06em;
+      font-weight:700;
+    }
+    .topTabBtn[aria-selected="true"]{
+      background:linear-gradient(180deg,#fbe7b0 0%,#f2d58f 42%,#d9bb72 100%);
+      color:#1e1402;
+      box-shadow:0 1px 0 rgba(255,255,255,0.45) inset, 0 -1px 0 rgba(120,80,20,0.35) inset, 0 10px 22px rgba(0,0,0,0.26);
+    }
+
+    .btnPrimary{
+      position:relative;
+      overflow:hidden;
+      isolation:isolate;
+      background:linear-gradient(180deg,#fbe7b0 0%,#f2d58f 42%,#d9bb72 100%);
+      box-shadow:0 1px 0 rgba(255,255,255,0.45) inset, 0 -1px 0 rgba(120,80,20,0.35) inset, 0 10px 22px rgba(0,0,0,0.24);
+      font-family:var(--mincho);
+      letter-spacing:0.06em;
+      font-weight:700;
+    }
+    .btnPrimary::after{
+      content:"";
+      position:absolute;
+      top:0; left:-40%;
+      width:30%; height:100%;
+      background:linear-gradient(110deg, transparent 0%, rgba(255,255,255,0.58) 50%, transparent 100%);
+      transform:skewX(-20deg);
+      transition:left 0.9s ease;
+      pointer-events:none;
+    }
+    .btnPrimary:hover::after{ left:120%; }
+
+    .btnGhost{
+      backdrop-filter:blur(6px);
+      -webkit-backdrop-filter:blur(6px);
+      box-shadow:0 1px 0 rgba(255,255,255,0.06) inset, 0 6px 14px rgba(0,0,0,0.2);
+    }
+
+    .choiceBtn.isSelected{
+      position:relative;
+      overflow:hidden;
+      background:linear-gradient(180deg,#fbe7b0 0%,#f2d58f 42%,#d9bb72 100%);
+      box-shadow:0 1px 0 rgba(255,255,255,0.45) inset, 0 -1px 0 rgba(120,80,20,0.35) inset, 0 10px 22px rgba(0,0,0,0.22);
+    }
+
+    .sectionCard{
+      position:relative;
+      padding-left:26px;
+      box-shadow:0 1px 0 rgba(255,255,255,0.04) inset, 0 10px 22px rgba(0,0,0,0.22);
+    }
+    .sectionCard::before{
+      content:"";
+      position:absolute;
+      left:10px;
+      top:20px;
+      bottom:20px;
+      width:2px;
+      background:linear-gradient(180deg, rgba(241,212,141,0.55) 0%, rgba(241,212,141,0.18) 100%);
+      border-radius:2px;
+    }
+
+    @keyframes premiumFadeInUp{
+      0%  { opacity:0; transform:translateY(12px); filter:blur(3px); }
+      60% { filter:blur(0); }
+      100%{ opacity:1; transform:translateY(0); filter:blur(0); }
+    }
+    .page > *{
+      animation:premiumFadeInUp 0.55s cubic-bezier(.2,.7,.2,1) both;
+    }
+    .page > *:nth-child(1){ animation-delay:.05s; }
+    .page > *:nth-child(2){ animation-delay:.14s; }
+    .page > *:nth-child(3){ animation-delay:.22s; }
+    @media (prefers-reduced-motion: reduce){
+      .page > *{ animation:none; }
+    }
+
+    /* backBtn 左矢印グリフ */
+    .backBtn{ display:inline-flex; align-items:center; gap:8px; }
+    .backBtn::before{
+      content:"";
+      display:inline-block;
+      width:8px; height:8px;
+      border-left:1.6px solid currentColor;
+      border-bottom:1.6px solid currentColor;
+      transform:rotate(45deg);
+      opacity:0.85;
+      transition: transform 0.3s ease;
+      margin-right:2px;
+    }
+    .backBtn:hover::before{
+      transform:rotate(45deg) translate(-2px,2px);
+      opacity:1;
+    }
+
+    /* filterBtn / tabBtn の形状差別化 */
+    .filterBtn,
+    .tabBtn{
+      transition: background 0.22s ease, color 0.22s ease, box-shadow 0.22s ease, transform 0.18s ease;
+    }
+    .filterBtn:hover,
+    .tabBtn:hover{
+      transform:translateY(-1px);
+    }
+    .filterBtn.isActive,
+    .tabBtn.isActive,
+    .tabBtn[aria-selected="true"]{
+      box-shadow: 0 2px 5px rgba(0,0,0,0.32) inset, 0 1px 0 rgba(255,220,150,0.18) inset;
+    }
+
+    @media (prefers-reduced-motion: reduce){
+      .backBtn::before,
+      .filterBtn,
+      .tabBtn{ transition:none; }
+    }
+  </style>
+</head>
+<body>
+<main class="page">
+<section class="hero">
+<div class="heroTop">
+<div class="heroTitle">
+<span class="eyebrow">SANMA LAB — RULES</span>
+<h1>ルール変更</h1>
+<p class="heroText">
+            採用ルール・点数・局進行を、自分の打ち場に合わせて仕立てる。<br />
+            スイッチと入力で、細部まで調整できます。
+          </p>
+</div>
+<div class="heroActions">
+<a class="btn btnPrimary" href="index_app.html">トップへ戻る</a>
+<button class="btn btnGhost" id="scrollActiveTabBtn" type="button">現在のタブを先頭へ</button>
+</div>
+</div>
+</section>
+<section class="tabsWrap">
+<div class="presetBar">
+<div class="presetBarTop">
+<div class="presetBarTitleBox">
+<div class="presetBarTitle">ルールプリセット</div>
+<div class="presetBarLead">標準ルールは読み取り専用です。プリセット1〜5には現在の内容を保存して切り替えられます。</div>
+</div>
+<div class="presetStatus" id="presetStatusText">標準ルールを表示中</div>
+</div>
+<div class="presetRow" id="presetSlotRow">
+<button class="presetSlotBtn isActive" data-preset-id="standard" type="button">標準ルール</button>
+<button class="presetSlotBtn" data-preset-id="slot1" type="button">プリセット1</button>
+<button class="presetSlotBtn" data-preset-id="slot2" type="button">プリセット2</button>
+<button class="presetSlotBtn" data-preset-id="slot3" type="button">プリセット3</button>
+<button class="presetSlotBtn" data-preset-id="slot4" type="button">プリセット4</button>
+<button class="presetSlotBtn" data-preset-id="slot5" type="button">プリセット5</button>
+</div>
+</div>
+<button class="tabActionBtn presetInlineSaveBtn" id="savePresetBtn" type="button">別プリセットへ保存</button>
+<div class="presetActions">
+<button class="tabActionBtn presetActionBtn" id="applyPresetBtn" type="button">このルールを採用</button>
+<button class="tabActionBtn presetActionBtn" id="renamePresetBtn" type="button">名前変更</button>
+</div>
+</div>
+<div class="tabsHeaderRow">
+<div aria-label="ルール変更タブ" class="topTabs" role="tablist">
+<button aria-controls="panel-overview" aria-selected="true" class="topTabBtn" data-tab="overview" id="tab-overview" role="tab" type="button">概要</button>
+<button aria-controls="panel-score" aria-selected="false" class="topTabBtn" data-tab="score" id="tab-score" role="tab" type="button">点数・精算</button>
+<button aria-controls="panel-tiles" aria-selected="false" class="topTabBtn" data-tab="tiles" id="tab-tiles" role="tab" type="button">使用牌</button>
+<button aria-controls="panel-basic" aria-selected="false" class="topTabBtn" data-tab="basic" id="tab-basic" role="tab" type="button">基本</button>
+<button aria-controls="panel-extra" aria-selected="false" class="topTabBtn" data-tab="extra" id="tab-extra" role="tab" type="button">補足</button>
+<button aria-controls="panel-yaku" aria-selected="false" class="topTabBtn" data-tab="yaku" id="tab-yaku" role="tab" type="button">採用役</button>
+</div>
+<div class="tabResetWrap">
+<button class="tabActionBtn" id="resetActiveTabBtn" type="button">このタブを初期値に戻す</button>
+</div>
+</div>
+<div class="mainPanels">
+<section aria-labelledby="tab-overview" class="mainPanel isActive" id="panel-overview" role="tabpanel">
+<div class="panelToolbar">
+<div class="panelToolbarText">
+<div class="panelToolbarTitle">概要</div>
+<div class="panelToolbarLead">まずは対局全体の大枠をここで決めます。</div>
+</div>
+<div class="toolbarActions">
+<button class="tabActionBtn" data-reset-panel="overview" type="button">このタブを初期値に戻す</button>
+</div>
+</div>
+<article class="sectionCard">
+<div class="sectionHead">
+<div class="sectionTitleBox">
+<h2 class="sectionTitle">概要設定</h2>
+<p class="sectionLead">対局形式、レート、祝儀単価、持ち点、連荘条件をまとめて決めるタブです。</p>
+</div>
+<span class="pill pillAccent">概要</span>
+</div>
+<div class="settingList">
+<div class="settingRow">
+<div class="settingMeta">
+<div class="settingLabel">半荘戦 / 東風戦</div>
+<div class="settingDesc">対局の長さを選びます。</div>
+</div>
+<div class="settingControl">
+<div aria-label="半荘戦または東風戦" class="choiceGroup" role="group">
+<button class="choiceBtn" data-choice-value="hanchan" data-default="hanchan" data-setting-key="overview-game-type" data-setting-type="choice" type="button">半荘戦</button>
+<button class="choiceBtn" data-choice-value="tonpuu" data-setting-key="overview-game-type" data-setting-type="choice" type="button">東風戦</button>
+</div>
+</div>
+</div>
+<div class="settingRow">
+<div class="settingMeta">
+<div class="settingLabel">レート</div>
+<div class="settingDesc">1000点あたりのレートを選びます。</div>
+</div>
+<div class="settingControl">
+<div aria-label="レート" class="choiceGroup" role="group">
+<button class="choiceBtn" data-choice-value="100p" data-default="100p" data-setting-key="overview-rate" data-setting-type="choice" type="button">100p</button>
+<button class="choiceBtn" data-choice-value="50p" data-setting-key="overview-rate" data-setting-type="choice" type="button">50p</button>
+<button class="choiceBtn" data-choice-value="30p" data-setting-key="overview-rate" data-setting-type="choice" type="button">30p</button>
+</div>
+</div>
+</div>
+<div class="settingRow">
+<div class="settingMeta">
+<div class="settingLabel">祝儀単価</div>
+<div class="settingDesc">1枚あたりの相当ポイントを入力します。</div>
+</div>
+<div class="settingControl">
+<div class="numInputWrap">
+<input class="numInput" data-default="200" data-setting-key="overview-chip-unit" data-setting-type="number" inputmode="numeric" min="0" step="100" type="number"/>
+<span class="unit">p相当</span>
+</div>
+</div>
+</div>
+<div class="settingRow">
+<div class="settingMeta">
+<div class="settingLabel">持ち点・返し点</div>
+<div class="settingDesc">対局開始時の持ち点と返し点を入力します。</div>
+</div>
+<div class="settingControl">
+<div class="pairInputs">
+<div class="pairField">
+<span class="pairLabel">持ち点</span>
+<input class="numInput numInputLong" data-default="35000" data-setting-key="overview-start-score" data-setting-type="number" inputmode="numeric" min="0" step="100" type="number"/>
+<span class="unit">点</span>
+</div>
+<div class="pairField">
+<span class="pairLabel">返し点</span>
+<input class="numInput numInputLong" data-default="40000" data-setting-key="overview-return-score" data-setting-type="number" inputmode="numeric" min="0" step="100" type="number"/>
+<span class="unit">点</span>
+</div>
+</div>
+</div>
+</div>
+<div class="settingRow">
+<div class="settingMeta">
+<div class="settingLabel">聴牌連荘 / アガリ連荘</div>
+<div class="settingDesc">親の連荘条件を選びます。</div>
+</div>
+<div class="settingControl">
+<div aria-label="連荘条件" class="choiceGroup" role="group">
+<button class="choiceBtn" data-choice-value="tenpai" data-default="tenpai" data-setting-key="overview-renchan-type" data-setting-type="choice" type="button">聴牌連荘</button>
+<button class="choiceBtn" data-choice-value="agari" data-setting-key="overview-renchan-type" data-setting-type="choice" type="button">アガリ連荘</button>
+</div>
+</div>
+</div>
+<div class="settingRow">
+<div class="settingMeta">
+<div class="settingLabel">祝儀対象（一発・裏）</div>
+<div class="settingDesc">一発と裏ドラのどちらを祝儀対象にするかを選びます。</div>
+</div>
+<div class="settingControl">
+<div aria-label="祝儀対象（一発・裏）" class="choiceGroup" role="group">
+<button class="choiceBtn" data-choice-value="both" data-default="both" data-setting-key="overview-chip-target-ippatsu-ura" data-setting-type="choice" type="button">両方</button>
+<button class="choiceBtn" data-choice-value="ippatsu" data-setting-key="overview-chip-target-ippatsu-ura" data-setting-type="choice" type="button">一発のみ</button>
+<button class="choiceBtn" data-choice-value="ura" data-setting-key="overview-chip-target-ippatsu-ura" data-setting-type="choice" type="button">裏のみ</button>
+<button class="choiceBtn" data-choice-value="none" data-setting-key="overview-chip-target-ippatsu-ura" data-setting-type="choice" type="button">どちらもなし</button>
+</div>
+</div>
+</div>
+<div class="settingRow">
+<div class="settingMeta">
+<div class="settingLabel">祝儀対象（祝儀牌）</div>
+<div class="settingDesc">祝儀牌を面前のみ対象にするか、鳴きでも対象にするかを選びます。</div>
+</div>
+<div class="settingControl">
+<div aria-label="祝儀対象（祝儀牌）" class="choiceGroup" role="group">
+<button class="choiceBtn" data-choice-value="menzen" data-default="menzen" data-setting-key="overview-chip-target-colored" data-setting-type="choice" type="button">面前</button>
+<button class="choiceBtn" data-choice-value="naki" data-setting-key="overview-chip-target-colored" data-setting-type="choice" type="button">鳴き</button>
+</div>
+</div>
+</div>
+<div class="settingRow">
+<div class="settingMeta">
+<div class="settingLabel">祝儀対象（白ポッチ）</div>
+<div class="settingDesc">白ポッチを祝儀対象にするかを選び、ありの場合の枚数相当を入力します。</div>
+</div>
+<div class="settingControl">
+<div class="comboChoiceInput">
+<div aria-label="祝儀対象（白ポッチ）" class="choiceGroup" role="group">
+<button class="choiceBtn" data-choice-value="on" data-default="off" data-setting-key="overview-chip-target-shiro-pocchi" data-setting-type="choice" type="button">あり</button>
+<button class="choiceBtn" data-choice-value="off" data-setting-key="overview-chip-target-shiro-pocchi" data-setting-type="choice" type="button">なし</button>
+</div>
+<div class="numInputWrap">
+<input class="numInput" data-default="1" data-setting-key="overview-chip-target-shiro-pocchi-count" data-setting-type="number" inputmode="numeric" min="0" step="1" type="number"/>
+<span class="unit">枚相当</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</article>
+</section>
+<section aria-labelledby="tab-score" class="mainPanel" id="panel-score" role="tabpanel">
+<div class="panelToolbar">
+<div class="panelToolbarText">
+<div class="panelToolbarTitle">点数・精算</div>
+<div class="panelToolbarLead">順位ウマと終了条件まわりをまとめて決めるタブです。</div>
+</div>
+<div class="toolbarActions">
+<button class="tabActionBtn" data-reset-panel="score" type="button">このタブを初期値に戻す</button>
+</div>
+</div>
+<article class="sectionCard">
+<div class="sectionHead">
+<div class="sectionTitleBox">
+<h2 class="sectionTitle">順位ウマ</h2>
+<p class="sectionLead">通常時と2着クビあり時のウマ条件をまとめて設定します。</p>
+</div>
+<span class="pill">ウマ</span>
+</div>
+<div class="settingList">
+<div class="settingRow">
+<div class="settingMeta">
+<div class="settingLabel">2着ウマ</div>
+<div class="settingDesc">通常時の2着ウマを入力します。</div>
+</div>
+<div class="settingControl">
+<div class="numInputWrap">
+<input class="numInput" data-default="-5" data-setting-key="score-uma-2" data-setting-type="number" inputmode="numeric" step="1" type="number"/>
+<span class="unit">pt</span>
+</div>
+</div>
+</div>
+<div class="settingRow">
+<div class="settingMeta">
+<div class="settingLabel">3着ウマ</div>
+<div class="settingDesc">通常時の3着ウマを入力します。</div>
+</div>
+<div class="settingControl">
+<div class="numInputWrap">
+<input class="numInput" data-default="-10" data-setting-key="score-uma-3" data-setting-type="number" inputmode="numeric" step="1" type="number"/>
+<span class="unit">pt</span>
+</div>
+</div>
+</div>
+<div class="settingRow">
+<div class="settingMeta">
+<div class="settingLabel">2着クビ</div>
+<div class="settingDesc">なしにするか、クビ条件の点数を入れるかを決めます。</div>
+</div>
+<div class="settingControl">
+<div class="comboChoiceInput">
+<div class="switchWrap">
+<div class="switchLabel choiceToggleLabel" data-choice-label-for="score-kubi-enabled">なし</div>
+<button aria-checked="false" class="switch choiceToggleSwitch" data-choice-off="off" data-choice-on="on" data-default="off" data-label-off="なし" data-label-on="あり" data-setting-key="score-kubi-enabled" data-setting-type="choice-toggle" role="switch" type="button"></button>
+</div>
+<div class="numInputWrap">
+<input class="numInput numInputLong" data-default="40000" data-setting-key="score-kubi-point" data-setting-type="number" inputmode="numeric" min="0" step="100" type="number"/>
+<span class="unit">点</span>
+</div>
+</div>
+</div>
+</div>
+<div class="settingRow">
+<div class="settingMeta">
+<div class="settingLabel">2着ウマ（クビあり）</div>
+<div class="settingDesc">2着クビあり時の2着ウマを入力します。</div>
+</div>
+<div class="settingControl">
+<div class="numInputWrap">
+<input class="numInput" data-default="5" data-setting-key="score-kubi-uma-2" data-setting-type="number" inputmode="numeric" step="1" type="number"/>
+<span class="unit">pt</span>
+</div>
+</div>
+</div>
+<div class="settingRow">
+<div class="settingMeta">
+<div class="settingLabel">3着ウマ（2着クビあり）</div>
+<div class="settingDesc">2着クビあり時の3着ウマを入力します。</div>
+</div>
+<div class="settingControl">
+<div class="numInputWrap">
+<input class="numInput" data-default="-15" data-setting-key="score-kubi-uma-3" data-setting-type="number" inputmode="numeric" step="1" type="number"/>
+<span class="unit">pt</span>
+</div>
+</div>
+</div>
+</div>
+</article>
+<article class="sectionCard">
+<div class="sectionHead">
+<div class="sectionTitleBox">
+<h2 class="sectionTitle">点数処理</h2>
+<p class="sectionLead">点数処理方式をここで切り替えます。</p>
+</div>
+<span class="pill">点数</span>
+</div>
+<div class="settingList">
+<div class="settingRow">
+<div class="settingMeta">
+<div class="settingLabel">ツモ損</div>
+<div class="settingDesc">ツモ損をありにするか、なしにするかを選びます。</div>
+</div>
+<div class="settingControl">
+<div class="switchWrap">
+<div class="switchLabel choiceToggleLabel" data-choice-label-for="score-tsumoson">なし</div>
+<button aria-checked="false" class="switch choiceToggleSwitch" data-choice-off="off" data-choice-on="on" data-default="off" data-label-off="なし" data-label-on="あり" data-setting-key="score-tsumoson" data-setting-type="choice-toggle" role="switch" type="button"></button>
+</div>
+</div>
+</div>
+<div class="settingRow">
+<div class="settingMeta">
+<div class="settingLabel">符計算</div>
+<div class="settingDesc">符計算をありにするか、なしにするかを選びます。</div>
+</div>
+<div class="settingControl">
+<div class="switchWrap">
+<div class="switchLabel choiceToggleLabel" data-choice-label-for="score-fu-calc">あり</div>
+<button aria-checked="true" class="switch choiceToggleSwitch isOn" data-choice-off="off" data-choice-on="on" data-default="on" data-label-off="なし" data-label-on="あり" data-setting-key="score-fu-calc" data-setting-type="choice-toggle" role="switch" type="button"></button>
+</div>
+</div>
+</div>
+<div class="settingRow">
+<div class="settingMeta">
+<div class="settingLabel">100点単位</div>
+<div class="settingDesc">100点単位の扱いを選びます。</div>
+</div>
+<div class="settingControl">
+<div class="switchWrap">
+<div class="switchLabel choiceToggleLabel" data-choice-label-for="score-rounding-type">切り上げ</div>
+<button aria-checked="false" class="switch choiceToggleSwitch" data-choice-off="ceil" data-choice-on="ari" data-default="ceil" data-label-off="切り上げ" data-label-on="あり" data-setting-key="score-rounding-type" data-setting-type="choice-toggle" role="switch" type="button"></button>
+</div>
+</div>
+</div>
+</div>
+</article>
+<article class="sectionCard">
+<div class="sectionHead">
+<div class="sectionTitleBox">
+<h2 class="sectionTitle">本場</h2>
+<p class="sectionLead">出アガリ時とツモアガリ時の本場加算をここで決めます。</p>
+</div>
+<span class="pill">本場</span>
+</div>
+<div class="settingList">
+<div class="settingRow">
+<div class="settingMeta">
+<div class="settingLabel">本場（出アガリ）</div>
+<div class="settingDesc">出アガリ時に放銃者から加算する本場分です。</div>
+</div>
+<div class="settingControl">
+<div class="numInputWrap">
+<input class="numInput numInputLong" data-default="1000" data-setting-key="score-honba-ron" data-setting-type="number" inputmode="numeric" min="0" step="100" type="number"/>
+<span class="unit">点</span>
+</div>
+</div>
+</div>
+<div class="settingRow">
+<div class="settingMeta">
+<div class="settingLabel">本場（ツモ・1人あたり）</div>
+<div class="settingDesc">ツモアガリ時に各支払者から加算する本場分です。</div>
+</div>
+<div class="settingControl">
+<div class="numInputWrap">
+<input class="numInput numInputLong" data-default="1000" data-setting-key="score-honba-tsumo-each" data-setting-type="number" inputmode="numeric" min="0" step="100" type="number"/>
+<span class="unit">点</span>
+</div>
+</div>
+</div>
+</div>
+</article>
+<article class="sectionCard">
+<div class="sectionHead">
+<div class="sectionTitleBox">
+<h2 class="sectionTitle">聴牌料</h2>
+<p class="sectionLead">流局時のノーテン罰符 / テンパイ料をここで決めます。</p>
+</div>
+<span class="pill">流局</span>
+</div>
+<div class="settingList">
+<div class="settingRow">
+<div class="settingMeta">
+<div class="settingLabel">聴牌料（1人あたり）</div>
+<div class="settingDesc">1人テンパイ時は各ノーテン者から、2人テンパイ時はノーテン者から各テンパイ者へ支払う点数です。</div>
+</div>
+<div class="settingControl">
+<div class="numInputWrap">
+<input class="numInput numInputLong" data-default="1000" data-setting-key="score-tenpai-fee" data-setting-type="number" inputmode="numeric" min="0" step="100" type="number"/>
+<span class="unit">点</span>
+</div>
+</div>
+</div>
+</div>
+</article>
+<article class="sectionCard">
+<div class="sectionHead">
+<div class="sectionTitleBox">
+<h2 class="sectionTitle">終了・精算条件</h2>
+<p class="sectionLead">トビ終了、箱下精算、トビチップをここで決めます。</p>
+</div>
+<span class="pill">条件</span>
+</div>
+<div class="settingList">
+<div class="settingRow">
+<div class="settingMeta">
+<div class="settingLabel">コールド終了</div>
+<div class="settingDesc">指定点数に到達した時点で対局を終了する基準点です。</div>
+</div>
+<div class="settingControl">
+<div class="numInputWrap">
+<input class="numInput numInputLong" data-default="80000" data-setting-key="score-cold-end-point" data-setting-type="number" inputmode="numeric" min="0" step="100" type="number"/>
+<span class="unit">点</span>
+</div>
+</div>
+</div><div class="settingRow">
+<div class="settingMeta">
+<div class="settingLabel">トビ終了</div>
+<div class="settingDesc">トビ時点で対局を終了するかを選びます。</div>
+</div>
+<div class="settingControl">
+<div class="switchWrap">
+<div class="switchLabel choiceToggleLabel" data-choice-label-for="score-tobi-end">あり</div>
+<button aria-checked="true" class="switch choiceToggleSwitch isOn" data-choice-off="off" data-choice-on="on" data-default="on" data-label-off="なし" data-label-on="あり" data-setting-key="score-tobi-end" data-setting-type="choice-toggle" role="switch" type="button"></button>
+</div>
+</div>
+</div>
+<div class="settingRow">
+<div class="settingMeta">
+<div class="settingLabel">箱下精算</div>
+<div class="settingDesc">マイナス分まで精算に含めるかを選びます。</div>
+</div>
+<div class="settingControl">
+<div class="switchWrap">
+<div class="switchLabel choiceToggleLabel" data-choice-label-for="score-hakoshita-type">なし</div>
+<button aria-checked="false" class="switch choiceToggleSwitch" data-choice-off="off" data-choice-on="on" data-default="off" data-label-off="なし" data-label-on="あり" data-setting-key="score-hakoshita-type" data-setting-type="choice-toggle" role="switch" type="button"></button>
+</div>
+</div>
+</div>
+<div class="settingRow">
+<div class="settingMeta">
+<div class="settingLabel">トビチップ</div>
+<div class="settingDesc">トビ時に動く祝儀相当を入力します。</div>
+</div>
+<div class="settingControl">
+<div class="numInputWrap">
+<input class="numInput" data-default="200" data-setting-key="score-tobi-chip" data-setting-type="number" inputmode="numeric" min="0" step="100" type="number"/>
+<span class="unit">p相当</span>
+</div>
+</div>
+</div>
+</div>
+</article>
+</section>
+<section aria-labelledby="tab-tiles" class="mainPanel" id="panel-tiles" role="tabpanel">
+<div class="panelToolbar">
+<div class="panelToolbarText">
+<div class="panelToolbarTitle">使用牌</div>
+<div class="panelToolbarLead">牌構成、祝儀対象牌、山残し、北や花牌の扱いをここで決めるタブです。</div>
+</div>
+<div class="toolbarActions">
+<button class="tabActionBtn" data-reset-panel="tiles" type="button">このタブを初期値に戻す</button>
+</div>
+</div>
+<article class="sectionCard">
+<div class="sectionHead">
+<div class="sectionTitleBox">
+<h2 class="sectionTitle">牌構成</h2>
+<p class="sectionLead">あとで全牌オーバーレイを開いて、赤・金・虹などの色付き牌を細かく決められるようにする予定の仮枠です。</p>
+</div>
+</div>
+<div class="settingList">
+<div class="settingRow settingRowFull">
+<div class="settingMeta">
+<div class="settingLabel">牌構成</div>
+<div class="settingDesc">全牌表示オーバーレイから色付き牌を決める構想のため、ここはいったん仮の箱だけ置いています。</div>
+</div>
+<div class="settingControl">
+<div class="tileCompositionSummary">
+<div class="tileCompositionSummaryBody">
+<div class="tileCompositionSummaryText" id="tileCompositionSummaryText"></div>
+<div class="tileCompositionSummaryActions">
+<button class="choiceBtn" id="tileCompositionEditBtn" type="button">編集</button>
+<button class="tabActionBtn" id="tileCompositionResetBtn" type="button">標準に戻す</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="settingRow settingRowFull">
+<div class="settingMeta">
+<div class="settingLabel">祝儀対象牌</div>
+<div class="settingDesc">現在の牌構成で採用中の色付き牌だけを一覧表示し、ドラ扱いと祝儀設定をここで決めます。</div>
+</div>
+<div class="settingControl">
+<div class="chipTargetTileList" id="chipTargetTileList"></div>
+</div>
+</div>
+</div>
+</article>
+<article class="sectionCard">
+<div class="sectionHead">
+<div class="sectionTitleBox">
+<h2 class="sectionTitle">牌とドラまわり</h2>
+<p class="sectionLead">山残し、北の扱い、花牌、白ポッチ、各種ドラの採用有無をここで設定します。</p>
+</div>
+<span class="pill">使用牌</span>
+</div>
+<div class="settingList">
+<div class="settingRow">
+<div class="settingMeta">
+<div class="settingLabel">山残し枚数</div>
+<div class="settingDesc">7トン残しにするか、最後まで取りきりにするかを選びます。</div>
+</div>
+<div class="settingControl">
+<div aria-label="山残し枚数" class="choiceGroup" role="group">
+<button class="choiceBtn" data-choice-value="7ton" data-default="7ton" data-setting-key="tiles-wall-end-type" data-setting-type="choice" type="button">7トン残し</button>
+<button class="choiceBtn" data-choice-value="all" data-setting-key="tiles-wall-end-type" data-setting-type="choice" type="button">取りきり</button>
+</div>
+</div>
+</div>
+<div class="settingRow">
+<div class="settingMeta">
+<div class="settingLabel">北扱い</div>
+<div class="settingDesc">北を抜きドラ・場風・オタ風のどれとして扱うかを選びます。</div>
+</div>
+<div class="settingControl">
+<div aria-label="北扱い" class="choiceGroup" role="group">
+<button class="choiceBtn" data-choice-value="nuki" data-default="nuki" data-setting-key="tiles-pei-type" data-setting-type="choice" type="button">抜きドラ</button>
+<button class="choiceBtn" data-choice-value="bakaze" data-setting-key="tiles-pei-type" data-setting-type="choice" type="button">場風</button>
+<button class="choiceBtn" data-choice-value="otakaze" data-setting-key="tiles-pei-type" data-setting-type="choice" type="button">オタ風</button>
+</div>
+</div>
+</div>
+<div class="settingRow">
+<div class="settingMeta">
+<div class="settingLabel">花牌</div>
+<div class="settingDesc">花牌を使うかどうかを選びます。</div>
+</div>
+<div class="settingControl">
+<div class="switchWrap">
+<div class="switchLabel choiceToggleLabel" data-choice-label-for="tiles-hanahai-type">なし</div>
+<button aria-checked="false" class="switch choiceToggleSwitch" data-choice-off="off" data-choice-on="on" data-default="off" data-label-off="なし" data-label-on="あり" data-setting-key="tiles-hanahai-type" data-setting-type="choice-toggle" role="switch" type="button"></button>
+</div>
+</div>
+</div>
+<div class="settingRow">
+<div class="settingMeta">
+<div class="settingLabel">裏ドラ</div>
+<div class="settingDesc">リーチ和了時の裏ドラを有効にするかです。</div>
+</div>
+<div class="settingControl">
+<div class="switchWrap">
+<div class="switchLabel" data-label-for="tiles-uradora">採用</div>
+<button aria-checked="true" class="switch isOn" data-default="true" data-setting-key="tiles-uradora" data-setting-type="bool" role="switch" type="button"></button>
+</div>
+</div>
+</div>
+<div class="settingRow">
+<div class="settingMeta">
+<div class="settingLabel">槓ドラ</div>
+<div class="settingDesc">カン成立時に槓ドラを有効にするかです。</div>
+</div>
+<div class="settingControl">
+<div class="switchWrap">
+<div class="switchLabel" data-label-for="tiles-kandora">採用</div>
+<button aria-checked="true" class="switch isOn" data-default="true" data-setting-key="tiles-kandora" data-setting-type="bool" role="switch" type="button"></button>
+</div>
+</div>
+</div>
+<div class="settingRow">
+<div class="settingMeta">
+<div class="settingLabel">槓裏ドラ</div>
+<div class="settingDesc">リーチ中のカン後に槓裏ドラを有効にするかです。</div>
+</div>
+<div class="settingControl">
+<div class="switchWrap">
+<div class="switchLabel" data-label-for="tiles-kanura">採用</div>
+<button aria-checked="true" class="switch isOn" data-default="true" data-setting-key="tiles-kanura" data-setting-type="bool" role="switch" type="button"></button>
+</div>
+</div>
+</div>
+</div>
+</article>
+</section>
+<section aria-labelledby="tab-basic" class="mainPanel" id="panel-basic" role="tabpanel">
+<div class="panelToolbar">
+<div class="panelToolbarText">
+<div class="panelToolbarTitle">基本</div>
+<div class="panelToolbarLead">形式聴牌、喰いタン、フリテンまわり、ダブロンなどの基本ルールをここで決めるタブです。</div>
+</div>
+<div class="toolbarActions">
+<button class="tabActionBtn" data-reset-panel="basic" type="button">このタブを初期値に戻す</button>
+</div>
+</div>
+<article class="sectionCard">
+<div class="sectionHead">
+<div class="sectionTitleBox">
+<h2 class="sectionTitle">基本ルール</h2>
+<p class="sectionLead">対局中に直接影響する基本項目を切り替えます。</p>
+</div>
+<span class="pill">切替</span>
+</div>
+<div class="settingList">
+<div class="settingRow">
+<div class="settingMeta">
+<div class="settingLabel">形式聴牌</div>
+<div class="settingDesc">形式聴牌をありにするか、なしにするかを選びます。</div>
+</div>
+<div class="settingControl">
+<div class="switchWrap">
+<div class="switchLabel choiceToggleLabel" data-choice-label-for="basic-keishiki-tenpai">あり</div>
+<button aria-checked="true" class="switch choiceToggleSwitch" data-choice-off="off" data-choice-on="on" data-default="on" data-label-off="なし" data-label-on="あり" data-setting-key="basic-keishiki-tenpai" data-setting-type="choice-toggle" role="switch" type="button"></button>
+</div>
+</div>
+</div>
+<div class="settingRow">
+<div class="settingMeta">
+<div class="settingLabel">喰いタン</div>
+<div class="settingDesc">鳴きタンヤオを認めるかどうかを選びます。</div>
+</div>
+<div class="settingControl">
+<div class="switchWrap">
+<div class="switchLabel choiceToggleLabel" data-choice-label-for="basic-kuitan-type">あり</div>
+<button aria-checked="true" class="switch choiceToggleSwitch" data-choice-off="off" data-choice-on="on" data-default="on" data-label-off="なし" data-label-on="あり" data-setting-key="basic-kuitan-type" data-setting-type="choice-toggle" role="switch" type="button"></button>
+</div>
+</div>
+</div>
+<div class="settingRow">
+<div class="settingMeta">
+<div class="settingLabel">後付け</div>
+<div class="settingDesc">後付けあり / 完全先付 を選びます。</div>
+</div>
+<div class="settingControl">
+<div class="settingChoiceWithExplain">
+<div aria-label="後付け" class="choiceGroup" role="group">
+<button class="choiceBtn" data-choice-value="allow" data-default="allow" data-setting-key="basic-atozuke-type" data-setting-type="choice" type="button">あり</button>
+<button class="choiceBtn" data-choice-value="kanzen_sakizuke" data-setting-key="basic-atozuke-type" data-setting-type="choice" type="button">完全先付</button>
+</div>
+<div class="settingExplainInline" data-atozuke-explain>後付けありです</div>
+</div>
+</div>
+</div>
+<div class="settingRow">
+<div class="settingMeta">
+<div class="settingLabel">ツモピン</div>
+<div class="settingDesc">ツモピンをありにするか、なしにするかを選びます。</div>
+</div>
+<div class="settingControl">
+<div class="switchWrap">
+<div class="switchLabel choiceToggleLabel" data-choice-label-for="basic-tsumopin">あり</div>
+<button aria-checked="true" class="switch choiceToggleSwitch" data-choice-off="off" data-choice-on="on" data-default="on" data-label-off="なし" data-label-on="あり" data-setting-key="basic-tsumopin" data-setting-type="choice-toggle" role="switch" type="button"></button>
+</div>
+</div>
+</div>
+<div class="settingRow">
+<div class="settingMeta">
+<div class="settingLabel">途中流局（九種九牌）</div>
+<div class="settingDesc">九種九牌による途中流局をありにするか、なしにするかを選びます。</div>
+</div>
+<div class="settingControl">
+<div class="switchWrap">
+<div class="switchLabel choiceToggleLabel" data-choice-label-for="basic-kyuushu">なし</div>
+<button aria-checked="false" class="switch choiceToggleSwitch" data-choice-off="off" data-choice-on="on" data-default="off" data-label-off="なし" data-label-on="あり" data-setting-key="basic-kyuushu" data-setting-type="choice-toggle" role="switch" type="button"></button>
+</div>
+</div>
+</div>
+<div class="settingRow">
+<div class="settingMeta">
+<div class="settingLabel">フリテンリーチ</div>
+<div class="settingDesc">フリテン状態でのリーチをありにするか、なしにするかを選びます。</div>
+</div>
+<div class="settingControl">
+<div class="switchWrap">
+<div class="switchLabel choiceToggleLabel" data-choice-label-for="basic-furiten-riichi">あり</div>
+<button aria-checked="true" class="switch choiceToggleSwitch" data-choice-off="off" data-choice-on="on" data-default="on" data-label-off="なし" data-label-on="あり" data-setting-key="basic-furiten-riichi" data-setting-type="choice-toggle" role="switch" type="button"></button>
+</div>
+</div>
+</div>
+<div class="settingRow">
+<div class="settingMeta">
+<div class="settingLabel">リーチ後の見逃し</div>
+<div class="settingDesc">リーチ後の見逃しをありにするか、なしにするかを選びます。</div>
+</div>
+<div class="settingControl">
+<div class="switchWrap">
+<div class="switchLabel choiceToggleLabel" data-choice-label-for="basic-riichi-skip">あり</div>
+<button aria-checked="true" class="switch choiceToggleSwitch" data-choice-off="off" data-choice-on="on" data-default="on" data-label-off="なし" data-label-on="あり" data-setting-key="basic-riichi-skip" data-setting-type="choice-toggle" role="switch" type="button"></button>
+</div>
+</div>
+</div>
+<div class="settingRow">
+<div class="settingMeta">
+<div class="settingLabel">4枚使い七対子</div>
+<div class="settingDesc">4枚使い七対子をありにするか、なしにするかを選びます。</div>
+</div>
+<div class="settingControl">
+<div class="switchWrap">
+<div class="switchLabel choiceToggleLabel" data-choice-label-for="basic-chiitoi-4mai">あり</div>
+<button aria-checked="true" class="switch choiceToggleSwitch" data-choice-off="off" data-choice-on="on" data-default="on" data-label-off="なし" data-label-on="あり" data-setting-key="basic-chiitoi-4mai" data-setting-type="choice-toggle" role="switch" type="button"></button>
+</div>
+</div>
+</div>
+<div class="settingRow">
+<div class="settingMeta">
+<div class="settingLabel">ダブロン</div>
+<div class="settingDesc">ダブロンありにするか、頭ハネにするかを選びます。</div>
+</div>
+<div class="settingControl">
+<div class="switchWrap">
+<div class="switchLabel choiceToggleLabel" data-choice-label-for="basic-double-ron">あり</div>
+<button aria-checked="true" class="switch choiceToggleSwitch" data-choice-off="atamahane" data-choice-on="double" data-default="double" data-label-off="頭ハネ" data-label-on="あり" data-setting-key="basic-double-ron" data-setting-type="choice-toggle" role="switch" type="button"></button>
+</div>
+</div>
+</div>
+</div>
+</article>
+</section>
+<section aria-labelledby="tab-extra" class="mainPanel" id="panel-extra" role="tabpanel">
+<div class="panelToolbar">
+<div class="panelToolbarText">
+<div class="panelToolbarTitle">補足</div>
+<div class="panelToolbarLead">符計算例外、流し満貫系、役満複合、祝儀などの追加条件です。</div>
+</div>
+<div class="toolbarActions">
+<button class="tabActionBtn" data-reset-panel="extra" type="button">このタブを初期値に戻す</button>
+</div>
+</div>
+<article class="sectionCard">
+<div class="sectionHead">
+<div class="sectionTitleBox">
+<h2 class="sectionTitle">補足条件</h2>
+<p class="sectionLead">通常ルールの外側にある細かな条件をまとめています。</p>
+</div>
+<span class="pill">補足</span>
+</div>
+<div class="settingList">
+<div class="settingRow">
+<div class="settingMeta">
+<div class="settingLabel">4翻30符満貫切り上げ</div>
+<div class="settingDesc">4翻30符を満貫へ切り上げるかを選びます。</div>
+</div>
+<div class="settingControl">
+<div class="switchWrap">
+<div class="switchLabel choiceToggleLabel" data-choice-label-for="extra-kiriage-mangan">採用</div>
+<button aria-checked="true" class="switch choiceToggleSwitch isOn" data-choice-off="off" data-choice-on="on" data-default="on" data-label-off="不採用" data-label-on="採用" data-setting-key="extra-kiriage-mangan" data-setting-type="choice-toggle" role="switch" type="button"></button>
+</div>
+</div>
+</div>
+<div class="settingRow">
+<div class="settingMeta">
+<div class="settingLabel">流し倍満</div>
+<div class="settingDesc">流し成立時の扱いを倍満・満貫・なしから選びます。</div>
+</div>
+<div class="settingControl">
+<div aria-label="流し倍満" class="choiceGroup" role="group">
+<button class="choiceBtn" data-choice-value="baiman" data-default="baiman" data-setting-key="extra-nagashi-mode" data-setting-type="choice" type="button">倍満</button>
+<button class="choiceBtn" data-choice-value="mangan" data-setting-key="extra-nagashi-mode" data-setting-type="choice" type="button">満貫</button>
+<button class="choiceBtn" data-choice-value="off" data-setting-key="extra-nagashi-mode" data-setting-type="choice" type="button">なし</button>
+</div>
+</div>
+</div>
+<div class="settingRow">
+<div class="settingMeta">
+<div class="settingLabel">ダブル役満</div>
+<div class="settingDesc">ダブル役満を採用するかを選びます。</div>
+</div>
+<div class="settingControl">
+<div class="switchWrap">
+<div class="switchLabel choiceToggleLabel" data-choice-label-for="extra-double-yakuman">採用</div>
+<button aria-checked="true" class="switch choiceToggleSwitch isOn" data-choice-off="off" data-choice-on="on" data-default="on" data-label-off="不採用" data-label-on="採用" data-setting-key="extra-double-yakuman" data-setting-type="choice-toggle" role="switch" type="button"></button>
+</div>
+</div>
+</div>
+<div class="settingRow">
+<div class="settingMeta">
+<div class="settingLabel">数え役満</div>
+<div class="settingDesc">数え役満を採用するかを選びます。</div>
+</div>
+<div class="settingControl">
+<div class="switchWrap">
+<div class="switchLabel choiceToggleLabel" data-choice-label-for="extra-kazoe-yakuman">採用</div>
+<button aria-checked="true" class="switch choiceToggleSwitch isOn" data-choice-off="off" data-choice-on="on" data-default="on" data-label-off="不採用" data-label-on="採用" data-setting-key="extra-kazoe-yakuman" data-setting-type="choice-toggle" role="switch" type="button"></button>
+</div>
+</div>
+</div>
+<div class="settingRow">
+<div class="settingMeta">
+<div class="settingLabel">役満のパオ</div>
+<div class="settingDesc">役満の責任払いを採用するかを選びます。</div>
+</div>
+<div class="settingControl">
+<div class="switchWrap">
+<div class="switchLabel choiceToggleLabel" data-choice-label-for="extra-yakuman-pao">不採用</div>
+<button aria-checked="false" class="switch choiceToggleSwitch" data-choice-off="off" data-choice-on="on" data-default="off" data-label-off="不採用" data-label-on="採用" data-setting-key="extra-yakuman-pao" data-setting-type="choice-toggle" role="switch" type="button"></button>
+</div>
+</div>
+</div>
+<div class="settingRow">
+<div class="settingMeta">
+<div class="settingLabel">大明槓のパオ</div>
+<div class="settingDesc">大明槓による責任払いを採用するかを選びます。</div>
+</div>
+<div class="settingControl">
+<div class="switchWrap">
+<div class="switchLabel choiceToggleLabel" data-choice-label-for="extra-daiminkan-pao">不採用</div>
+<button aria-checked="false" class="switch choiceToggleSwitch" data-choice-off="off" data-choice-on="on" data-default="off" data-label-off="不採用" data-label-on="採用" data-setting-key="extra-daiminkan-pao" data-setting-type="choice-toggle" role="switch" type="button"></button>
+</div>
+</div>
+</div>
+<div class="settingRow">
+<div class="settingMeta">
+<div class="settingLabel">国士無双の暗槓ロン</div>
+<div class="settingDesc">国士無双で暗槓ロンを認めるかを選びます。</div>
+</div>
+<div class="settingControl">
+<div class="switchWrap">
+<div class="switchLabel choiceToggleLabel" data-choice-label-for="extra-kokushi-ankan-ron">不採用</div>
+<button aria-checked="false" class="switch choiceToggleSwitch" data-choice-off="off" data-choice-on="on" data-default="off" data-label-off="不採用" data-label-on="採用" data-setting-key="extra-kokushi-ankan-ron" data-setting-type="choice-toggle" role="switch" type="button"></button>
+</div>
+</div>
+</div>
+<div class="settingRow">
+<div class="settingMeta">
+<div class="settingLabel">ツモ番なしリーチ</div>
+<div class="settingDesc">ツモ番がなくてもリーチできるかを選びます。</div>
+</div>
+<div class="settingControl">
+<div class="switchWrap">
+<div class="switchLabel choiceToggleLabel" data-choice-label-for="extra-riichi-without-tsumo">採用</div>
+<button aria-checked="true" class="switch choiceToggleSwitch isOn" data-choice-off="off" data-choice-on="on" data-default="on" data-label-off="不採用" data-label-on="採用" data-setting-key="extra-riichi-without-tsumo" data-setting-type="choice-toggle" role="switch" type="button"></button>
+</div>
+</div>
+</div>
+<div class="settingRow">
+<div class="settingMeta">
+<div class="settingLabel">オープンリーチ</div>
+<div class="settingDesc">オープンリーチを採用するかを選びます。</div>
+</div>
+<div class="settingControl">
+<div class="switchWrap">
+<div class="switchLabel choiceToggleLabel" data-choice-label-for="extra-open-riichi">不採用</div>
+<button aria-checked="false" class="switch choiceToggleSwitch" data-choice-off="off" data-choice-on="on" data-default="off" data-label-off="不採用" data-label-on="採用" data-setting-key="extra-open-riichi" data-setting-type="choice-toggle" role="switch" type="button"></button>
+</div>
+</div>
+</div>
+</div>
+</article>
+</section>
+<section aria-labelledby="tab-yaku" class="mainPanel" id="panel-yaku" role="tabpanel">
+<div class="panelToolbar">
+<div class="panelToolbarText">
+<div class="panelToolbarTitle">採用役</div>
+<div class="panelToolbarLead">基本役と三麻ローカル役をまとめて切り替えるタブです。</div>
+</div>
+<div class="toolbarActions">
+<button class="tabActionBtn" data-reset-panel="yaku" type="button">このタブを初期値に戻す</button>
+</div>
+</div>
+<article class="sectionCard">
+<div class="sectionHead">
+<div class="sectionTitleBox">
+<h2 class="sectionTitle">基本役</h2>
+<p class="sectionLead">基本採用の役は点灯状態で並べ、押すと消灯して不採用にできます。</p>
+</div>
+<span class="pill">基本役</span>
+</div>
+<div class="yakuGroupStack">
+<div class="yakuGroupBox">
+<div class="yakuGroupTitle">1翻役</div>
+<div class="yakuChipList">
+<button class="yakuChipBtn" data-default="true" data-setting-key="yaku-riichi" data-setting-type="bool-chip" type="button">立直</button>
+<button class="yakuChipBtn" data-default="true" data-setting-key="yaku-ippatsu" data-setting-type="bool-chip" type="button">一発</button>
+<button class="yakuChipBtn" data-default="true" data-setting-key="yaku-tsumo" data-setting-type="bool-chip" type="button">門前清自摸和</button>
+<button class="yakuChipBtn" data-default="true" data-setting-key="yaku-tanyao" data-setting-type="bool-chip" type="button">断么九</button>
+<button class="yakuChipBtn" data-default="true" data-setting-key="yaku-pinfu" data-setting-type="bool-chip" type="button">平和</button>
+<button class="yakuChipBtn" data-default="true" data-setting-key="yaku-iipeikou" data-setting-type="bool-chip" type="button">一盃口</button>
+<button class="yakuChipBtn" data-default="true" data-setting-key="yaku-yakuhai" data-setting-type="bool-chip" type="button">役牌（白・發・中・場風・自風）</button>
+<button class="yakuChipBtn" data-default="true" data-setting-key="yaku-haitei" data-setting-type="bool-chip" type="button">海底摸月</button>
+<button class="yakuChipBtn" data-default="true" data-setting-key="yaku-houtei" data-setting-type="bool-chip" type="button">河底撈魚</button>
+<button class="yakuChipBtn" data-default="true" data-setting-key="yaku-rinshan" data-setting-type="bool-chip" type="button">嶺上開花</button>
+<button class="yakuChipBtn" data-default="true" data-setting-key="yaku-chankan" data-setting-type="bool-chip" type="button">槍槓</button>
+</div>
+</div>
+<div class="yakuGroupBox">
+<div class="yakuGroupTitle">2翻役</div>
+<div class="yakuChipList">
+<button class="yakuChipBtn" data-default="true" data-setting-key="yaku-double-riichi" data-setting-type="bool-chip" type="button">ダブル立直</button>
+<button class="yakuChipBtn" data-default="true" data-setting-key="yaku-chiitoitsu" data-setting-type="bool-chip" type="button">七対子</button>
+<button class="yakuChipBtn" data-default="true" data-setting-key="yaku-toitoi" data-setting-type="bool-chip" type="button">対々和</button>
+<button class="yakuChipBtn" data-default="true" data-setting-key="yaku-sanankou" data-setting-type="bool-chip" type="button">三暗刻</button>
+<button class="yakuChipBtn" data-default="true" data-setting-key="yaku-sanshoku-doukou" data-setting-type="bool-chip" type="button">三色同刻</button>
+<button class="yakuChipBtn" data-default="true" data-setting-key="yaku-sankantsu" data-setting-type="bool-chip" type="button">三槓子</button>
+<button class="yakuChipBtn" data-default="true" data-setting-key="yaku-chanta" data-setting-type="bool-chip" type="button">混全帯么九</button>
+<button class="yakuChipBtn" data-default="true" data-setting-key="yaku-ittsuu" data-setting-type="bool-chip" type="button">一気通貫</button>
+<button class="yakuChipBtn" data-default="true" data-setting-key="yaku-honroutou" data-setting-type="bool-chip" type="button">混老頭</button>
+<button class="yakuChipBtn" data-default="true" data-setting-key="yaku-shousangen" data-setting-type="bool-chip" type="button">小三元</button>
+<button class="yakuChipBtn" data-default="true" data-setting-key="yaku-honitsu" data-setting-type="bool-chip" type="button">混一色</button>
+</div>
+</div>
+<div class="yakuGroupBox">
+<div class="yakuGroupTitle">3翻以上</div>
+<div class="yakuChipList">
+<button class="yakuChipBtn" data-default="true" data-setting-key="yaku-ryanpeikou" data-setting-type="bool-chip" type="button">二盃口</button>
+<button class="yakuChipBtn" data-default="true" data-setting-key="yaku-junchan" data-setting-type="bool-chip" type="button">純全帯么九</button>
+<button class="yakuChipBtn" data-default="true" data-setting-key="yaku-chinitsu" data-setting-type="bool-chip" type="button">清一色</button>
+<button class="yakuChipBtn" data-default="true" data-setting-key="yaku-renhou" data-setting-type="bool-chip" type="button">人和（4翻役）</button>
+</div>
+</div>
+<div class="yakuGroupBox">
+<div class="yakuGroupTitle">役満</div>
+<div class="yakuChipList">
+<button class="yakuChipBtn" data-default="true" data-setting-key="yaku-kokushi" data-setting-type="bool-chip" type="button">国士無双</button>
+<button class="yakuChipBtn" data-default="true" data-setting-key="yaku-suuankou" data-setting-type="bool-chip" type="button">四暗刻</button>
+<button class="yakuChipBtn" data-default="true" data-setting-key="yaku-daisangen" data-setting-type="bool-chip" type="button">大三元</button>
+<button class="yakuChipBtn" data-default="true" data-setting-key="yaku-tsuuiisou" data-setting-type="bool-chip" type="button">字一色</button>
+<button class="yakuChipBtn" data-default="true" data-setting-key="yaku-ryuuiisou" data-setting-type="bool-chip" type="button">緑一色</button>
+<button class="yakuChipBtn" data-default="true" data-setting-key="yaku-chinroutou" data-setting-type="bool-chip" type="button">清老頭</button>
+<button class="yakuChipBtn" data-default="true" data-setting-key="yaku-shousuushii" data-setting-type="bool-chip" type="button">小四喜</button>
+<button class="yakuChipBtn" data-default="true" data-setting-key="yaku-daisuushii" data-setting-type="bool-chip" type="button">大四喜</button>
+<button class="yakuChipBtn" data-default="true" data-setting-key="yaku-chuuren" data-setting-type="bool-chip" type="button">九蓮宝燈</button>
+<button class="yakuChipBtn" data-default="true" data-setting-key="yaku-suukantsu" data-setting-type="bool-chip" type="button">四槓子</button>
+<button class="yakuChipBtn" data-default="true" data-setting-key="yaku-tenhou" data-setting-type="bool-chip" type="button">天和</button>
+<button class="yakuChipBtn" data-default="true" data-setting-key="yaku-chiihou" data-setting-type="bool-chip" type="button">地和</button>
+</div>
+</div>
+</div>
+</article>
+<article class="sectionCard">
+<div class="sectionHead">
+<div class="sectionTitleBox">
+<h2 class="sectionTitle">三麻ローカル役</h2>
+<p class="sectionLead">そこそこ有名な三麻ローカル役を下にまとめています。</p>
+</div>
+<span class="pill">ローカル</span>
+</div>
+<div class="yakuGroupStack">
+<div class="yakuGroupBox">
+<div class="yakuGroupTitle">採用切替</div>
+<div class="localYakuList">
+<button class="yakuChipBtn" data-default="false" data-setting-key="yaku-local-sanpuu" data-setting-type="bool-chip" type="button">三風</button>
+<button class="yakuChipBtn" data-default="false" data-setting-key="yaku-local-sanrenkou" data-setting-type="bool-chip" type="button">三連刻</button>
+<button class="yakuChipBtn" data-default="false" data-setting-key="yaku-local-shousharin" data-setting-type="bool-chip" type="button">小車輪</button>
+<button class="yakuChipBtn" data-default="false" data-setting-key="yaku-local-suurenkou" data-setting-type="bool-chip" type="button">四連刻</button>
+<button class="yakuChipBtn" data-default="false" data-setting-key="yaku-local-daisharin" data-setting-type="bool-chip" type="button">大車輪</button>
+</div>
+</div>
+<div class="settingRow">
+<div class="settingMeta">
+<div class="settingLabel">萬子のホンイツ</div>
+<div class="settingDesc">なし・6翻・役満の3択で決めます。</div>
+</div>
+<div class="settingControl">
+<div aria-label="萬子のホンイツ" class="choiceGroup" role="group">
+<button class="choiceBtn" data-choice-value="off" data-default="off" data-setting-key="yaku-local-manzu-honitsu" data-setting-type="choice" type="button">なし</button>
+<button class="choiceBtn" data-choice-value="baiman" data-setting-key="yaku-local-manzu-honitsu" data-setting-type="choice" type="button">6翻</button>
+<button class="choiceBtn" data-choice-value="yakuman" data-setting-key="yaku-local-manzu-honitsu" data-setting-type="choice" type="button">役満</button>
+</div>
+</div>
+</div>
+</div>
+</article>
+</section>
+</div>
+<div class="footerNote">
+        現在は入力UIと保存まわりまで接続済みです。<strong>半荘戦 / 東風戦、持ち点 / 返し点、連荘条件、ウマ / クビ、トビ終了、箱下精算、本場、聴牌料、コールド終了</strong> はアプリ版対局へ反映されます。
+      </div>
+</section>
+</main>
+<div aria-hidden="true" class="tileCompositionOverlay" id="tileCompositionOverlay">
+<div aria-labelledby="tileCompositionOverlayTitle" aria-modal="true" class="tileCompositionPanel" role="dialog">
+<div class="tileCompositionPanelHead">
+<div class="tileCompositionPanelTitleWrap">
+<div class="tileCompositionPanelTitle" id="tileCompositionOverlayTitle">牌構成を編集</div>
+</div>
+<button class="tabActionBtn" id="tileCompositionCloseBtn" type="button">閉じる</button>
+</div>
+<div class="tileCompositionPanelBody">
+<div class="tileCompositionListCard">
+<div class="tileCompositionCardTitle">牌一覧</div>
+<div class="tileCompositionGrid" id="tileCompositionGrid"></div>
+</div>
+<div class="tileCompositionEditorCard">
+<div class="tileCompositionCardTitle">選択中の牌</div>
+<div class="tileCompositionEditorEmpty" id="tileCompositionEditorEmpty">左の一覧から牌を選ぶと、この欄で枚数を編集できます。</div>
+<div class="tileCompositionEditorMain" id="tileCompositionEditorMain" style="display:none;">
+<div class="tileCompositionEditorHeader">
+<div class="tileCompositionTileImgWrap"><img alt="" class="tileCompositionTileImg" id="tileCompositionSelectedImg" src="../../img/1p.png"/></div>
+<div class="tileCompositionEditorInfo">
+<div class="tileCompositionEditorCode" id="tileCompositionSelectedCode">1p</div>
+</div>
+</div>
+<div class="tileCompositionCountList">
+<div class="tileCompositionCountRow">
+<div class="tileCompositionCountMeta">
+<div class="tileCompositionCountLabel">通常</div>
+</div>
+<input class="tileCompositionCountInput" id="tileCompositionNormalCount" readonly type="number"/>
+</div>
+<div class="tileCompositionCountRow">
+<div class="tileCompositionCountMeta">
+<div class="tileCompositionCountLabel">赤</div>
+</div>
+<input class="tileCompositionCountInput" data-color-key="r" id="tileCompositionCountR" inputmode="numeric" max="4" min="0" step="1" type="number"/>
+</div>
+<div class="tileCompositionCountRow">
+<div class="tileCompositionCountMeta">
+<div class="tileCompositionCountLabel">青</div>
+</div>
+<input class="tileCompositionCountInput" data-color-key="b" id="tileCompositionCountB" inputmode="numeric" max="4" min="0" step="1" type="number"/>
+</div>
+<div class="tileCompositionCountRow">
+<div class="tileCompositionCountMeta">
+<div class="tileCompositionCountLabel">金</div>
+</div>
+<input class="tileCompositionCountInput" data-color-key="g" id="tileCompositionCountG" inputmode="numeric" max="4" min="0" step="1" type="number"/>
+</div>
+<div class="tileCompositionCountRow">
+<div class="tileCompositionCountMeta">
+<div class="tileCompositionCountLabel">虹</div>
+</div>
+<input class="tileCompositionCountInput" data-color-key="n" id="tileCompositionCountN" inputmode="numeric" max="4" min="0" step="1" type="number"/>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="tileCompositionPanelFoot">
+<div class="tileCompositionSummaryActions">
+<button class="choiceBtn" id="tileCompositionCloseBtnBottom" type="button">閉じる</button>
+</div>
+</div>
+</div>
+</div>
+<div aria-hidden="true" class="chipTargetDetailOverlay" id="chipTargetDetailOverlay">
+<div aria-labelledby="chipTargetDetailOverlayTitle" aria-modal="true" class="chipTargetDetailPanel" role="dialog">
+<div class="chipTargetDetailHead">
+<div class="chipTargetDetailTitleWrap">
+<div class="chipTargetDetailTitle" id="chipTargetDetailOverlayTitle">祝儀対象牌の詳細編集</div>
+<div class="chipTargetDetailLead" id="chipTargetDetailLead">面前時と鳴き時で、ドラ扱い枚数と祝儀枚数を個別に設定できます。</div>
+</div>
+<button class="chipTargetDetailCloseBtn" id="chipTargetDetailCloseBtn" type="button">閉じる</button>
+</div>
+<div class="chipTargetDetailTileHead">
+<div class="chipTargetTileImgWrap"><img alt="" class="chipTargetTileImg" id="chipTargetDetailTileImg" src="../../img/r5p.png"/></div>
+<div class="chipTargetDetailTileInfo">
+<div class="chipTargetDetailTileCode" id="chipTargetDetailTileCode">r5p</div>
+<div class="chipTargetDetailTileMeta" id="chipTargetDetailTileMeta">赤5p / 2枚採用</div>
+</div>
+</div>
+<div class="chipTargetDetailLines">
+<div class="chipTargetDetailLine">
+<div class="chipTargetInlineField"><span class="chipTargetInlineLabel" id="chipTargetDetailDoraSwitchLabel">ドラ</span><button aria-checked="false" class="switch chipTargetSwitch" id="chipTargetDetailDoraSwitch" role="switch" type="button"></button></div>
+<div class="chipTargetInlineField"><span class="chipTargetInlineLabel">詳細</span><button aria-checked="false" class="switch chipTargetSwitch" id="chipTargetDetailUseDetailedDoraSwitch" role="switch" type="button"></button></div>
+<div class="chipTargetInlineField"><span class="chipTargetInlineLabel" id="chipTargetDetailDoraMenzenLabel">ドラ面前扱い</span><input class="chipTargetInlineInput" id="chipTargetDetailDoraMenzenCount" inputmode="numeric" min="0" step="1" type="number"/></div>
+<div class="chipTargetInlineField"><span class="chipTargetInlineLabel" id="chipTargetDetailDoraFuroLabel">鳴き扱い</span><input class="chipTargetInlineInput" id="chipTargetDetailDoraFuroCount" inputmode="numeric" min="0" step="1" type="number"/></div>
+</div>
+<div class="chipTargetDetailLine">
+<div class="chipTargetDetailLeadLabel">祝儀</div>
+<div class="chipTargetInlineField"><span class="chipTargetInlineLabel">詳細</span><button aria-checked="false" class="switch chipTargetSwitch" id="chipTargetDetailUseDetailedChipSwitch" role="switch" type="button"></button></div>
+<div class="chipTargetInlineField"><span class="chipTargetInlineLabel">面前枚数</span><input class="chipTargetInlineInput" id="chipTargetDetailChipMenzenCount" inputmode="numeric" min="0" step="1" type="number"/></div>
+<div class="chipTargetInlineField"><span class="chipTargetInlineLabel">鳴き枚数</span><input class="chipTargetInlineInput" id="chipTargetDetailChipFuroCount" inputmode="numeric" min="0" step="1" type="number"/></div>
+</div>
+</div>
+</div>
+</div>
+<script>
+    (function () {
+      // ログイン中ならルール系ストレージキーをアカウント別に切替。
+      // ゲスト時は従来キー（mbsanma_rules_*）をそのまま使うので、既存ユーザーには非破壊。
+      function getActiveAccountIdForRuleScope() {
+        function normalize(v){
+          return String(v || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+        }
+
+        // 1) まず sessionStorage の active session を見る
+        try {
+          var raw = sessionStorage.getItem("mbsanma_app_active_session_v1")
+                 || sessionStorage.getItem("mbsanma_visitor_active_session_v1");
+          if (raw) {
+            var parsed = JSON.parse(raw);
+            if (parsed && parsed.mode === "account") {
+              var sid = normalize(parsed.accountId);
+              if (sid) return sid;
+            }
+            // mode が "local" と明示されているならゲスト確定。
+            if (parsed && parsed.mode === "local") return "";
+          }
+        } catch (e) {}
+
+        // 2) session に無い／壊れているときは localStorage のログインアカウントを見る。
+        //    index_app.html の loadCurrentLoginAccount と同じソース。
+        try {
+          var fromLocal = normalize(localStorage.getItem("mbsanma_app_current_login_account_v1"));
+          if (fromLocal) return fromLocal;
+        } catch (e) {}
+
+        // 3) sessionStorage 側の個別キーも念のため見る。
+        try {
+          var fromSession = normalize(sessionStorage.getItem("mbsanma_app_current_login_account_session_v1"));
+          if (fromSession) return fromSession;
+        } catch (e) {}
+
+        return "";
+      }
+      function buildScopedRuleStorageKey(baseKey) {
+        var accountId = getActiveAccountIdForRuleScope();
+        if (!accountId) return baseKey;
+        return "mbsanma_app_account_" + accountId + "_" + String(baseKey || "").replace(/^mbsanma_/, "");
+      }
+
+      var storageKey = "mbsanma_rules_ui_v2"; // sessionStorage 上の UI キャッシュ用。スコープしない。
+      var persistStorageKey = buildScopedRuleStorageKey("mbsanma_rules_ui_persist_v1");
+      var rulesStorageKey = buildScopedRuleStorageKey("mbsanma_rules_settings_v1");
+      var presetStorageKey = buildScopedRuleStorageKey("mbsanma_rules_presets_v1");
+      var activeRuleSetStorageKey = buildScopedRuleStorageKey("mbsanma_rules_active_v1");
+      var presetSlotIds = ["slot1", "slot2", "slot3", "slot4", "slot5"];
+      var presetDefaultNames = {
+        slot1: "プリセット1",
+        slot2: "プリセット2",
+        slot3: "プリセット3",
+        slot4: "プリセット4",
+        slot5: "プリセット5"
+      };
+      var TILE_COMPOSITION_TILE_CODES = [
+        "1m","9m",
+        "1p","2p","3p","4p","5p","6p","7p","8p","9p",
+        "1s","2s","3s","4s","5s","6s","7s","8s","9s",
+        "1z","2z","3z","4z","5z","6z","7z"
+      ];
+      var TILE_COLOR_KEYS = ["r", "b", "g", "n"];
+      var TILE_COLOR_LABELS = { r: "赤", b: "青", g: "金", n: "虹" };
+      var TILE_LABELS = {
+        "1z": "東",
+        "2z": "南",
+        "3z": "西",
+        "4z": "北",
+        "5z": "白",
+        "6z": "發",
+        "7z": "中"
+      };
+      var state = loadState();
+      var topTabButtons = Array.prototype.slice.call(document.querySelectorAll(".topTabBtn"));
+      var mainPanels = Array.prototype.slice.call(document.querySelectorAll(".mainPanel"));
+      var presetSlotButtons = Array.prototype.slice.call(document.querySelectorAll(".presetSlotBtn"));
+      var presetStatusText = document.getElementById("presetStatusText");
+      var presetSlotRow = document.getElementById("presetSlotRow");
+      var applyPresetBtn = document.getElementById("applyPresetBtn");
+      var savePresetBtn = document.getElementById("savePresetBtn");
+      var renamePresetBtn = document.getElementById("renamePresetBtn");
+      var presetBarTitleBox = document.querySelector(".presetBarTitleBox");
+      var presetBarTitle = document.querySelector(".presetBarTitle");
+      var presetBarLead = document.querySelector(".presetBarLead");
+      var presetActions = document.querySelector(".presetActions");
+      var scrollActiveTabBtn = document.getElementById("scrollActiveTabBtn");
+      var resetActiveTabBtn = document.getElementById("resetActiveTabBtn");
+      var resetButtons = Array.prototype.slice.call(document.querySelectorAll("[data-reset-panel]"));
+      var boolControls = Array.prototype.slice.call(document.querySelectorAll('[data-setting-type="bool"]'));
+      var boolChipControls = Array.prototype.slice.call(document.querySelectorAll('[data-setting-type="bool-chip"]'));
+      var numberControls = Array.prototype.slice.call(document.querySelectorAll('[data-setting-type="number"]'));
+      var choiceControls = Array.prototype.slice.call(document.querySelectorAll('[data-setting-type="choice"]'));
+      var choiceToggleControls = Array.prototype.slice.call(document.querySelectorAll('[data-setting-type="choice-toggle"]'));
+      var tileCompositionEditBtn = document.getElementById("tileCompositionEditBtn");
+      var tileCompositionResetBtn = document.getElementById("tileCompositionResetBtn");
+      var tileCompositionSummaryText = document.getElementById("tileCompositionSummaryText");
+      var chipTargetTileList = document.getElementById("chipTargetTileList");
+      var chipTargetDetailOverlay = document.getElementById("chipTargetDetailOverlay");
+      var chipTargetDetailCloseBtn = document.getElementById("chipTargetDetailCloseBtn");
+      var chipTargetDetailTileImg = document.getElementById("chipTargetDetailTileImg");
+      var chipTargetDetailTileCode = document.getElementById("chipTargetDetailTileCode");
+      var chipTargetDetailTileMeta = document.getElementById("chipTargetDetailTileMeta");
+      var chipTargetDetailLead = document.getElementById("chipTargetDetailLead");
+      var chipTargetDetailDoraSwitch = document.getElementById("chipTargetDetailDoraSwitch");
+      var chipTargetDetailDoraSwitchLabel = document.getElementById("chipTargetDetailDoraSwitchLabel");
+      var chipTargetDetailDoraMenzenLabel = document.getElementById("chipTargetDetailDoraMenzenLabel");
+      var chipTargetDetailDoraFuroLabel = document.getElementById("chipTargetDetailDoraFuroLabel");
+      var chipTargetDetailUseDetailedDoraSwitch = document.getElementById("chipTargetDetailUseDetailedDoraSwitch");
+      var chipTargetDetailDoraMenzenCount = document.getElementById("chipTargetDetailDoraMenzenCount");
+      var chipTargetDetailDoraFuroCount = document.getElementById("chipTargetDetailDoraFuroCount");
+      var chipTargetDetailChipMenzenCount = document.getElementById("chipTargetDetailChipMenzenCount");
+      var chipTargetDetailUseDetailedChipSwitch = document.getElementById("chipTargetDetailUseDetailedChipSwitch");
+      var chipTargetDetailChipFuroCount = document.getElementById("chipTargetDetailChipFuroCount");
+      var tileCompositionOverlay = document.getElementById("tileCompositionOverlay");
+      var tileCompositionGrid = document.getElementById("tileCompositionGrid");
+      var tileCompositionEditorEmpty = document.getElementById("tileCompositionEditorEmpty");
+      var tileCompositionEditorMain = document.getElementById("tileCompositionEditorMain");
+      var tileCompositionSelectedImg = document.getElementById("tileCompositionSelectedImg");
+      var tileCompositionSelectedCode = document.getElementById("tileCompositionSelectedCode");
+      var tileCompositionSelectedLabel = document.getElementById("tileCompositionSelectedLabel");
+      var tileCompositionNormalCount = document.getElementById("tileCompositionNormalCount");
+      var tileCompositionResetTileBtn = document.getElementById("tileCompositionResetTileBtn");
+      var tileCompositionCountInputs = Array.prototype.slice.call(document.querySelectorAll(".tileCompositionCountInput[data-color-key]"));
+      var tileCompositionCloseButtons = Array.prototype.slice.call(document.querySelectorAll("#tileCompositionCloseBtn, #tileCompositionCloseBtnBottom"));
+      var tileCompositionSelectedCodeValue = TILE_COMPOSITION_TILE_CODES[0];
+      var chipTargetDetailSelectedTileCode = "";
+      var ruleHelpTextByKey = {
+        "overview-game-type":"半荘戦は長めに遊びたいとき向け、東風戦は短時間で回したいとき向けの基本設定です。",
+        "overview-rate":"レートは点棒以外のポイント感をそろえる項目です。遊ぶ場の慣れた単位に合わせる想定です。",
+        "overview-chip-unit":"祝儀1枚ぶんの価値を決めます。祝儀を強めにしたいか、控えめにしたいかで調整できます。",
+        "overview-start-score":"開始点と返し点の差で、沈みや浮きの基準が変わります。普段の卓に近い数値に合わせる項目です。",
+        "overview-renchan-type":"連荘条件を厳しくするほど親の流れ替わりが起きやすくなります。",
+        "score-tsumoson":"ツモ損ありにすると親かぶりや三麻らしい収支差が出やすくなります。",
+        "tiles-kandora":"槓ドラを採用すると、槓が入った局の打点上振れが大きくなります。",
+        "basic-atozuke-type":"後付けをどこまで許すかで、鳴き手の自由度と速度感が変わります。",
+        "basic-double-ron":"ダブロンありなら同巡の複数ロンをそのまま成立させます。頭ハネにすると上家優先の処理になります。",
+        "extra-open-riichi":"オープン立直を採用するローカル卓向けの切り替えです。普段の一般ルールでは不採用寄りです。"
+      };
+      var presetHelpBtn = null;
+      var presetHelpBox = null;
+      var suppressStateSave = false;
+      var activePresetId = "standard";
+      var hasPresetActionIntent = false;
+      var appliedRuleSet = null;
+      var baselineRuleStateJson = "";
+
+      var ruleStateKeys = (function () {
+        var seen = {};
+        var keys = [];
+
+        function pushKey(key) {
+          if (!key || seen[key]) return;
+          seen[key] = true;
+          keys.push(key);
+        }
+
+        boolControls.forEach(function (control) { pushKey(control.dataset.settingKey); });
+        boolChipControls.forEach(function (control) { pushKey(control.dataset.settingKey); });
+        numberControls.forEach(function (control) { pushKey(control.dataset.settingKey); });
+        choiceControls.forEach(function (control) { pushKey(control.dataset.settingKey); });
+        choiceToggleControls.forEach(function (control) { pushKey(control.dataset.settingKey); });
+        pushKey("tiles-tile-composition");
+        pushKey("tiles-chip-target-settings");
+        return keys;
+      })();
+
+      var presetStore = loadPresetStore();
+      appliedRuleSet = loadAppliedRuleSet();
+      activePresetId = presetStore.activePresetId || "standard";
+      if (activePresetId === "standard") {
+        state = getPresetRuleStateSnapshot("standard");
+      } else if (!state || typeof state !== "object" || Object.keys(state).length <= 0) {
+        state = getPresetRuleStateSnapshot(activePresetId);
+      }
+      state["tiles-tile-composition"] = normalizeTileCompositionValue(state["tiles-tile-composition"]);
+      state["tiles-chip-target-settings"] = normalizeChipTargetSettingsValue(state["tiles-chip-target-settings"]);
+
+
+      function createEmptyTileCompositionCounts() {
+        return { r: 0, b: 0, g: 0, n: 0 };
+      }
+
+      function createDefaultChipTargetTileSetting() {
+        return {
+          dora: false,
+          doraCount: "0",
+          chipValue: "0",
+          targetMode: "menzen",
+          useDetailedDora: false,
+          useDetailedChip: false,
+          doraMenzenCount: "0",
+          doraFuroCount: "0",
+          chipMenzenCount: "0",
+          chipFuroCount: "0"
+        };
+      }
+
+      function normalizeChipTargetTileSettingValue(value) {
+        var src = value && typeof value === "object" ? value : {};
+        var rawMode = String(src.targetMode != null ? src.targetMode : "menzen");
+        if (rawMode !== "naki") rawMode = "menzen";
+
+        var baseDoraCount = String(src.doraCount != null ? src.doraCount : "0");
+        var baseChipValue = String(src.chipValue != null ? src.chipValue : "0");
+        var useDetailedDora = !!src.useDetailedDora;
+        var useDetailedChip = !!src.useDetailedChip;
+
+        return {
+          dora: !!src.dora,
+          doraCount: baseDoraCount,
+          chipValue: baseChipValue,
+          targetMode: rawMode,
+          useDetailedDora: useDetailedDora,
+          useDetailedChip: useDetailedChip,
+          doraMenzenCount: useDetailedDora
+            ? String(src.doraMenzenCount != null ? src.doraMenzenCount : baseDoraCount)
+            : baseDoraCount,
+          doraFuroCount: useDetailedDora
+            ? String(src.doraFuroCount != null ? src.doraFuroCount : baseDoraCount)
+            : baseDoraCount,
+          chipMenzenCount: useDetailedChip
+            ? String(src.chipMenzenCount != null ? src.chipMenzenCount : baseChipValue)
+            : baseChipValue,
+          chipFuroCount: useDetailedChip
+            ? String(src.chipFuroCount != null ? src.chipFuroCount : baseChipValue)
+            : baseChipValue
+        };
+      }
+
+      function normalizeChipTargetSettingsValue(value) {
+        var src = value && typeof value === "object" ? value : {};
+        var out = {};
+        Object.keys(src).forEach(function (key) {
+          out[key] = normalizeChipTargetTileSettingValue(src[key]);
+        });
+        return out;
+      }
+
+      function buildDefaultChipTargetSettings() {
+        return normalizeChipTargetSettingsValue({
+          "5p": {
+            dora: true,
+            doraCount: "1",
+            chipValue: "1",
+            targetMode: "menzen"
+          },
+          "5s": {
+            dora: true,
+            doraCount: "1",
+            chipValue: "1",
+            targetMode: "menzen"
+          },
+          "4z": {
+            dora: true,
+            doraCount: "1",
+            chipValue: "1",
+            targetMode: "naki"
+          }
+        });
+      }
+
+      function buildDefaultTileComposition() {
+        var tiles = {};
+        TILE_COMPOSITION_TILE_CODES.forEach(function (code) {
+          tiles[code] = createEmptyTileCompositionCounts();
+        });
+        tiles["5p"].r = 2;
+        tiles["5s"].r = 2;
+        tiles["4z"].n = 1;
+        return {
+          version: 1,
+          tiles: tiles
+        };
+      }
+
+      function normalizeTileCompositionValue(value) {
+        var base = value && typeof value === "object" ? value : buildDefaultTileComposition();
+        var srcTiles = base.tiles && typeof base.tiles === "object" ? base.tiles : {};
+        var out = {
+          version: 1,
+          tiles: {}
+        };
+
+        TILE_COMPOSITION_TILE_CODES.forEach(function (code) {
+          var row = srcTiles[code] && typeof srcTiles[code] === "object" ? srcTiles[code] : createEmptyTileCompositionCounts();
+          var nextRow = createEmptyTileCompositionCounts();
+          var used = 0;
+
+          TILE_COLOR_KEYS.forEach(function (colorKey) {
+            var count = Math.round(Number(row[colorKey]) || 0);
+            if (!isFinite(count) || count < 0) count = 0;
+            if (count > 4) count = 4;
+            if ((used + count) > 4) count = Math.max(0, 4 - used);
+            nextRow[colorKey] = count;
+            used += count;
+          });
+
+          out.tiles[code] = nextRow;
+        });
+
+        return out;
+      }
+
+      function getTileCompositionState() {
+        state["tiles-tile-composition"] = normalizeTileCompositionValue(state["tiles-tile-composition"]);
+        return state["tiles-tile-composition"];
+      }
+
+      function getTileCompositionRow(code) {
+        var composition = getTileCompositionState();
+        if (!composition.tiles[code]) composition.tiles[code] = createEmptyTileCompositionCounts();
+        return composition.tiles[code];
+      }
+
+      function getTileNormalCount(code) {
+        var row = getTileCompositionRow(code);
+        var colored = 0;
+        TILE_COLOR_KEYS.forEach(function (colorKey) {
+          colored += Number(row[colorKey]) || 0;
+        });
+        return Math.max(0, 4 - colored);
+      }
+
+      function resetTileCompositionToDefault() {
+        state["tiles-tile-composition"] = normalizeTileCompositionValue(buildDefaultTileComposition());
+        state["tiles-chip-target-settings"] = buildDefaultChipTargetSettings();
+        saveState();
+        renderTileCompositionSummary();
+        renderTileCompositionGrid();
+        renderTileCompositionEditor();
+        renderChipTargetTileList();
+      }
+
+      function resetTileCompositionCode(code) {
+        state["tiles-tile-composition"] = normalizeTileCompositionValue(state["tiles-tile-composition"]);
+        state["tiles-tile-composition"].tiles[code] = createEmptyTileCompositionCounts();
+        saveState();
+        renderTileCompositionSummary();
+        renderTileCompositionGrid();
+        renderTileCompositionEditor();
+        renderChipTargetTileList();
+      }
+
+      function setTileCompositionCount(code, colorKey, value) {
+        if (TILE_COLOR_KEYS.indexOf(colorKey) < 0) return;
+        var composition = normalizeTileCompositionValue(state["tiles-tile-composition"]);
+        var row = composition.tiles[code] || createEmptyTileCompositionCounts();
+        row[colorKey] = Math.round(Number(value) || 0);
+        composition.tiles[code] = row;
+        state["tiles-tile-composition"] = normalizeTileCompositionValue(composition);
+        saveState();
+        renderTileCompositionSummary();
+        renderTileCompositionGrid();
+        renderTileCompositionEditor();
+        renderChipTargetTileList();
+      }
+
+      function getColoredTileVariantList() {
+        var composition = getTileCompositionState();
+        var list = [];
+
+        TILE_COMPOSITION_TILE_CODES.forEach(function (baseCode) {
+          var row = composition.tiles[baseCode] || createEmptyTileCompositionCounts();
+          TILE_COLOR_KEYS.forEach(function (colorKey) {
+            var count = Number(row[colorKey]) || 0;
+            if (count <= 0) return;
+            list.push({
+              id: colorKey + baseCode,
+              colorKey: colorKey,
+              baseCode: baseCode,
+              count: count
+            });
+          });
+        });
+
+        return list;
+      }
+
+      function getChipTargetOverviewMode() {
+        var raw = String(state["overview-chip-target-colored"] != null ? state["overview-chip-target-colored"] : "menzen");
+        return raw === "naki" ? "naki" : "menzen";
+      }
+
+      function buildChipTargetImplicitSetting() {
+        return normalizeChipTargetTileSettingValue({
+          targetMode: getChipTargetOverviewMode()
+        });
+      }
+
+      function isChipTargetTileSettingSameAsOverview(value) {
+        var base = buildChipTargetImplicitSetting();
+        var row = normalizeChipTargetTileSettingValue(value);
+        return (
+          row.dora === base.dora &&
+          row.doraCount === base.doraCount &&
+          row.chipValue === base.chipValue &&
+          row.targetMode === base.targetMode &&
+          row.useDetailedDora === base.useDetailedDora &&
+          row.useDetailedChip === base.useDetailedChip &&
+          row.doraMenzenCount === base.doraMenzenCount &&
+          row.doraFuroCount === base.doraFuroCount &&
+          row.chipMenzenCount === base.chipMenzenCount &&
+          row.chipFuroCount === base.chipFuroCount
+        );
+      }
+
+      function compactChipTargetSettingsState() {
+        var src = normalizeChipTargetSettingsValue(state["tiles-chip-target-settings"]);
+        var out = {};
+        Object.keys(src).forEach(function (key) {
+          var row = normalizeChipTargetTileSettingValue(src[key]);
+          if (!isChipTargetTileSettingSameAsOverview(row)) {
+            out[key] = row;
+          }
+        });
+        state["tiles-chip-target-settings"] = out;
+        return out;
+      }
+
+      function getChipTargetSettingsState() {
+        return compactChipTargetSettingsState();
+      }
+
+      function getChipTargetTileSetting(tileCode) {
+        var settings = getChipTargetSettingsState();
+        if (tileCode && Object.prototype.hasOwnProperty.call(settings, tileCode)) {
+          return normalizeChipTargetTileSettingValue(settings[tileCode]);
+        }
+        var key = getChipTargetSettingStorageKey(tileCode);
+        if (key && Object.prototype.hasOwnProperty.call(settings, key)) {
+          return normalizeChipTargetTileSettingValue(settings[key]);
+        }
+        return buildChipTargetImplicitSetting();
+      }
+
+      function setChipTargetTileSettingField(tileCode, fieldKey, value) {
+        var settings = getChipTargetSettingsState();
+        var key = getChipTargetSettingStorageKey(tileCode);
+        var row = getChipTargetTileSetting(tileCode);
+
+        if (fieldKey === "dora") {
+          row.dora = !!value;
+        } else if (fieldKey === "targetMode") {
+          row.targetMode = value === "naki" ? "naki" : "menzen";
+        } else if (fieldKey === "useDetailedDora" || fieldKey === "useDetailedChip") {
+          row[fieldKey] = !!value;
+        } else {
+          row[fieldKey] = String(value != null ? value : "");
+          if (fieldKey === "doraMenzenCount" || fieldKey === "doraFuroCount") {
+            row.useDetailedDora = true;
+          }
+          if (fieldKey === "chipMenzenCount" || fieldKey === "chipFuroCount") {
+            row.useDetailedChip = true;
+          }
+        }
+
+        row = normalizeChipTargetTileSettingValue(row);
+        if (isChipTargetTileSettingSameAsOverview(row)) {
+          delete settings[key];
+        } else {
+          settings[key] = row;
+        }
+        state["tiles-chip-target-settings"] = settings;
+        saveState();
+        renderChipTargetTileList();
+        if (chipTargetDetailSelectedTileCode === tileCode) {
+          renderChipTargetDetailOverlay();
+        }
+      }
+
+      function getColoredTileVariantLabel(item) {
+        return TILE_COLOR_LABELS[item.colorKey] + getTileCompositionCodeLabel(item.baseCode);
+      }
+
+      function getColoredTileVariantMeta(item) {
+        return getColoredTileVariantLabel(item) + " / " + item.count + "枚採用";
+      }
+
+      function getColoredTileVariantCountMeta(item) {
+        return item.count + "枚採用";
+      }
+
+      function findColoredTileVariantItem(tileCode) {
+        var list = getColoredTileVariantList();
+        for (var i = 0; i < list.length; i += 1) {
+          if (list[i].id === tileCode) return list[i];
+        }
+        return null;
+      }
+
+      function getCurrentPeiTypeSetting() {
+        var value = String(state["tiles-pei-type"] != null ? state["tiles-pei-type"] : "nuki");
+        if (value !== "bakaze" && value !== "otakaze") return "nuki";
+        return value;
+      }
+
+      function isRuleEditingEnabled() {
+        return activePresetId !== "standard";
+      }
+
+      function getChipTargetSettingStorageKey(tileCode) {
+        var code = String(tileCode || "");
+        return code;
+      }
+
+      function isChipTargetNorthTileWithNukiPei(tileCode) {
+        var code = String(tileCode || "");
+        return getCurrentPeiTypeSetting() === "nuki" && code.slice(1) === "4z";
+      }
+
+      function getChipTargetDoraSwitchLabelText(tileCode) {
+        return isChipTargetNorthTileWithNukiPei(tileCode) ? "北ドラ" : "ドラ";
+      }
+
+      function getChipTargetDoraCountLabelText(tileCode) {
+        return isChipTargetNorthTileWithNukiPei(tileCode) ? "北ドラ数" : "ドラ扱い";
+      }
+
+      function getChipTargetDetailLeadText(tileCode) {
+        if (isChipTargetNorthTileWithNukiPei(tileCode)) {
+          return "北扱いが抜きドラのため、この牌で入れた数が北ドラの最終数になります。面前時と鳴き時で個別設定もできます。";
+        }
+        return "面前時と鳴き時で、ドラ扱い枚数と祝儀枚数を個別に設定できます。";
+      }
+
+      function buildChipTargetTileImage(tileCode) {
+        var imgWrap = document.createElement("div");
+        imgWrap.className = "chipTargetTileImgWrap";
+        var img = document.createElement("img");
+        img.className = "chipTargetTileImg";
+        img.src = "../../img/" + tileCode + ".png";
+        img.alt = tileCode;
+        img.draggable = false;
+        img.onerror = function () {
+          img.remove();
+          imgWrap.textContent = tileCode;
+        };
+        imgWrap.appendChild(img);
+        return imgWrap;
+      }
+
+      function buildChipTargetInlineNumberField(tileCode, fieldKey, labelText, value) {
+        var field = document.createElement("div");
+        field.className = "chipTargetInlineField";
+
+        var label = document.createElement("span");
+        label.className = "chipTargetInlineLabel";
+        label.textContent = labelText;
+
+        var input = document.createElement("input");
+        input.className = "chipTargetInlineInput";
+        input.type = "number";
+        input.inputMode = "numeric";
+        input.step = "1";
+        input.min = "0";
+        input.value = String(value != null ? value : "0");
+        input.disabled = !isRuleEditingEnabled();
+        input.addEventListener("input", function () {
+          if (!isRuleEditingEnabled()) return;
+          setChipTargetTileSettingField(tileCode, fieldKey, input.value);
+        });
+
+        field.appendChild(label);
+        field.appendChild(input);
+        return field;
+      }
+
+      function buildChipTargetDoraField(tileCode, value) {
+        var field = document.createElement("div");
+        field.className = "chipTargetInlineField";
+
+        var label = document.createElement("span");
+        label.className = "chipTargetInlineLabel";
+        label.textContent = getChipTargetDoraSwitchLabelText(tileCode);
+
+        var button = document.createElement("button");
+        button.type = "button";
+        button.className = "switch chipTargetSwitch" + (value ? " isOn" : "");
+        button.setAttribute("role", "switch");
+        button.setAttribute("aria-checked", value ? "true" : "false");
+        button.disabled = !isRuleEditingEnabled();
+        button.addEventListener("click", function () {
+          if (!isRuleEditingEnabled()) return;
+          setChipTargetTileSettingField(tileCode, "dora", !value);
+        });
+
+        field.appendChild(label);
+        field.appendChild(button);
+        return field;
+      }
+
+      function buildChipTargetModeField(tileCode, value) {
+        var field = document.createElement("div");
+        field.className = "chipTargetInlineField";
+
+        var label = document.createElement("span");
+        label.className = "chipTargetInlineLabel";
+        label.textContent = "対象";
+
+        var group = document.createElement("div");
+        group.className = "chipTargetModeGroup";
+
+        var menzenBtn = document.createElement("button");
+        menzenBtn.type = "button";
+        menzenBtn.className = "chipTargetModeBtn" + (value !== "naki" ? " isSelected" : "");
+        menzenBtn.textContent = "面前";
+        menzenBtn.addEventListener("click", function () {
+          setChipTargetTileSettingField(tileCode, "targetMode", "menzen");
+        });
+
+        var nakiBtn = document.createElement("button");
+        nakiBtn.type = "button";
+        nakiBtn.className = "chipTargetModeBtn" + (value === "naki" ? " isSelected" : "");
+        nakiBtn.textContent = "鳴き";
+        nakiBtn.addEventListener("click", function () {
+          setChipTargetTileSettingField(tileCode, "targetMode", "naki");
+        });
+
+        group.appendChild(menzenBtn);
+        group.appendChild(nakiBtn);
+        field.appendChild(label);
+        field.appendChild(group);
+        return field;
+      }
+
+      function buildChipTargetDetailButton(tileCode, setting) {
+        var button = document.createElement("button");
+        button.type = "button";
+        button.className = "chipTargetDetailBtn";
+        button.textContent = (setting && (setting.useDetailedDora || setting.useDetailedChip)) ? "詳細編集中" : "詳細編集";
+        button.addEventListener("click", function () {
+          openChipTargetDetailOverlay(tileCode);
+        });
+        return button;
+      }
+
+      function buildChipTargetTileRow(item) {
+        var tileCode = item.id;
+        var setting = getChipTargetTileSetting(tileCode);
+
+        var row = document.createElement("div");
+        row.className = "chipTargetTileRow";
+
+        var main = document.createElement("div");
+        main.className = "chipTargetTileMain";
+        main.appendChild(buildChipTargetTileImage(tileCode));
+
+        var info = document.createElement("div");
+        info.className = "chipTargetTileInfo";
+
+        var metaEl = document.createElement("div");
+        metaEl.className = "chipTargetTileCode";
+        metaEl.textContent = getColoredTileVariantCountMeta(item);
+
+        info.appendChild(metaEl);
+        main.appendChild(info);
+
+        row.appendChild(main);
+        row.appendChild(buildChipTargetDoraField(tileCode, setting.dora));
+        row.appendChild(buildChipTargetInlineNumberField(tileCode, "doraCount", getChipTargetDoraCountLabelText(tileCode), setting.doraCount));
+        row.appendChild(buildChipTargetInlineNumberField(tileCode, "chipValue", "祝儀", setting.chipValue));
+        row.appendChild(buildChipTargetModeField(tileCode, setting.targetMode));
+        row.appendChild(buildChipTargetDetailButton(tileCode, setting));
+        return row;
+      }
+
+      function renderChipTargetTileList() {
+        if (!chipTargetTileList) return;
+        chipTargetTileList.innerHTML = "";
+
+        var list = getColoredTileVariantList();
+        if (!list.length) {
+          var empty = document.createElement("div");
+          empty.className = "chipTargetTileEmpty";
+          empty.textContent = "牌構成で色付き牌を採用すると、ここに祝儀対象牌の設定欄が表示されます。";
+          chipTargetTileList.appendChild(empty);
+          return;
+        }
+
+        list.forEach(function (item) {
+          chipTargetTileList.appendChild(buildChipTargetTileRow(item));
+        });
+      }
+
+      function openChipTargetDetailOverlay(tileCode) {
+        if (!chipTargetDetailOverlay) return;
+        if (!isRuleEditingEnabled()) return;
+        chipTargetDetailSelectedTileCode = tileCode;
+        renderChipTargetDetailOverlay();
+        chipTargetDetailOverlay.classList.add("isOpen");
+        chipTargetDetailOverlay.setAttribute("aria-hidden", "false");
+      }
+
+      function closeChipTargetDetailOverlay() {
+        if (!chipTargetDetailOverlay) return;
+        chipTargetDetailOverlay.classList.remove("isOpen");
+        chipTargetDetailOverlay.setAttribute("aria-hidden", "true");
+      }
+
+      function renderChipTargetDetailOverlay() {
+        if (!chipTargetDetailSelectedTileCode) return;
+        var item = findColoredTileVariantItem(chipTargetDetailSelectedTileCode);
+        var setting = getChipTargetTileSetting(chipTargetDetailSelectedTileCode);
+        if (chipTargetDetailTileImg) chipTargetDetailTileImg.src = "../../img/" + chipTargetDetailSelectedTileCode + ".png";
+        if (chipTargetDetailTileCode) chipTargetDetailTileCode.textContent = chipTargetDetailSelectedTileCode;
+        if (chipTargetDetailTileMeta) {
+          chipTargetDetailTileMeta.textContent = item ? getColoredTileVariantMeta(item) : chipTargetDetailSelectedTileCode;
+        }
+        if (chipTargetDetailLead) {
+          chipTargetDetailLead.textContent = getChipTargetDetailLeadText(chipTargetDetailSelectedTileCode);
+        }
+        if (chipTargetDetailDoraSwitchLabel) {
+          chipTargetDetailDoraSwitchLabel.textContent = getChipTargetDoraSwitchLabelText(chipTargetDetailSelectedTileCode);
+        }
+        if (chipTargetDetailDoraMenzenLabel) {
+          chipTargetDetailDoraMenzenLabel.textContent = isChipTargetNorthTileWithNukiPei(chipTargetDetailSelectedTileCode) ? "面前北ドラ" : "ドラ面前扱い";
+        }
+        if (chipTargetDetailDoraFuroLabel) {
+          chipTargetDetailDoraFuroLabel.textContent = isChipTargetNorthTileWithNukiPei(chipTargetDetailSelectedTileCode) ? "鳴き北ドラ" : "鳴き扱い";
+        }
+        if (chipTargetDetailDoraSwitch) {
+          chipTargetDetailDoraSwitch.classList.toggle("isOn", !!setting.dora);
+          chipTargetDetailDoraSwitch.setAttribute("aria-checked", setting.dora ? "true" : "false");
+        }
+        if (chipTargetDetailUseDetailedDoraSwitch) {
+          chipTargetDetailUseDetailedDoraSwitch.classList.toggle("isOn", !!setting.useDetailedDora);
+          chipTargetDetailUseDetailedDoraSwitch.setAttribute("aria-checked", setting.useDetailedDora ? "true" : "false");
+        }
+        if (chipTargetDetailUseDetailedChipSwitch) {
+          chipTargetDetailUseDetailedChipSwitch.classList.toggle("isOn", !!setting.useDetailedChip);
+          chipTargetDetailUseDetailedChipSwitch.setAttribute("aria-checked", setting.useDetailedChip ? "true" : "false");
+        }
+        if (chipTargetDetailDoraMenzenCount) {
+          chipTargetDetailDoraMenzenCount.value = setting.doraMenzenCount;
+          chipTargetDetailDoraMenzenCount.disabled = !setting.useDetailedDora;
+        }
+        if (chipTargetDetailDoraFuroCount) {
+          chipTargetDetailDoraFuroCount.value = setting.doraFuroCount;
+          chipTargetDetailDoraFuroCount.disabled = !setting.useDetailedDora;
+        }
+        if (chipTargetDetailChipMenzenCount) {
+          chipTargetDetailChipMenzenCount.value = setting.chipMenzenCount;
+          chipTargetDetailChipMenzenCount.disabled = !setting.useDetailedChip;
+        }
+        if (chipTargetDetailChipFuroCount) {
+          chipTargetDetailChipFuroCount.value = setting.chipFuroCount;
+          chipTargetDetailChipFuroCount.disabled = !setting.useDetailedChip;
+        }
+      }
+      function getTileCompositionCodeLabel(code) {
+        if (!code) return "";
+        if (code.slice(1) === "z") return TILE_LABELS[code] || code;
+        return code;
+      }
+
+      function formatTileCompositionMeta(code) {
+        var row = getTileCompositionRow(code);
+        var parts = [];
+        TILE_COLOR_KEYS.forEach(function (colorKey) {
+          var count = Number(row[colorKey]) || 0;
+          if (count > 0) parts.push(TILE_COLOR_LABELS[colorKey] + count);
+        });
+        parts.push("通常" + getTileNormalCount(code));
+        return parts.join(" / ");
+      }
+
+      function buildTileCompositionSummaryItem(tileCode, labelText, count) {
+        var item = document.createElement("div");
+        item.className = "tileCompositionSummaryItem";
+
+        var imgWrap = document.createElement("div");
+        imgWrap.className = "tileCompositionSummaryImgWrap";
+
+        var img = document.createElement("img");
+        img.className = "tileCompositionSummaryImg";
+        img.src = "../../img/" + tileCode + ".png";
+        img.alt = labelText;
+        img.draggable = false;
+        img.onerror = function () {
+          img.remove();
+          imgWrap.textContent = tileCode;
+        };
+        imgWrap.appendChild(img);
+
+        var countEl = document.createElement("div");
+        countEl.className = "tileCompositionSummaryCount";
+        countEl.textContent = "×" + count;
+
+        item.appendChild(imgWrap);
+        item.appendChild(countEl);
+        return item;
+      }
+
+      function renderTileCompositionSummary() {
+        if (!tileCompositionSummaryText) return;
+        tileCompositionSummaryText.innerHTML = "";
+
+        var list = getColoredTileVariantList();
+        if (!list.length) {
+          var empty = document.createElement("div");
+          empty.className = "tileCompositionSummaryEmpty";
+          empty.textContent = "色付き牌なし";
+          tileCompositionSummaryText.appendChild(empty);
+          return;
+        }
+
+        list.forEach(function (item) {
+          tileCompositionSummaryText.appendChild(
+            buildTileCompositionSummaryItem(item.id, getColoredTileVariantLabel(item), item.count)
+          );
+        });
+      }
+
+      function buildTileCompositionTileButton(code) {
+        var button = document.createElement("button");
+        button.type = "button";
+        button.className = "tileCompositionTileBtn" + (tileCompositionSelectedCodeValue === code ? " isActive" : "");
+        button.dataset.tileCode = code;
+
+        var imgWrap = document.createElement("div");
+        imgWrap.className = "tileCompositionTileImgWrap";
+        var img = document.createElement("img");
+        img.className = "tileCompositionTileImg";
+        img.src = "../../img/" + code + ".png";
+        img.alt = code;
+        img.draggable = false;
+        img.onerror = function () {
+          img.replaceWith(document.createTextNode(code));
+        };
+        imgWrap.appendChild(img);
+
+        var codeEl = document.createElement("div");
+        codeEl.className = "tileCompositionTileCode";
+        codeEl.textContent = getTileCompositionCodeLabel(code);
+
+        button.appendChild(imgWrap);
+        button.appendChild(codeEl);
+        button.addEventListener("click", function () {
+          tileCompositionSelectedCodeValue = code;
+          renderTileCompositionGrid();
+          renderTileCompositionEditor();
+        });
+        return button;
+      }
+
+      function renderTileCompositionGrid() {
+        if (!tileCompositionGrid) return;
+        tileCompositionGrid.innerHTML = "";
+        TILE_COMPOSITION_TILE_CODES.forEach(function (code) {
+          tileCompositionGrid.appendChild(buildTileCompositionTileButton(code));
+        });
+      }
+
+      function renderTileCompositionEditor() {
+        if (!tileCompositionEditorMain || !tileCompositionEditorEmpty) return;
+        var code = tileCompositionSelectedCodeValue;
+        if (!code) {
+          tileCompositionEditorEmpty.style.display = "block";
+          tileCompositionEditorMain.style.display = "none";
+          return;
+        }
+
+        var row = getTileCompositionRow(code);
+        tileCompositionEditorEmpty.style.display = "none";
+        tileCompositionEditorMain.style.display = "grid";
+        if (tileCompositionSelectedImg) tileCompositionSelectedImg.src = "../../img/" + code + ".png";
+        if (tileCompositionSelectedCode) tileCompositionSelectedCode.textContent = code;
+        if (tileCompositionSelectedLabel) tileCompositionSelectedLabel.textContent = getTileCompositionCodeLabel(code);
+        if (tileCompositionNormalCount) tileCompositionNormalCount.value = String(getTileNormalCount(code));
+        tileCompositionCountInputs.forEach(function (input) {
+          var colorKey = input.dataset.colorKey;
+          input.value = String(Number(row[colorKey]) || 0);
+        });
+      }
+
+      function openTileCompositionOverlay() {
+        if (!tileCompositionOverlay) return;
+        renderTileCompositionSummary();
+        renderTileCompositionGrid();
+        renderTileCompositionEditor();
+        tileCompositionOverlay.classList.add("isOpen");
+        tileCompositionOverlay.setAttribute("aria-hidden", "false");
+      }
+
+      function closeTileCompositionOverlay() {
+        if (!tileCompositionOverlay) return;
+        tileCompositionOverlay.classList.remove("isOpen");
+        tileCompositionOverlay.setAttribute("aria-hidden", "true");
+      }
+
+      function clonePlainData(value) {
+        try {
+          return JSON.parse(JSON.stringify(value));
+        } catch (e) {
+          return value;
+        }
+      }
+
+      function buildDefaultRuleState() {
+        var defaults = {};
+        var seenChoiceKeys = {};
+
+        boolControls.forEach(function (control) {
+          defaults[control.dataset.settingKey] = String(control.dataset.default) === "true";
+        });
+        boolChipControls.forEach(function (control) {
+          defaults[control.dataset.settingKey] = String(control.dataset.default) === "true";
+        });
+        numberControls.forEach(function (control) {
+          defaults[control.dataset.settingKey] = String(control.dataset.default || "");
+        });
+        choiceControls.forEach(function (control) {
+          var key = control.dataset.settingKey;
+          if (seenChoiceKeys[key]) return;
+          seenChoiceKeys[key] = true;
+          defaults[key] = String(normalizeLegacyChoiceValue(key, control.dataset.default || control.dataset.choiceValue || "") || "");
+        });
+        choiceToggleControls.forEach(function (control) {
+          defaults[control.dataset.settingKey] = String(control.dataset.default || control.dataset.choiceOn || "");
+        });
+
+        defaults["tiles-tile-composition"] = normalizeTileCompositionValue(buildDefaultTileComposition());
+        defaults["tiles-chip-target-settings"] = buildDefaultChipTargetSettings();
+        return defaults;
+      }
+
+      function createEmptyPresetStore() {
+        var slots = {};
+        presetSlotIds.forEach(function (slotId) {
+          slots[slotId] = {
+            name: presetDefaultNames[slotId] || slotId,
+            rules: buildDefaultRuleState()
+          };
+        });
+        return {
+          activePresetId: "standard",
+          slots: slots
+        };
+      }
+
+      function normalizePresetEntry(slotId, value) {
+        if (!value || typeof value !== "object") {
+          return {
+            name: presetDefaultNames[slotId] || slotId,
+            rules: buildDefaultRuleState()
+          };
+        }
+        var entry = {};
+        var name = String(value.name || "").trim();
+        entry.name = name || presetDefaultNames[slotId] || slotId;
+        if (value.rules && typeof value.rules === "object") {
+          entry.rules = clonePlainData(value.rules);
+        } else {
+          entry.rules = buildDefaultRuleState();
+        }
+        return entry;
+      }
+
+      function loadPresetStore() {
+        var base = createEmptyPresetStore();
+        try {
+          var raw = localStorage.getItem(presetStorageKey);
+          if (!raw) return base;
+          var parsed = JSON.parse(raw);
+          if (!parsed || typeof parsed !== "object") return base;
+          if (parsed.activePresetId === "standard" || presetSlotIds.indexOf(parsed.activePresetId) >= 0) {
+            base.activePresetId = parsed.activePresetId;
+          }
+          var slots = parsed.slots && typeof parsed.slots === "object" ? parsed.slots : {};
+          presetSlotIds.forEach(function (slotId) {
+            base.slots[slotId] = normalizePresetEntry(slotId, slots[slotId]);
+          });
+        } catch (e) {}
+        return base;
+      }
+
+      function savePresetStore() {
+        try {
+          localStorage.setItem(presetStorageKey, JSON.stringify(presetStore));
+        } catch (e) {}
+      }
+
+      // ログイン中のみ、現在の rules / presets / activeRuleSet をクラウドへ投げる。
+      // 呼び出しは保存ボタン／プリセット保存／ルール適用などユーザー起点のタイミングだけに限定する。
+      // 失敗しても画面操作はブロックしない（fire-and-forget）。
+      function syncRulesToCloudIfLoggedIn() {
+        try {
+          var accountId = getActiveAccountIdForRuleScope();
+          if (!accountId) return;
+          if (!window.MBSanmaSupabase) return;
+          if (typeof window.MBSanmaSupabase.isConfigured === "function" && !window.MBSanmaSupabase.isConfigured()) return;
+          if (typeof window.MBSanmaSupabase.saveAccountRules !== "function") return;
+
+          var payload = { rules: null, presets: null, activeRuleSet: null };
+
+          try {
+            var rulesRaw = localStorage.getItem(rulesStorageKey);
+            if (rulesRaw) {
+              var parsedRules = JSON.parse(rulesRaw);
+              if (parsedRules && typeof parsedRules === "object") payload.rules = parsedRules;
+            }
+          } catch (e) {}
+
+          try {
+            var presetsRaw = localStorage.getItem(presetStorageKey);
+            if (presetsRaw) {
+              var parsedPresets = JSON.parse(presetsRaw);
+              if (parsedPresets && typeof parsedPresets === "object") payload.presets = parsedPresets;
+            }
+          } catch (e) {}
+
+          try {
+            var activeRaw = localStorage.getItem(activeRuleSetStorageKey);
+            if (activeRaw) {
+              var parsedActive = JSON.parse(activeRaw);
+              if (parsedActive && typeof parsedActive === "object") payload.activeRuleSet = parsedActive;
+            }
+          } catch (e) {}
+
+          var p = window.MBSanmaSupabase.saveAccountRules(accountId, payload);
+          if (p && typeof p.then === "function") {
+            p.then(function () {}, function () {});
+          }
+        } catch (e) {}
+      }
+
+      function buildAppliedRuleSetSnapshot(presetId, rulesSnapshot) {
+        return {
+          version: 1,
+          presetId: presetId === "standard" ? "standard" : presetId,
+          displayName: getPresetDisplayName(presetId),
+          rules: getCurrentRuleStateSnapshot(rulesSnapshot || getPresetRuleStateSnapshot(presetId))
+        };
+      }
+
+      function normalizeAppliedRuleSet(value) {
+        var presetId = value && value.presetId === "standard" ? "standard" : (value && presetSlotIds.indexOf(value.presetId) >= 0 ? value.presetId : "standard");
+        var base = buildAppliedRuleSetSnapshot(presetId);
+        if (!value || typeof value !== "object") return base;
+        var displayName = String(value.displayName || "").trim();
+        if (displayName) base.displayName = displayName;
+        if (value.rules && typeof value.rules === "object") {
+          base.rules = getCurrentRuleStateSnapshot(value.rules);
+        }
+        return base;
+      }
+
+      function loadAppliedRuleSet() {
+        try {
+          var raw = localStorage.getItem(activeRuleSetStorageKey);
+          if (!raw) return buildAppliedRuleSetSnapshot("standard");
+          return normalizeAppliedRuleSet(JSON.parse(raw));
+        } catch (e) {}
+        return buildAppliedRuleSetSnapshot("standard");
+      }
+
+      function saveAppliedRuleSet() {
+        try {
+          localStorage.setItem(activeRuleSetStorageKey, JSON.stringify(appliedRuleSet));
+        } catch (e) {}
+      }
+
+      function getCurrentRuleStateSnapshot(source) {
+        var src = source && typeof source === "object" ? source : state;
+        var out = {};
+        ruleStateKeys.forEach(function (key) {
+          if (!Object.prototype.hasOwnProperty.call(src, key)) return;
+          if (key === "tiles-tile-composition") {
+            out[key] = normalizeTileCompositionValue(src[key]);
+            return;
+          }
+          if (key === "tiles-chip-target-settings") {
+            out[key] = normalizeChipTargetSettingsValue(src[key]);
+            return;
+          }
+          out[key] = clonePlainData(src[key]);
+        });
+        return out;
+      }
+
+      function getStandardRuleStateSnapshot() {
+        return buildDefaultRuleState();
+      }
+
+      function getPresetRuleStateSnapshot(presetId) {
+        if (presetId === "standard") return getStandardRuleStateSnapshot();
+        var entry = presetStore && presetStore.slots ? presetStore.slots[presetId] : null;
+        if (entry && entry.rules && typeof entry.rules === "object") {
+          return clonePlainData(entry.rules);
+        }
+        return getStandardRuleStateSnapshot();
+      }
+
+      function getRuleStateJson(source) {
+        return JSON.stringify(getCurrentRuleStateSnapshot(source));
+      }
+
+      function hasUnsavedPresetChanges() {
+        return getRuleStateJson(state) !== baselineRuleStateJson;
+      }
+
+      function getPresetDisplayName(presetId) {
+        if (presetId === "standard") return "標準ルール";
+        var entry = presetStore && presetStore.slots ? presetStore.slots[presetId] : null;
+        if (entry && entry.name) return entry.name;
+        return presetDefaultNames[presetId] || presetId;
+      }
+
+      function isPresetSlotEmpty(presetId) {
+        return false;
+      }
+
+      function getAppliedPresetId() {
+        return appliedRuleSet && appliedRuleSet.presetId ? appliedRuleSet.presetId : "standard";
+      }
+
+      function getAppliedPresetDisplayName() {
+        if (appliedRuleSet && appliedRuleSet.displayName) return appliedRuleSet.displayName;
+        return getPresetDisplayName(getAppliedPresetId());
+      }
+
+      function setRuleEditingEnabled(enabled) {
+        boolControls.forEach(function (control) { control.disabled = !enabled; });
+        boolChipControls.forEach(function (control) { control.disabled = !enabled; });
+        numberControls.forEach(function (control) { control.disabled = !enabled; });
+        choiceControls.forEach(function (control) { control.disabled = !enabled; });
+        choiceToggleControls.forEach(function (control) { control.disabled = !enabled; });
+        resetButtons.forEach(function (button) { button.disabled = !enabled; });
+        if (resetActiveTabBtn) resetActiveTabBtn.disabled = !enabled;
+        if (tileCompositionEditBtn) tileCompositionEditBtn.disabled = !enabled;
+        if (tileCompositionResetBtn) tileCompositionResetBtn.disabled = !enabled;
+        Array.prototype.forEach.call(document.querySelectorAll(".chipTargetSwitch, .chipTargetInlineInput, .chipTargetModeBtn, .chipTargetDetailBtn"), function (control) {
+          control.disabled = !enabled;
+        });
+        if (!enabled) {
+          [chipTargetDetailDoraSwitch, chipTargetDetailUseDetailedDoraSwitch, chipTargetDetailUseDetailedChipSwitch, chipTargetDetailDoraMenzenCount, chipTargetDetailDoraFuroCount, chipTargetDetailChipMenzenCount, chipTargetDetailChipFuroCount].forEach(function (control) {
+            if (!control) return;
+            control.disabled = true;
+          });
+        }
+        if (!enabled) closeChipTargetDetailOverlay();
+      }
+
+      function renderPresetBar() {
+        presetSlotButtons.forEach(function (button) {
+          var presetId = button.dataset.presetId;
+          var isActive = presetId === activePresetId;
+          var isApplied = presetId === getAppliedPresetId();
+          button.classList.toggle("isActive", isActive);
+          button.classList.toggle("isApplied", isApplied);
+          button.classList.toggle("isEmpty", isPresetSlotEmpty(presetId));
+          button.textContent = getPresetDisplayName(presetId) + (isApplied ? " [採用中]" : "");
+        });
+
+        if (presetStatusText) {
+          var text = "表示中: " + getPresetDisplayName(activePresetId) + " / 採用中: " + getAppliedPresetDisplayName();
+          if (hasUnsavedPresetChanges()) {
+            text += " / 未保存の変更あり";
+            presetStatusText.classList.add("isDirty");
+          } else {
+            text += " / 保存済み";
+            presetStatusText.classList.remove("isDirty");
+          }
+          presetStatusText.textContent = text;
+        }
+
+        if (applyPresetBtn) {
+          applyPresetBtn.textContent = getAppliedPresetId() === activePresetId ? "このルールを採用中" : "このルールを採用";
+          applyPresetBtn.disabled = getAppliedPresetId() === activePresetId && !hasUnsavedPresetChanges();
+        }
+        if (savePresetBtn) {
+          savePresetBtn.textContent = activePresetId === "standard" ? "保存先を選んで保存" : "このプリセットに保存";
+          savePresetBtn.disabled = activePresetId === "standard";
+          savePresetBtn.classList.toggle("isDirty", hasUnsavedPresetChanges() && activePresetId !== "standard");
+        }
+        if (renamePresetBtn) {
+          renamePresetBtn.disabled = activePresetId === "standard";
+        }
+        if (presetActions) {
+          presetActions.classList.toggle("isVisible", hasPresetActionIntent);
+        }
+        setRuleEditingEnabled(activePresetId !== "standard");
+      }
+
+      function setBaselineFromActivePreset() {
+        baselineRuleStateJson = getRuleStateJson(getPresetRuleStateSnapshot(activePresetId));
+        renderPresetBar();
+      }
+
+      function applyStateSnapshot(nextSnapshot) {
+        var currentTab = state && state.activeMainTab ? state.activeMainTab : "overview";
+        suppressStateSave = true;
+        state = getCurrentRuleStateSnapshot(nextSnapshot || {});
+        state.activeMainTab = currentTab;
+
+        boolControls.forEach(function (control) {
+          var key = control.dataset.settingKey;
+          var defaultValue = String(control.dataset.default) === "true";
+          var storedValue = typeof state[key] === "boolean" ? state[key] : defaultValue;
+          setBoolValue(control, storedValue);
+        });
+
+        boolChipControls.forEach(function (control) {
+          var key = control.dataset.settingKey;
+          var defaultValue = String(control.dataset.default) === "true";
+          var storedValue = typeof state[key] === "boolean" ? state[key] : defaultValue;
+          setBoolChipValue(control, storedValue);
+        });
+
+        numberControls.forEach(function (control) {
+          var key = control.dataset.settingKey;
+          var defaultValue = control.dataset.default || "";
+          var storedValue = typeof state[key] === "string" ? state[key] : defaultValue;
+          setNumberValue(control, storedValue);
+        });
+
+        (function () {
+          var seen = {};
+          choiceControls.forEach(function (control) {
+            var key = control.dataset.settingKey;
+            if (seen[key]) return;
+            seen[key] = true;
+            var defaultValue = control.dataset.default || control.dataset.choiceValue || "";
+            var storedValue = typeof state[key] === "string" ? state[key] : defaultValue;
+            setChoiceValue(key, storedValue);
+          });
+        })();
+
+        choiceToggleControls.forEach(function (control) {
+          var key = control.dataset.settingKey;
+          var defaultValue = control.dataset.default || control.dataset.choiceOn || "";
+          var storedValue = typeof state[key] === "string" ? state[key] : defaultValue;
+          setChoiceToggleValue(control, storedValue);
+        });
+
+        renderTileCompositionSummary();
+        renderTileCompositionGrid();
+        renderTileCompositionEditor();
+        renderChipTargetTileList();
+        activateMainTab(state.activeMainTab || "overview");
+        suppressStateSave = false;
+        saveState();
+      }
+
+      function saveCurrentStateToPreset(presetId, switchToSavedPreset) {
+        if (presetSlotIds.indexOf(presetId) < 0) return false;
+        presetStore.slots[presetId] = {
+          name: getPresetDisplayName(presetId),
+          rules: getCurrentRuleStateSnapshot(state)
+        };
+        if (switchToSavedPreset) {
+          activePresetId = presetId;
+          presetStore.activePresetId = presetId;
+        }
+        savePresetStore();
+        if (getAppliedPresetId() === presetId) {
+          appliedRuleSet = buildAppliedRuleSetSnapshot(presetId, presetStore.slots[presetId].rules);
+          saveAppliedRuleSet();
+        }
+        setBaselineFromActivePreset();
+        saveState();
+        syncRulesToCloudIfLoggedIn();
+        return true;
+      }
+
+      function promptPresetTargetId(defaultPresetId) {
+        var defaultNumber = 1;
+        if (defaultPresetId && /^slot[1-5]$/.test(defaultPresetId)) {
+          defaultNumber = Number(defaultPresetId.replace("slot", "")) || 1;
+        }
+        var raw = window.prompt("保存先プリセット番号を1〜5で入力してください。", String(defaultNumber));
+        if (raw == null) return "";
+        var number = Number(String(raw).trim());
+        if (!Number.isInteger(number) || number < 1 || number > 5) {
+          window.alert("保存先は 1〜5 のプリセット番号で指定してください。");
+          return "";
+        }
+        return "slot" + String(number);
+      }
+
+      function handlePresetSaveAction() {
+        if (activePresetId === "standard") {
+          return;
+        } 
+        saveCurrentStateToPreset(activePresetId, false);
+      }
+
+      function renameActivePreset() {
+        if (activePresetId === "standard") return;
+        var nextName = window.prompt("プリセット名を入力してください。", getPresetDisplayName(activePresetId));
+        if (nextName == null) return;
+        nextName = String(nextName).trim();
+        if (!nextName) {
+          window.alert("プリセット名は空にできません。");
+          return;
+        }
+        if (!presetStore.slots[activePresetId]) {
+          presetStore.slots[activePresetId] = {
+            name: nextName,
+            rules: null
+          };
+        } else {
+          presetStore.slots[activePresetId].name = nextName;
+        }
+        savePresetStore();
+        if (getAppliedPresetId() === activePresetId) {
+          appliedRuleSet = buildAppliedRuleSetSnapshot(activePresetId, presetStore.slots[activePresetId].rules);
+          saveAppliedRuleSet();
+        }
+        renderPresetBar();
+        syncRulesToCloudIfLoggedIn();
+      }
+
+      function applyActivePresetAsRuleSet() {
+        if (activePresetId !== "standard" && hasUnsavedPresetChanges()) {
+          saveCurrentStateToPreset(activePresetId, false);
+        }
+        appliedRuleSet = buildAppliedRuleSetSnapshot(activePresetId, activePresetId === "standard" ? getStandardRuleStateSnapshot() : getPresetRuleStateSnapshot(activePresetId));
+        saveAppliedRuleSet();
+        state = getCurrentRuleStateSnapshot(appliedRuleSet.rules);
+        saveState();
+        renderPresetBar();
+        syncRulesToCloudIfLoggedIn();
+      }
+
+      function activatePreset(presetId) {
+        activePresetId = presetId;
+        presetStore.activePresetId = presetId;
+        savePresetStore();
+        applyStateSnapshot(getPresetRuleStateSnapshot(presetId));
+        setBaselineFromActivePreset();
+      }
+
+      function requestPresetSwitch(nextPresetId) {
+        if (nextPresetId === activePresetId) return;
+        if (!hasUnsavedPresetChanges()) {
+          activatePreset(nextPresetId);
+          return;
+        }
+
+        if (activePresetId === "standard" && nextPresetId !== "standard") {
+          if (window.confirm(getPresetDisplayName(nextPresetId) + "へ保存してから切り替えますか？")) {
+            saveCurrentStateToPreset(nextPresetId, true);
+            return;
+          }
+        } else if (activePresetId !== "standard") {
+          if (window.confirm("未保存の変更を現在のプリセットへ保存してから切り替えますか？")) {
+            saveCurrentStateToPreset(activePresetId, false);
+            activatePreset(nextPresetId);
+            return;
+          }
+        }
+
+        if (!window.confirm("未保存の変更を破棄して切り替えますか？")) return;
+        activatePreset(nextPresetId);
+      }
+
+      function loadState() {
+        try {
+          var rulesRaw = localStorage.getItem(rulesStorageKey);
+          if (rulesRaw) {
+            return JSON.parse(rulesRaw) || {};
+          }
+        } catch (e) {}
+
+        try {
+          var persistedRaw = localStorage.getItem(persistStorageKey);
+          if (persistedRaw) {
+            return JSON.parse(persistedRaw) || {};
+          }
+        } catch (e) {}
+
+        try {
+          var raw = sessionStorage.getItem(storageKey);
+          return raw ? JSON.parse(raw) : {};
+        } catch (e) {
+          return {};
+        }
+      }
+
+      function saveState() {
+        if (suppressStateSave) return;
+        state["tiles-tile-composition"] = normalizeTileCompositionValue(state["tiles-tile-composition"]);
+        compactChipTargetSettingsState();
+        try {
+          sessionStorage.setItem(storageKey, JSON.stringify(state));
+        } catch (e) {}
+
+        try {
+          localStorage.setItem(persistStorageKey, JSON.stringify(state));
+        } catch (e) {}
+
+        try {
+          localStorage.setItem(rulesStorageKey, JSON.stringify(state));
+        } catch (e) {}
+        renderPresetBar();
+      }
+
+      function normalizeLegacyChoiceValue(key, value) {
+        if (key === "basic-atozuke-type") {
+          var raw = String(value || "").toLowerCase();
+          if (raw === "on") return "allow";
+          if (raw === "off") return "kanzen_sakizuke";
+          if (raw === "no_atozuke") return "kanzen_sakizuke";
+        }
+        return value;
+      }
+
+      function activateMainTab(tabName) {
+        topTabButtons.forEach(function (button) {
+          var isActive = button.dataset.tab === tabName;
+          button.setAttribute("aria-selected", isActive ? "true" : "false");
+        });
+
+        mainPanels.forEach(function (panel) {
+          panel.classList.toggle("isActive", panel.id === "panel-" + tabName);
+        });
+
+        state.activeMainTab = tabName;
+        saveState();
+      }
+
+      function updateSwitchLabel(key, value) {
+        var label = document.querySelector('[data-label-for="' + key + '"]');
+        if (!label) return;
+        label.textContent = value ? "採用" : "不採用";
+      }
+
+      function setBoolValue(control, value) {
+        control.classList.toggle("isOn", value);
+        control.setAttribute("aria-checked", value ? "true" : "false");
+        state[control.dataset.settingKey] = !!value;
+        updateSwitchLabel(control.dataset.settingKey, !!value);
+        saveState();
+      }
+
+      function setBoolChipValue(control, value) {
+        control.classList.toggle("isSelected", value);
+        control.setAttribute("aria-pressed", value ? "true" : "false");
+        state[control.dataset.settingKey] = !!value;
+        saveState();
+      }
+
+      function setNumberValue(control, value) {
+        control.value = value;
+        state[control.dataset.settingKey] = String(value);
+        saveState();
+      }
+      function updateAtozukeExplain(value) {
+        var explain = document.querySelector('[data-atozuke-explain]');
+        if (!explain) return;
+
+        if (value === "kanzen_sakizuke") {
+          explain.textContent = "和了時に待ち全体で共通する役が必要です。かつ、第一副露が役に関与しているか、面前部分で確定している役が必要です。";
+          return;
+        }
+
+        explain.textContent = "後付けありです";
+      }
+
+      function setChoiceValue(key, value) {
+        value = String(normalizeLegacyChoiceValue(key, value) || "");
+        var controls = Array.prototype.slice.call(document.querySelectorAll('[data-setting-type="choice"][data-setting-key="' + key + '"]'));
+        controls.forEach(function (control) {
+          var isSelected = control.dataset.choiceValue === value;
+          control.classList.toggle("isSelected", isSelected);
+          control.setAttribute("aria-pressed", isSelected ? "true" : "false");
+        });
+        state[key] = String(value);
+        if (key === "basic-atozuke-type") {
+          updateAtozukeExplain(value);
+        }
+        if (key === "overview-chip-target-colored") {
+          compactChipTargetSettingsState();
+          renderChipTargetTileList();
+          if (chipTargetDetailSelectedTileCode) {
+            renderChipTargetDetailOverlay();
+          }
+        }
+        saveState();
+      }
+
+      function updateChoiceToggleLabel(key, value) {
+        var label = document.querySelector('[data-choice-label-for="' + key + '"]');
+        var control = document.querySelector('[data-setting-type="choice-toggle"][data-setting-key="' + key + '"]');
+        if (!label || !control) return;
+        label.textContent = value === control.dataset.choiceOn ? control.dataset.labelOn : control.dataset.labelOff;
+      }
+
+      function setChoiceToggleValue(control, value) {
+        var isOn = value === control.dataset.choiceOn;
+        control.classList.toggle("isOn", isOn);
+        control.setAttribute("aria-checked", isOn ? "true" : "false");
+        state[control.dataset.settingKey] = String(value);
+        updateChoiceToggleLabel(control.dataset.settingKey, String(value));
+        saveState();
+      }
+
+      function getSettingRowPrimaryKey(row) {
+        var control = row ? row.querySelector("[data-setting-key]") : null;
+        return control ? String(control.dataset.settingKey || "") : "";
+      }
+
+      function getRuleHelpText(row, primaryKey) {
+        var desc = row ? row.querySelector(".settingDesc") : null;
+        var label = row ? row.querySelector(".settingLabel") : null;
+        var descText = desc ? String(desc.textContent || "").trim() : "";
+        var labelText = label ? String(label.textContent || "").trim() : "この項目";
+        if (ruleHelpTextByKey[primaryKey]) return ruleHelpTextByKey[primaryKey];
+        if (descText) return descText;
+        return labelText + "の動きを切り替える項目です。普段の卓ルールに近い内容を選ぶ使い方を想定しています。";
+      }
+
+      function closeRuleHelpBoxes(exceptButton) {
+        Array.prototype.forEach.call(document.querySelectorAll(".ruleHelpBtn"), function (button) {
+          if (exceptButton && button === exceptButton) return;
+          button.setAttribute("aria-expanded", "false");
+        });
+        Array.prototype.forEach.call(document.querySelectorAll(".ruleHelpBox"), function (box) {
+          if (exceptButton && exceptButton.nextSibling === box) return;
+          box.classList.remove("isOpen");
+        });
+      }
+
+      function setupRuleHelpButtons() {
+        Array.prototype.forEach.call(document.querySelectorAll(".settingRow .settingMeta"), function (meta, index) {
+          var label = meta.querySelector(".settingLabel");
+          if (!label || meta.querySelector(".ruleHelpBtn")) return;
+          var row = meta.closest(".settingRow");
+          var primaryKey = getSettingRowPrimaryKey(row);
+
+          var labelRow = document.createElement("div");
+          labelRow.className = "settingLabelRow";
+          label.parentNode.insertBefore(labelRow, label);
+          labelRow.appendChild(label);
+
+          var helpBtn = document.createElement("button");
+          helpBtn.type = "button";
+          helpBtn.className = "ruleHelpBtn";
+          helpBtn.textContent = "?";
+          helpBtn.setAttribute("aria-expanded", "false");
+          helpBtn.setAttribute("aria-label", (label.textContent || "この項目") + "の説明を表示");
+          helpBtn.dataset.ruleHelpKey = primaryKey;
+          helpBtn.dataset.ruleHelpIndex = String(index);
+
+          var helpBox = document.createElement("div");
+          helpBox.className = "ruleHelpBox";
+          helpBox.id = "ruleHelpBox-" + index;
+          helpBox.textContent = getRuleHelpText(row, primaryKey);
+
+          helpBtn.setAttribute("aria-controls", helpBox.id);
+          helpBtn.addEventListener("click", function (event) {
+            event.stopPropagation();
+            var isOpen = helpBtn.getAttribute("aria-expanded") === "true";
+            closeRuleHelpBoxes(helpBtn);
+            helpBtn.setAttribute("aria-expanded", isOpen ? "false" : "true");
+            helpBox.classList.toggle("isOpen", !isOpen);
+          });
+
+          labelRow.appendChild(helpBtn);
+          meta.appendChild(helpBox);
+        });
+      }
+
+      function ensurePresetHelpUi() {
+        if (!presetBarTitleBox || !presetBarTitle || presetHelpBtn || presetHelpBox) return;
+
+        var titleRow = document.createElement("div");
+        titleRow.className = "presetBarTitleRow";
+        presetBarTitle.parentNode.insertBefore(titleRow, presetBarTitle);
+        titleRow.appendChild(presetBarTitle);
+
+        presetHelpBtn = document.createElement("button");
+        presetHelpBtn.type = "button";
+        presetHelpBtn.className = "presetHelpBtn";
+        presetHelpBtn.textContent = "?";
+        presetHelpBtn.id = "presetHelpBtn";
+        presetHelpBtn.setAttribute("aria-expanded", "false");
+        presetHelpBtn.setAttribute("aria-label", "ルールプリセットの説明を表示");
+
+        presetHelpBox = document.createElement("div");
+        presetHelpBox.className = "presetHelpBox";
+        presetHelpBox.id = "presetHelpBox";
+        presetHelpBox.textContent = "標準ルールは読み取り専用です。プリセット1〜5は保存用の枠で、選んだプリセットに現在の内容を書き込みながら切り替えられます。このページは「タブで項目を見る → 値を調整する → 必要ならプリセットに保存する → 採用して対局へ反映する」という使い方を想定しています。";
+
+        presetHelpBtn.setAttribute("aria-controls", presetHelpBox.id);
+        presetHelpBtn.addEventListener("click", function (event) {
+          event.stopPropagation();
+          var isOpen = presetHelpBtn.getAttribute("aria-expanded") === "true";
+          presetHelpBtn.setAttribute("aria-expanded", isOpen ? "false" : "true");
+          presetHelpBox.classList.toggle("isOpen", !isOpen);
+        });
+
+        titleRow.appendChild(presetHelpBtn);
+        presetBarTitleBox.appendChild(presetHelpBox);
+        if (presetBarLead) {
+          presetBarLead.setAttribute("aria-hidden", "true");
+        }
+      }
+
+      function ensurePresetSaveButtonPlacement() {
+        if (!presetSlotRow || !savePresetBtn) return;
+        if (savePresetBtn.parentNode !== presetSlotRow) {
+          presetSlotRow.appendChild(savePresetBtn);
+        }
+      }
+
+      function closePresetHelpBox() {
+        if (!presetHelpBtn || !presetHelpBox) return;
+        presetHelpBtn.setAttribute("aria-expanded", "false");
+        presetHelpBox.classList.remove("isOpen");
+      }
+
+
+      function resetPanel(panelKey) {
+        var panel = document.getElementById("panel-" + panelKey);
+        if (!panel) return;
+
+        Array.prototype.slice.call(panel.querySelectorAll('[data-setting-type="bool"]')).forEach(function (control) {
+          var value = String(control.dataset.default) === "true";
+          setBoolValue(control, value);
+        });
+
+        Array.prototype.slice.call(panel.querySelectorAll('[data-setting-type="number"]')).forEach(function (control) {
+          setNumberValue(control, control.dataset.default || "");
+        });
+
+        Array.prototype.slice.call(panel.querySelectorAll('[data-setting-type="bool-chip"]')).forEach(function (control) {
+          var value = String(control.dataset.default) === "true";
+          setBoolChipValue(control, value);
+        });
+
+        var choiceGroups = {};
+        Array.prototype.slice.call(panel.querySelectorAll('[data-setting-type="choice"]')).forEach(function (control) {
+          var key = control.dataset.settingKey;
+          if (!choiceGroups[key]) {
+            choiceGroups[key] = control.dataset.default || control.dataset.choiceValue || "";
+          }
+        });
+
+        Object.keys(choiceGroups).forEach(function (key) {
+          setChoiceValue(key, choiceGroups[key]);
+        });
+
+        Array.prototype.slice.call(panel.querySelectorAll('[data-setting-type="choice-toggle"]')).forEach(function (control) {
+          setChoiceToggleValue(control, control.dataset.default || control.dataset.choiceOn || "");
+        });
+
+        if (panelKey === "tiles") {
+          state["tiles-tile-composition"] = normalizeTileCompositionValue(buildDefaultTileComposition());
+          state["tiles-chip-target-settings"] = buildDefaultChipTargetSettings();
+          renderTileCompositionSummary();
+          renderTileCompositionGrid();
+          renderTileCompositionEditor();
+          renderChipTargetTileList();
+          saveState();
+        }
+      }
+
+      topTabButtons.forEach(function (button) {
+        button.addEventListener("click", function () {
+          activateMainTab(button.dataset.tab);
+        });
+      });
+
+      presetSlotButtons.forEach(function (button) {
+        button.addEventListener("click", function () {
+          hasPresetActionIntent = true;
+          renderPresetBar();
+          requestPresetSwitch(button.dataset.presetId);
+        });
+      });
+
+      if (savePresetBtn) {
+        savePresetBtn.addEventListener("click", function () {
+          handlePresetSaveAction();
+        });
+      }
+
+      if (applyPresetBtn) {
+        applyPresetBtn.addEventListener("click", function () {
+          applyActivePresetAsRuleSet();
+        });
+      }
+
+      if (renamePresetBtn) {
+        renamePresetBtn.addEventListener("click", function () {
+          renameActivePreset();
+        });
+      }
+
+      boolControls.forEach(function (control) {
+        control.addEventListener("click", function () {
+          var current = control.getAttribute("aria-checked") === "true";
+          setBoolValue(control, !current);
+        });
+      });
+
+      boolChipControls.forEach(function (control) {
+        control.addEventListener("click", function () {
+          var current = control.classList.contains("isSelected");
+          setBoolChipValue(control, !current);
+        });
+      });
+
+      numberControls.forEach(function (control) {
+        control.addEventListener("input", function () {
+          setNumberValue(control, control.value);
+        });
+      });
+      choiceControls.forEach(function (control) {
+        control.addEventListener("click", function () {
+          setChoiceValue(control.dataset.settingKey, control.dataset.choiceValue);
+        });
+      });
+
+      choiceToggleControls.forEach(function (control) {
+        control.addEventListener("click", function () {
+          var current = state[control.dataset.settingKey];
+          var nextValue = current === control.dataset.choiceOn ? control.dataset.choiceOff : control.dataset.choiceOn;
+          setChoiceToggleValue(control, nextValue);
+        });
+      });
+
+      if (tileCompositionEditBtn) {
+        tileCompositionEditBtn.addEventListener("click", function () {
+          openTileCompositionOverlay();
+        });
+      }
+
+      if (tileCompositionResetBtn) {
+        tileCompositionResetBtn.addEventListener("click", function () {
+          resetTileCompositionToDefault();
+        });
+      }
+
+      if (tileCompositionResetTileBtn) {
+        tileCompositionResetTileBtn.addEventListener("click", function () {
+          resetTileCompositionCode(tileCompositionSelectedCodeValue);
+        });
+      }
+
+      tileCompositionCountInputs.forEach(function (input) {
+        input.addEventListener("input", function () {
+          setTileCompositionCount(tileCompositionSelectedCodeValue, input.dataset.colorKey, input.value);
+        });
+      });
+
+      tileCompositionCloseButtons.forEach(function (button) {
+        button.addEventListener("click", function () {
+          closeTileCompositionOverlay();
+        });
+      });
+
+      if (tileCompositionOverlay) {
+        tileCompositionOverlay.addEventListener("click", function (event) {
+          if (event.target === tileCompositionOverlay) closeTileCompositionOverlay();
+        });
+      }
+
+      if (chipTargetDetailCloseBtn) {
+        chipTargetDetailCloseBtn.addEventListener("click", function () {
+          closeChipTargetDetailOverlay();
+        });
+      }
+
+      if (chipTargetDetailOverlay) {
+        chipTargetDetailOverlay.addEventListener("click", function (event) {
+          if (event.target === chipTargetDetailOverlay) closeChipTargetDetailOverlay();
+        });
+      }
+
+      if (chipTargetDetailDoraSwitch) {
+        chipTargetDetailDoraSwitch.addEventListener("click", function () {
+          if (!chipTargetDetailSelectedTileCode) return;
+          var currentSetting = getChipTargetTileSetting(chipTargetDetailSelectedTileCode);
+          setChipTargetTileSettingField(chipTargetDetailSelectedTileCode, "dora", !currentSetting.dora);
+        });
+      }
+
+      if (chipTargetDetailUseDetailedDoraSwitch) {
+        chipTargetDetailUseDetailedDoraSwitch.addEventListener("click", function () {
+          if (!chipTargetDetailSelectedTileCode) return;
+          var currentSetting = getChipTargetTileSetting(chipTargetDetailSelectedTileCode);
+          setChipTargetTileSettingField(chipTargetDetailSelectedTileCode, "useDetailedDora", !currentSetting.useDetailedDora);
+        });
+      }
+
+      if (chipTargetDetailUseDetailedChipSwitch) {
+        chipTargetDetailUseDetailedChipSwitch.addEventListener("click", function () {
+          if (!chipTargetDetailSelectedTileCode) return;
+          var currentSetting = getChipTargetTileSetting(chipTargetDetailSelectedTileCode);
+          setChipTargetTileSettingField(chipTargetDetailSelectedTileCode, "useDetailedChip", !currentSetting.useDetailedChip);
+        });
+      }
+
+      if (chipTargetDetailDoraMenzenCount) {
+        chipTargetDetailDoraMenzenCount.addEventListener("input", function () {
+          if (!chipTargetDetailSelectedTileCode) return;
+          setChipTargetTileSettingField(chipTargetDetailSelectedTileCode, "doraMenzenCount", chipTargetDetailDoraMenzenCount.value);
+        });
+      }
+
+      if (chipTargetDetailDoraFuroCount) {
+        chipTargetDetailDoraFuroCount.addEventListener("input", function () {
+          if (!chipTargetDetailSelectedTileCode) return;
+          setChipTargetTileSettingField(chipTargetDetailSelectedTileCode, "doraFuroCount", chipTargetDetailDoraFuroCount.value);
+        });
+      }
+
+      if (chipTargetDetailChipMenzenCount) {
+        chipTargetDetailChipMenzenCount.addEventListener("input", function () {
+          if (!chipTargetDetailSelectedTileCode) return;
+          setChipTargetTileSettingField(chipTargetDetailSelectedTileCode, "chipMenzenCount", chipTargetDetailChipMenzenCount.value);
+        });
+      }
+
+      if (chipTargetDetailChipFuroCount) {
+        chipTargetDetailChipFuroCount.addEventListener("input", function () {
+          if (!chipTargetDetailSelectedTileCode) return;
+          setChipTargetTileSettingField(chipTargetDetailSelectedTileCode, "chipFuroCount", chipTargetDetailChipFuroCount.value);
+        });
+      }
+
+      document.addEventListener("keydown", function (event) {
+        if (event.key === "Escape") {
+          if (presetHelpBox && presetHelpBox.classList.contains("isOpen")) {
+            closePresetHelpBox();
+            return;
+          }
+          if (document.querySelector(".ruleHelpBox.isOpen")) {
+            closeRuleHelpBoxes();
+            return;
+          }
+          if (chipTargetDetailOverlay && chipTargetDetailOverlay.classList.contains("isOpen")) {
+            closeChipTargetDetailOverlay();
+            return;
+          }
+          if (tileCompositionOverlay && tileCompositionOverlay.classList.contains("isOpen")) {
+            closeTileCompositionOverlay();
+          }
+        }
+      });
+
+      document.addEventListener("click", function (event) {
+        if (hasPresetActionIntent && !event.target.closest(".presetBar")) {
+          hasPresetActionIntent = false;
+          renderPresetBar();
+        }
+        if (presetHelpBtn && presetHelpBox && !event.target.closest(".presetBarTitleBox")) {
+          closePresetHelpBox();
+        }
+        if (!event.target.closest(".settingMeta")) {
+          closeRuleHelpBoxes();
+        }
+      });
+
+      resetButtons.forEach(function (button) {
+        button.addEventListener("click", function () {
+          resetPanel(button.dataset.resetPanel);
+        });
+      });
+
+      if (resetActiveTabBtn) {
+        resetActiveTabBtn.addEventListener("click", function () {
+          var activeTabButton = document.querySelector('.topTabBtn[aria-selected="true"]');
+          if (!activeTabButton) return;
+          resetPanel(activeTabButton.dataset.tab);
+        });
+      }
+
+      if (scrollActiveTabBtn) {
+        scrollActiveTabBtn.addEventListener("click", function () {
+          var activePanel = document.querySelector(".mainPanel.isActive");
+          if (!activePanel) return;
+          activePanel.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+      }
+
+      ensurePresetHelpUi();
+      ensurePresetSaveButtonPlacement();
+      setupRuleHelpButtons();
+      applyStateSnapshot(state);
+      setBaselineFromActivePreset();
+    })();
+  </script>
+</body>
+</html>

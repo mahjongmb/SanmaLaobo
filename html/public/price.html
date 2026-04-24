@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>料金・営業時間 | 麻雀MB</title>
+  <meta name="description" content="麻雀MBの料金・営業時間のご案内。三人麻雀メイン、四人麻雀、ライト三麻、貸卓料金、営業時間、予約方法を掲載しています。">
+  <style>
+    :root {
+      --bg: #f6f7f9;
+      --card: #ffffff;
+      --text: #1f2937;
+      --muted: #5f6b7a;
+      --line: #e5e7eb;
+      --accent: #0f766e;
+      --accent-soft: #ecfdf5;
+      --accent-2: #1d4ed8;
+      --accent-3: #ea580c;
+      --shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+      --radius: 22px;
+      --max: 1080px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(29, 78, 216, 0.08), transparent 28%),
+        radial-gradient(circle at top right, rgba(234, 88, 12, 0.08), transparent 28%),
+        linear-gradient(180deg, #ffffff 0%, var(--bg) 100%);
+      line-height: 1.7;
+    }
+
+    .wrap {
+      width: min(calc(100% - 28px), var(--max));
+      margin: 0 auto;
+    }
+
+    .hero {
+      padding: 26px 0 18px;
+    }
+
+    .hero-card {
+      background: linear-gradient(135deg, #0f172a 0%, #16354a 55%, #14532d 100%);
+      color: #fff;
+      border-radius: 28px;
+      padding: 28px 24px;
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-card::before,
+    .hero-card::after {
+      content: "";
+      position: absolute;
+      border-radius: 999px;
+      filter: blur(8px);
+      opacity: 0.3;
+    }
+
+    .hero-card::before {
+      width: 220px;
+      height: 220px;
+      background: rgba(59, 130, 246, 0.35);
+      top: -80px;
+      right: -40px;
+    }
+
+    .hero-card::after {
+      width: 180px;
+      height: 180px;
+      background: rgba(34, 197, 94, 0.28);
+      bottom: -70px;
+      left: -30px;
+    }
+
+    .label {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.12);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      backdrop-filter: blur(6px);
+    }
+
+    h1 {
+      margin: 14px 0 10px;
+      font-size: clamp(30px, 5vw, 48px);
+      line-height: 1.15;
+      letter-spacing: 0.02em;
+    }
+
+    .hero p {
+      margin: 0;
+      font-size: clamp(15px, 2.2vw, 18px);
+      color: rgba(255,255,255,0.9);
+      max-width: 720px;
+    }
+
+    .section {
+      padding: 12px 0;
+    }
+
+    .section-title {
+      margin: 0 0 14px;
+      font-size: clamp(24px, 3.3vw, 34px);
+      line-height: 1.2;
+    }
+
+    .section-sub {
+      margin: 0 0 20px;
+      color: var(--muted);
+      font-size: 15px;
+    }
+
+    .notice {
+      background: var(--accent-soft);
+      border: 1px solid #ccebdc;
+      border-radius: var(--radius);
+      padding: 18px 18px;
+      box-shadow: 0 6px 18px rgba(15, 118, 110, 0.06);
+    }
+
+    .notice strong {
+      display: block;
+      font-size: 18px;
+      margin-bottom: 6px;
+      color: #065f46;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 22px;
+      box-shadow: var(--shadow);
+    }
+
+    .card h3 {
+      margin: 0 0 6px;
+      font-size: 22px;
+      line-height: 1.25;
+    }
+
+    .tag {
+      display: inline-block;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      padding: 6px 10px;
+      border-radius: 999px;
+      margin-bottom: 12px;
+    }
+
+    .tag-main { background: #ecfdf5; color: #047857; }
+    .tag-light { background: #eff6ff; color: #1d4ed8; }
+    .tag-four { background: #fff7ed; color: #c2410c; }
+    .tag-table { background: #f5f3ff; color: #6d28d9; }
+
+    .price-main {
+      font-size: clamp(26px, 4vw, 38px);
+      font-weight: 800;
+      line-height: 1.2;
+      margin: 4px 0 12px;
+    }
+
+    .price-main small {
+      font-size: 0.48em;
+      font-weight: 700;
+      color: var(--muted);
+    }
+
+    ul {
+      margin: 0;
+      padding-left: 1.15em;
+    }
+
+    li + li { margin-top: 6px; }
+
+    .muted {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .hours {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .hours-box {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 22px;
+      box-shadow: var(--shadow);
+    }
+
+    .hours-day {
+      font-size: 15px;
+      color: var(--muted);
+      margin-bottom: 6px;
+      font-weight: 700;
+    }
+
+    .hours-time {
+      font-size: clamp(28px, 4.2vw, 40px);
+      font-weight: 800;
+      line-height: 1.1;
+      margin: 0;
+    }
+
+    .info-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .info-item {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 18px;
+      box-shadow: var(--shadow);
+    }
+
+    .info-item strong {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 16px;
+    }
+
+    footer {
+      padding: 10px 0 34px;
+    }
+
+    .footer-card {
+      background: #111827;
+      color: rgba(255,255,255,0.92);
+      border-radius: 24px;
+      padding: 22px;
+      box-shadow: var(--shadow);
+    }
+
+    .footer-card h2 {
+      margin: 0 0 10px;
+      font-size: 22px;
+    }
+
+    .footer-card p {
+      margin: 0;
+      color: rgba(255,255,255,0.82);
+    }
+
+    @media (max-width: 860px) {
+      .grid,
+      .hours {
+        grid-template-columns: 1fr;
+      }
+
+      .hero-card {
+        padding: 24px 18px;
+        border-radius: 24px;
+      }
+
+      .card,
+      .hours-box,
+      .notice,
+      .footer-card {
+        padding: 18px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .wrap {
+        width: min(calc(100% - 18px), var(--max));
+      }
+
+      .hero {
+        padding-top: 14px;
+      }
+
+      .section {
+        padding: 10px 0;
+      }
+
+      .price-main {
+        font-size: 30px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <div class="wrap">
+      <div class="hero-card">
+        <div class="label">麻雀MB</div>
+        <h1>料金・営業時間</h1>
+        <p>当店は三人麻雀メインです。フリー・貸卓の料金と、営業時間・ご予約方法をご案内しています。</p>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="section">
+      <div class="wrap">
+        <div class="notice">
+          <strong>共通のご案内</strong>
+          <div>フリー・貸卓ともに、別途ドリンクバー料金 <b>300円</b> がかかります。</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="wrap">
+        <h2 class="section-title">料金案内</h2>
+        <p class="section-sub">メインの三人麻雀を中心に、ライト三麻・四人麻雀・貸卓の料金を掲載しています。</p>
+
+        <div class="grid">
+          <article class="card">
+            <div class="tag tag-main">メイン</div>
+            <h3>三人麻雀</h3>
+            <div class="price-main">平均 500円 <small>／ゲーム代</small></div>
+            <ul>
+              <li>着順によってゲーム代が変動します</li>
+              <li>トップ　600円</li>
+              <li>2着　500円</li>
+              <li>ラス　400円</li>
+              <li>別途ドリンクバー 300円</li>
+            </ul>
+          </article>
+
+          <article class="card">
+            <div class="tag tag-light">低レート</div>
+            <h3>ライト三麻</h3>
+            <div class="price-main">300円 <small>＋ トップ賞 100円</small></div>
+            <ul>
+              <li>レートを抑えて遊びやすい三人麻雀です</li>
+              <li>別途ドリンクバー 300円</li>
+            </ul>
+          </article>
+
+          <article class="card">
+            <div class="tag tag-four">四人麻雀</div>
+            <h3>四人麻雀</h3>
+            <div class="price-main">600円 <small>＋ トップ賞 100円</small></div>
+            <ul>
+              <li>四人麻雀のご利用も可能です</li>
+              <li>別途ドリンクバー 300円</li>
+            </ul>
+          </article>
+
+          <article class="card">
+            <div class="tag tag-table">貸卓</div>
+            <h3>貸卓</h3>
+            <div class="price-main">1時間 1,200円</div>
+            <ul>
+              <li>1卓あたりの料金です</li>
+              <li>別途お一人様ドリンクバー 300円</li>
+            </ul>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="wrap">
+        <h2 class="section-title">営業時間</h2>
+        <p class="section-sub">平日・土曜日と、日曜日で営業時間が異なります。</p>
+
+        <div class="hours">
+          <div class="hours-box">
+            <div class="hours-day">平日・土曜日</div>
+            <p class="hours-time">15:00〜24:00</p>
+          </div>
+          <div class="hours-box">
+            <div class="hours-day">日曜日</div>
+            <p class="hours-time">12:00〜24:00</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="wrap">
+        <h2 class="section-title">ご利用案内</h2>
+        <div class="info-list">
+          <div class="info-item">
+            <strong>定休日</strong>
+            年中無休で営業しています。
+          </div>
+          <div class="info-item">
+            <strong>ご予約・お問い合わせ</strong>
+            お電話または公式LINEのトークにて承っております。
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <div class="footer-card">
+        <h2>麻雀MB</h2>
+        <p>料金や営業時間の詳細確認、ご予約・お問い合わせはお気軽にどうぞ。</p>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

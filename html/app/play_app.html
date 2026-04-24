@@ -1,0 +1,1955 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <title>MBサンマアプリ版</title>
+
+  <script>
+    (function(){
+      window.MBSANMA_ASSET_PREFIX = "../../";
+      const ACTIVE_SESSION_STORAGE_KEY = "mbsanma_app_active_session_v1";
+      const LEGACY_ACTIVE_SESSION_STORAGE_KEY = "mbsanma_visitor_active_session_v1";
+
+      function normalizeSession(src){
+        const mode = src && src.mode === "account" ? "account" : (src && src.mode === "local" ? "local" : "");
+        return {
+          mode,
+          accountId: mode === "account" ? String(src && src.accountId || "") : ""
+        };
+      }
+
+      function readSession(storageKey){
+        try{
+          const raw = sessionStorage.getItem(storageKey);
+          if (!raw) return null;
+          const parsed = normalizeSession(JSON.parse(raw));
+          return parsed.mode ? parsed : null;
+        }catch(e){
+          return null;
+        }
+      }
+
+      const current = readSession(ACTIVE_SESSION_STORAGE_KEY);
+      if (current){
+        return;
+      }
+
+      const legacy = readSession(LEGACY_ACTIVE_SESSION_STORAGE_KEY);
+      if (legacy){
+        try{
+          sessionStorage.setItem(ACTIVE_SESSION_STORAGE_KEY, JSON.stringify(legacy));
+        }catch(e){}
+        return;
+      }
+
+      location.replace("index_app.html");
+    })();
+  </script>
+
+  <!-- CSS（../../style/ 配下が正） -->
+  <link rel="stylesheet" href="../../style/base.css" />
+  <link rel="stylesheet" href="../../style/overlay.css" />
+  <link rel="stylesheet" href="../../style/hand.css" />
+  <link rel="stylesheet" href="../../style/center.css" />
+  <link rel="stylesheet" href="../../style/cpu.css" />
+  <link rel="stylesheet" href="../../style/river.css" />
+  <link rel="stylesheet" href="../../style/rightArea.css" />
+
+  <style>
+    :root{
+      --appChromeBorder: rgba(255, 248, 230, 0.14);
+      --appChromePanel:
+        linear-gradient(180deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.05) 100%),
+        linear-gradient(135deg, rgba(25, 37, 31, 0.94) 0%, rgba(10, 15, 13, 0.96) 100%);
+      --appChromeShadow:
+        0 22px 52px rgba(0,0,0,0.34),
+        inset 0 1px 0 rgba(255,255,255,0.14);
+    }
+    body{
+      background:
+        radial-gradient(circle at top, rgba(111, 158, 118, 0.16) 0%, rgba(111, 158, 118, 0) 32%),
+        linear-gradient(180deg, #0c1511 0%, #09100d 52%, #050807 100%);
+    }
+    .app{
+      position: relative;
+      isolation: isolate;
+    }
+    .app::before{
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(circle at 18% 14%, rgba(209, 180, 108, 0.10) 0%, rgba(209, 180, 108, 0) 22%),
+        radial-gradient(circle at 84% 12%, rgba(113, 171, 150, 0.10) 0%, rgba(113, 171, 150, 0) 24%),
+        linear-gradient(180deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0) 20%);
+      z-index: -2;
+    }
+    .boardStage{
+      background:
+        radial-gradient(circle at center, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 34%, rgba(255,255,255,0) 62%);
+    }
+    .boardViewport::before{
+      content: "";
+      position: absolute;
+      inset: 24px;
+      border-radius: 36px;
+      border: 1px solid rgba(255,255,255,0.05);
+      background: linear-gradient(180deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.05),
+        0 30px 80px rgba(0,0,0,0.20);
+      pointer-events: none;
+    }
+    .gameBoard{
+      border-radius: 34px;
+      box-shadow:
+        0 42px 90px rgba(0,0,0,0.46),
+        0 0 0 1px rgba(255,255,255,0.05),
+        inset 0 1px 0 rgba(255,255,255,0.08);
+    }
+    .gameBoard::before,
+    .gameBoard::after{
+      content: "";
+      position: absolute;
+      pointer-events: none;
+    }
+    .gameBoard::before{
+      inset: 0;
+      border-radius: 34px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.02) 16%, rgba(255,255,255,0) 28%);
+      mix-blend-mode: screen;
+    }
+    .gameBoard::after{
+      left: 34px;
+      right: 34px;
+      top: 18px;
+      height: 86px;
+      border-radius: 999px;
+      background: radial-gradient(circle at center, rgba(0,0,0,0.18) 0%, rgba(0,0,0,0) 72%);
+      opacity: 0.8;
+    }
+    #settingsOverlay{
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.58);
+      z-index: 4000;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+    #settingsPanel{
+      width: min(920px, 96vw);
+      min-height: min(620px, 84vh);
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: rgba(18, 24, 20, 0.96);
+      color: #f3f5f2;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      border-radius: 16px;
+      box-shadow: 0 18px 48px rgba(0, 0, 0, 0.45);
+      padding: 18px;
+      box-sizing: border-box;
+      backdrop-filter: blur(8px);
+    }
+    #settingsHeader{
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+      flex: 0 0 auto;
+    }
+    #settingsTitleWrap{
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    #settingsTitle{
+      font-size: 22px;
+      font-weight: 800;
+      line-height: 1.2;
+    }
+    #settingsSubTitle{
+      font-size: 12px;
+      opacity: 0.72;
+      line-height: 1.3;
+    }
+    #settingsCloseBtn{
+      appearance: none;
+      border: 0;
+      border-radius: 10px;
+      padding: 10px 14px;
+      cursor: pointer;
+      font-weight: 700;
+    }
+    #settingsBody{
+      flex: 1 1 auto;
+      min-height: 0;
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr);
+      gap: 12px;
+      overflow: hidden;
+    }
+    #settingsTabs{
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      flex: 0 0 auto;
+    }
+    .settingsTabBtn{
+      appearance: none;
+      border: 1px solid rgba(255,255,255,0.10);
+      border-radius: 12px;
+      min-height: 42px;
+      padding: 0 14px;
+      background: rgba(255,255,255,0.04);
+      color: rgba(243,245,242,0.76);
+      font-size: 14px;
+      font-weight: 800;
+      letter-spacing: 0.03em;
+      cursor: pointer;
+      transition: background 140ms ease, color 140ms ease, border-color 140ms ease, transform 140ms ease, box-shadow 140ms ease;
+    }
+    .settingsTabBtn:hover{
+      transform: translateY(-1px);
+    }
+    .settingsTabBtn.isActive{
+      border-color: rgba(182, 227, 201, 0.24);
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.05) 100%),
+        rgba(62, 101, 81, 0.82);
+      color: #ffffff;
+      box-shadow:
+        0 10px 18px rgba(0,0,0,0.18),
+        inset 0 1px 0 rgba(255,255,255,0.12);
+    }
+    #settingsTabPanels{
+      min-height: 0;
+      overflow: hidden;
+    }
+    .settingsTabPane{
+      height: 100%;
+      display: none;
+    }
+    .settingsTabPane.isActive{
+      display: block;
+    }
+    .settingsPaneInner{
+      height: 100%;
+      overflow: hidden;
+    }
+    .settingsSection{
+      height: 100%;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.10);
+      border-radius: 14px;
+      padding: 14px;
+      box-sizing: border-box;
+      overflow: hidden;
+    }
+    .settingsSectionTitle{
+      font-size: 16px;
+      font-weight: 800;
+      margin-bottom: 12px;
+    }
+    .settingsSectionNote{
+      display: none;
+    }
+    .settingsToggleRow{
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .settingsCheck{
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      font-weight: 700;
+    }
+    .settingsSegment{
+      display: inline-flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .settingsSegmentBtn{
+      appearance: none;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 999px;
+      min-height: 34px;
+      padding: 0 14px;
+      background: rgba(255,255,255,0.04);
+      color: rgba(243,245,242,0.78);
+      font-size: 13px;
+      font-weight: 800;
+      cursor: pointer;
+      transition:
+        background 140ms ease,
+        color 140ms ease,
+        transform 140ms ease,
+        box-shadow 140ms ease,
+        border-color 140ms ease;
+    }
+    .settingsSegmentBtn:hover{
+      transform: translateY(-1px);
+    }
+    .settingsSegmentBtn.isActive{
+      border-color: rgba(182, 227, 201, 0.28);
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.05) 100%),
+        rgba(62, 101, 81, 0.82);
+      color: #ffffff;
+      box-shadow:
+        0 8px 16px rgba(0,0,0,0.18),
+        inset 0 1px 0 rgba(255,255,255,0.12);
+    }
+    .settingsSeats{
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      height: 100%;
+    }
+    .settingsSeatCard{
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 12px;
+      box-sizing: border-box;
+    }
+    .settingsSeatTitle{
+      font-size: 15px;
+      font-weight: 800;
+      margin-bottom: 12px;
+    }
+    .settingsField{
+      display: grid;
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+    .settingsField:last-child{
+      margin-bottom: 0;
+    }
+    .settingsLabel{
+      font-size: 13px;
+      font-weight: 700;
+      opacity: 0.92;
+    }
+    .settingsPlayerModeRow{
+      display: grid;
+      gap: 8px;
+    }
+    .settingsModeSwitch{
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      width: fit-content;
+      padding: 6px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(0, 0, 0, 0.24);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.08),
+        0 8px 18px rgba(0,0,0,0.18);
+    }
+    .settingsModeSwitchBtn{
+      appearance: none;
+      border: 0;
+      min-width: 112px;
+      min-height: 42px;
+      padding: 0 18px;
+      border-radius: 999px;
+      background: transparent;
+      color: rgba(243, 245, 242, 0.82);
+      font-size: 14px;
+      font-weight: 800;
+      letter-spacing: 0.03em;
+      cursor: pointer;
+      transition:
+        background 140ms ease,
+        color 140ms ease,
+        transform 140ms ease,
+        box-shadow 140ms ease;
+    }
+    .settingsModeSwitchBtn:hover{
+      transform: translateY(-1px);
+    }
+    .settingsModeSwitchBtn.isActive{
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.20) 0%, rgba(255,255,255,0.06) 100%),
+        rgba(76, 119, 98, 0.78);
+      color: #ffffff;
+      box-shadow:
+        0 10px 18px rgba(0,0,0,0.20),
+        inset 0 1px 0 rgba(255,255,255,0.14);
+    }
+    .settingsModeSummary{
+      display: grid;
+      gap: 6px;
+      margin-top: 4px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.03);
+    }
+    .settingsModeSummaryItem{
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      font-size: 12px;
+      line-height: 1.4;
+      color: rgba(243, 245, 242, 0.88);
+    }
+    .settingsModeSummaryLabel{
+      opacity: 0.72;
+      font-weight: 700;
+    }
+    .settingsModeSummaryValue{
+      font-weight: 800;
+      color: #ffffff;
+    }
+    .settingsHint{
+      display: none;
+    }
+    .settingsSelect{
+      width: 100%;
+      min-height: 40px;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      background: rgba(0, 0, 0, 0.28);
+      color: #f3f5f2;
+      padding: 8px 10px;
+      box-sizing: border-box;
+    }
+    .settingsSelect:disabled{
+      opacity: 0.42;
+      cursor: not-allowed;
+    }
+    @media (orientation: landscape) and (max-height: 520px){
+      #settingsOverlay{
+        padding: 8px;
+      }
+      #settingsPanel{
+        width: min(96vw, 1280px);
+        min-height: 0;
+        max-height: 96vh;
+        padding: 10px 12px;
+        border-radius: 14px;
+      }
+      #settingsHeader{
+        gap: 8px;
+        margin-bottom: 8px;
+      }
+      #settingsTitle{
+        font-size: 18px;
+      }
+      #settingsSubTitle{
+        display: none;
+      }
+      #settingsCloseBtn{
+        min-height: 34px;
+        padding: 0 12px;
+        font-size: 12px;
+      }
+      #settingsBody{
+        gap: 8px;
+      }
+      #settingsTabs{
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 6px;
+      }
+      .settingsTabBtn{
+        min-height: 34px;
+        padding: 0 10px;
+        font-size: 11px;
+        border-radius: 10px;
+      }
+      #settingsTabPanels{
+        min-height: 0;
+      }
+      .settingsPaneInner{
+        height: 100%;
+        overflow: auto;
+      }
+      .settingsSection{
+        padding: 10px;
+        overflow: auto;
+      }
+      .settingsSectionTitle{
+        font-size: 14px;
+        margin-bottom: 8px;
+      }
+      .settingsToggleRow{
+        gap: 10px 14px;
+      }
+      .settingsCheck{
+        font-size: 12px;
+      }
+      .settingsSegment{
+        gap: 4px;
+      }
+      .settingsSegmentBtn{
+        min-height: 30px;
+        padding: 0 10px;
+        font-size: 11px;
+      }
+      .settingsSeats{
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+        height: auto;
+      }
+      .settingsSeatCard{
+        padding: 10px;
+      }
+      .settingsSeatTitle{
+        font-size: 13px;
+        margin-bottom: 8px;
+      }
+      .settingsField{
+        gap: 4px;
+        margin-bottom: 8px;
+      }
+      .settingsLabel{
+        font-size: 11px;
+      }
+      .settingsPlayerModeRow{
+        gap: 8px;
+      }
+      .settingsModeSwitch{
+        width: 100%;
+        gap: 4px;
+        padding: 4px;
+      }
+      .settingsModeSwitchBtn{
+        min-width: 0;
+        flex: 1 1 0;
+        min-height: 34px;
+        padding: 0 10px;
+        font-size: 11px;
+      }
+      .settingsModeSummary{
+        gap: 4px;
+        margin-top: 2px;
+        padding: 8px 10px;
+      }
+      .settingsModeSummaryItem{
+        font-size: 10px;
+        gap: 8px;
+      }
+      .settingsSelect{
+        min-height: 34px;
+        padding: 6px 8px;
+        font-size: 12px;
+      }
+    }
+
+    /* アプリ版専用：上部6ボタン（3×2） */
+    .appTopMetaRow{
+      position: fixed;
+      top: 10px;
+      left: 42px;
+      z-index: 19;
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      padding: 8px;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.03) 100%),
+        rgba(12, 19, 16, 0.74);
+      box-shadow:
+        0 18px 36px rgba(0,0,0,0.26),
+        inset 0 1px 0 rgba(255,255,255,0.10);
+      backdrop-filter: blur(12px);
+      max-width: calc(100vw - 68px);
+      flex-wrap: nowrap;
+    }
+    .boardTopControls{
+      top: 0.9%;
+      width: auto;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .boardTopAppControls{
+      position: relative;
+      display: grid !important;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      grid-template-rows: repeat(2, minmax(0, auto));
+      gap: 10px 10px;
+      width: 596px;
+      max-width: 596px;
+      align-items: stretch;
+      justify-content: center;
+      margin-left: auto;
+      margin-right: auto;
+      padding: 0;
+      border-radius: 0;
+      border: 0;
+      background: transparent;
+      box-shadow: none;
+      backdrop-filter: none;
+      transform: translateY(-6px);
+    }
+    .boardTopAppControls::before{
+      content: none;
+    }
+    .boardTopAppControls .topMenuBtn{
+      position: relative;
+      width: 100% !important;
+      min-width: 0 !important;
+      min-height: 44px !important;
+      height: 44px !important;
+      padding: 0 10px !important;
+      border-radius: 16px !important;
+      border-color: rgba(255,255,255,0.12) !important;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.05) 100%),
+        linear-gradient(135deg, rgba(34, 47, 40, 0.92) 0%, rgba(15, 21, 18, 0.96) 100%) !important;
+      box-shadow:
+        0 12px 24px rgba(0,0,0,0.24),
+        inset 0 1px 0 rgba(255,255,255,0.12),
+        inset 0 -1px 0 rgba(0,0,0,0.22) !important;
+      font-size: 14px !important;
+      font-weight: 800 !important;
+      letter-spacing: 0.08em !important;
+      line-height: 1 !important;
+      text-transform: uppercase;
+    }
+    .boardTopAppControls .topMenuBtn::before{
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: linear-gradient(180deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0) 42%);
+      pointer-events: none;
+      opacity: 0.9;
+    }
+    .boardTopAppControls .topMenuBtn:hover{
+      border-color: rgba(255,255,255,0.22) !important;
+      box-shadow:
+        0 16px 30px rgba(0,0,0,0.28),
+        0 0 0 1px rgba(255,255,255,0.04),
+        inset 0 1px 0 rgba(255,255,255,0.16),
+        inset 0 -1px 0 rgba(0,0,0,0.18) !important;
+    }
+    .boardTopRuleBadge{
+      margin-top: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 42px;
+      padding: 0 16px;
+      border-radius: 14px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.14) 0%, rgba(255,255,255,0.04) 100%),
+        rgba(24, 32, 29, 0.86);
+      border: 1px solid rgba(255,255,255,0.10);
+      box-shadow:
+        0 12px 24px rgba(0,0,0,0.22),
+        inset 0 1px 0 rgba(255,255,255,0.10);
+      color: #f3f1ea;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: none;
+      max-width: min(240px, 21vw);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    @media (orientation: landscape) and (max-height: 700px){
+      .appTopMetaRow{
+        top: 8px;
+        left: 30px;
+        gap: 7px;
+        padding: 7px;
+        border-radius: 16px;
+        max-width: calc(100vw - 48px);
+      }
+      .boardTopControls{
+        top: 0.3%;
+        gap: 8px;
+      }
+      .boardTopAppControls{
+        gap: 8px 8px;
+        width: 552px;
+        max-width: 552px;
+        transform: translateY(-4px);
+      }
+      .boardTopAppControls .topMenuBtn{
+        min-height: 40px !important;
+        height: 40px !important;
+        padding: 0 8px !important;
+        border-radius: 14px !important;
+        font-size: 13px !important;
+      }
+      .boardTopRuleBadge{
+        min-height: 38px;
+        font-size: 10px;
+        padding: 0 13px;
+        max-width: min(200px, 18vw);
+      }
+    }
+
+
+    #appTopBackBtn{
+      position: relative;
+      top: auto;
+      left: auto;
+      z-index: auto;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex: 0 0 auto;
+      min-width: 124px;
+      height: 42px;
+      padding: 0 16px;
+      border: 1px solid rgba(255,255,255,0.10);
+      border-radius: 14px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.14) 0%, rgba(255,255,255,0.04) 100%),
+        rgba(24, 32, 29, 0.86);
+      color: #f3f1ea;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: none;
+      cursor: pointer;
+      backdrop-filter: blur(12px);
+      box-shadow: var(--appChromeShadow);
+      transition: transform 140ms ease, box-shadow 140ms ease, border-color 140ms ease;
+    }
+    #appTopBackBtn:hover{
+      transform: translateY(-1px);
+      border-color: rgba(255,255,255,0.20);
+      box-shadow:
+        0 26px 44px rgba(0,0,0,0.30),
+        inset 0 1px 0 rgba(255,255,255,0.16);
+    }
+    #activeAccountBadge{
+      position: relative !important;
+      top: auto !important;
+      left: auto !important;
+      right: auto !important;
+      z-index: auto !important;
+      flex: 0 0 auto;
+      min-height: 42px !important;
+      padding: 0 16px !important;
+      border-radius: 14px !important;
+      border: 1px solid rgba(255,255,255,0.10) !important;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.14) 0%, rgba(255,255,255,0.04) 100%),
+        rgba(24, 32, 29, 0.86) !important;
+      color: #f3f1ea !important;
+      font-size: 12px !important;
+      letter-spacing: 0.05em !important;
+      font-weight: 700 !important;
+      box-shadow:
+        0 18px 34px rgba(0,0,0,0.26),
+        inset 0 1px 0 rgba(255,255,255,0.14) !important;
+    }
+    @media (orientation: landscape) and (max-height: 700px){
+      #appTopBackBtn{
+        min-width: 118px;
+        height: 38px;
+        padding: 0 14px;
+        border-radius: 12px;
+        font-size: 11px;
+      }
+      #activeAccountBadge{
+        min-height: 38px !important;
+        padding: 0 14px !important;
+        border-radius: 12px !important;
+      }
+    }
+
+    .actionbar{
+      padding: 10px 12px;
+      border-radius: 22px;
+      border: 1px solid rgba(255,255,255,0.10);
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.02) 100%),
+        rgba(8, 12, 11, 0.34);
+      box-shadow:
+        0 18px 34px rgba(0,0,0,0.20),
+        inset 0 1px 0 rgba(255,255,255,0.08);
+      backdrop-filter: blur(10px);
+    }
+    .actionBtn{
+      border-radius: 16px !important;
+      letter-spacing: 0.04em;
+      box-shadow:
+        0 14px 26px rgba(0,0,0,0.24),
+        inset 0 1px 0 rgba(255,255,255,0.12),
+        inset 0 -1px 0 rgba(0,0,0,0.22);
+    }
+    .actionBtn.enabled{
+      border-color: rgba(255,255,255,0.16);
+    }
+    @media (max-width: 700px){
+      .boardViewport::before{
+        inset: 14px;
+        border-radius: 26px;
+      }
+      .actionbar{
+        padding: 8px 10px;
+        border-radius: 18px;
+      }
+    }
+    @media (orientation: landscape) and (max-height: 520px){
+      .boardViewport::before{
+        inset: 14px;
+        border-radius: 24px;
+      }
+      .gameBoard{
+        border-radius: 28px;
+      }
+      .actionbar{
+        padding: 8px 10px;
+        border-radius: 18px;
+      }
+    }
+
+
+    #nagashiOverlay{
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.18);
+      z-index: 3050;
+      pointer-events: auto;
+    }
+    #nagashiOverlay .nagashiStage{
+      position: absolute;
+      left: 50%;
+      top: 44%;
+      transform: translate(-50%, -50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+    #nagashiOverlay.winner-left .nagashiStage{
+      left: 33%;
+      top: 42%;
+    }
+    #nagashiOverlay.winner-right .nagashiStage{
+      left: 67%;
+      top: 42%;
+    }
+    #nagashiOverlay .nagashiBadge{
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 168px;
+      min-height: 84px;
+      padding: 0 30px;
+      border-radius: 999px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.24) 0%, rgba(255,255,255,0.06) 100%),
+        rgba(20, 32, 26, 0.92);
+      border: 1px solid rgba(255, 230, 150, 0.34);
+      box-shadow:
+        0 18px 42px rgba(0,0,0,0.34),
+        inset 0 1px 0 rgba(255,255,255,0.18);
+      color: #f6df9e;
+      font-size: 34px;
+      font-weight: 900;
+      letter-spacing: 0.12em;
+      text-indent: 0.12em;
+      line-height: 1;
+      text-shadow:
+        0 2px 0 rgba(0,0,0,0.34),
+        0 0 18px rgba(255, 226, 138, 0.24);
+      white-space: nowrap;
+    }
+    #nagashiOverlay .nagashiSub{
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 34px;
+      padding: 0 14px;
+      border-radius: 999px;
+      background: rgba(0,0,0,0.34);
+      border: 1px solid rgba(255,255,255,0.12);
+      color: rgba(255,255,255,0.9);
+      font-size: 14px;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      white-space: nowrap;
+    }
+    @media (orientation: landscape) and (max-height: 700px){
+      #nagashiOverlay .nagashiBadge{
+        min-width: 146px;
+        min-height: 74px;
+        padding: 0 26px;
+        font-size: 30px;
+      }
+      #nagashiOverlay .nagashiSub{
+        min-height: 30px;
+        padding: 0 12px;
+        font-size: 12px;
+      }
+    }
+
+  </style>
+
+
+  <script>
+    window.MB_SANMA_SUPABASE_CONFIG = {
+      url: "https://edcsvszqscbfeizfmilp.supabase.co",
+      anonKey: "sb_publishable_vLIhwWFFomM4WwSaupoOxw_UOUNihF0"
+    };
+  </script>
+
+</head>
+
+<body>
+  <div class="app">
+
+    <!-- 盤面ステージ -->
+    <div class="boardStage">
+      <div class="boardViewport" id="boardViewport">
+        <div class="gameBoard">
+
+        <div id="appTopMetaRow" class="appTopMetaRow">
+          <button id="appTopBackBtn" type="button">トップに戻る</button>
+          <div id="activeAccountBadge" class="activeAccountBadge" aria-live="polite" hidden></div>
+          <div id="boardTopRuleBadge" class="boardTopRuleBadge" aria-live="polite">標準ルール</div>
+        </div>
+
+        <!-- マット内上部ボタン群 -->
+        <div class="boardTopControls" aria-label="top controls">
+          <div class="boardTopLeftControls boardTopMainControls boardTopAppControls">
+            <button id="newBtn" type="button" class="topMenuBtn topMenuBtnPrimary">最初から</button>
+            <button id="appRuleBtn" type="button" class="topMenuBtn">ルール</button>
+            <button id="appStatsBtn" type="button" class="topMenuBtn topMenuBtnAccent">成績</button>
+            <button id="debugOpenBtn" type="button" class="topMenuBtn">デバッグ</button>
+            <button id="settingsBtn" type="button" class="topMenuBtn">設定</button>
+            <button id="appLogBtn" type="button" class="topMenuBtn">ログ</button>
+          </div>
+        </div>
+
+        <!-- 中央ゾーン -->
+        <div id="centerUi"></div>
+
+        <!-- CPU：左 -->
+        <div class="cpuSide cpuLeftSide">
+          <div class="cpuSideInner cpuLeftSideInner">
+            <div class="cpuHand" id="cpuLeftHand"></div>
+            <div class="cpuOpenStack cpuLeftOpenStack">
+              <div class="cpuMeldArea cpuLeftMeldArea">
+                <div class="cpuMelds" id="cpuLeftMelds"></div>
+              </div>
+              <div class="cpuPeiArea cpuLeftPeiArea">
+                <div class="cpuPeis" id="cpuLeftPeis"></div>
+              </div>
+            </div>
+          </div>
+          <div class="cpuRiver" id="cpuLeftRiver"></div>
+        </div>
+
+        <!-- CPU：右 -->
+        <div class="cpuSide cpuRightSide">
+          <div class="cpuSideInner cpuRightSideInner">
+            <div class="cpuOpenStack cpuRightOpenStack">
+              <div class="cpuPeiArea cpuRightPeiArea">
+                <div class="cpuPeis" id="cpuRightPeis"></div>
+              </div>
+              <div class="cpuMeldArea cpuRightMeldArea">
+                <div class="cpuMelds" id="cpuRightMelds"></div>
+              </div>
+            </div>
+            <div class="cpuHand" id="cpuRightHand"></div>
+          </div>
+          <div class="cpuRiver" id="cpuRightRiver"></div>
+        </div>
+
+        <!-- 受け入れ表示 -->
+        <div id="stats"></div>
+
+        <!-- 自分の河 -->
+        <div class="river-wrap">
+          <div id="river"></div>
+        </div>
+
+        <!-- 手牌ゾーン -->
+        <div class="hand-wrap">
+          <div class="actionbar" aria-label="actions">
+            <button id="peiBtn" type="button" class="actionBtn">抜き</button>
+            <button id="ponBtn" type="button" class="actionBtn">ポン</button>
+            <button id="kanBtn" type="button" class="actionBtn">カン</button>
+            <button id="passBtn" type="button" class="actionBtn">スキップ</button>
+            <button id="riichiBtn" type="button" class="actionBtn">リーチ</button>
+            <button id="riichiCancelBtn" type="button" class="actionBtn">キャンセル</button>
+            <button id="ronBtn" type="button" class="actionBtn">ロン</button>
+            <button id="tsumoBtn" type="button" class="actionBtn">ツモ</button>
+            <button id="kyuushuBtn" type="button" class="actionBtn">九種九牌</button>
+          </div>
+
+
+          <!-- 右側表示（北抜き・副露） -->
+          <div class="playerHandRow">
+          <div class="rightArea">
+            <div class="rightBlock">
+              <div class="rightLabel">抜き</div>
+              <div id="peis"></div>
+            </div>
+            <div class="rightBlock">
+              <div class="rightLabel">副露</div>
+              <div id="melds"></div>
+            </div>
+          </div>
+
+          <!-- 手牌 -->
+          <div id="hand"></div>
+          </div>
+        </div>
+
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- オーバーレイ：ツモ -->
+  <div id="tsumoOverlay">
+    <div class="agariStage">
+      <div class="agariFx agariFxTsumo"></div>
+      <div class="agariBadge agariBadgeTsumo">
+        <img src="../../img/tsumo.png" alt="ツモ" />
+      </div>
+      <div class="hint">クリックで閉じる</div>
+    </div>
+  </div>
+
+
+  <!-- オーバーレイ：流し -->
+  <div id="nagashiOverlay">
+    <div class="nagashiStage">
+      <div class="nagashiBadge">流し</div>
+      <div class="nagashiSub">クリックで閉じる</div>
+    </div>
+  </div>
+
+  <!-- オーバーレイ：流局 -->
+  <div id="ryukyokuOverlay">
+    <div class="inner">
+      <img src="../../img/ryukyoku.png" alt="流局" />
+      <div class="hint">クリックで閉じる</div>
+    </div>
+  </div>
+
+  <!-- オーバーレイ：ロン -->
+  <div id="ronOverlay">
+    <div class="agariStage">
+      <div class="agariFx agariFxRon"></div>
+      <div class="agariBadge agariBadgeRon">
+        <img src="../../img/ron.png" alt="ロン" />
+      </div>
+      <div class="hint">クリックで閉じる</div>
+    </div>
+  </div>
+
+
+  <!-- 設定画面 -->
+  <div id="settingsOverlay" aria-hidden="true">
+    <div id="settingsPanel" role="dialog" aria-modal="true" aria-labelledby="settingsTitle" aria-describedby="settingsSubTitle">
+      <div id="settingsHeader">
+        <div id="settingsTitleWrap">
+          <div id="settingsTitle">設定</div>
+          <div id="settingsSubTitle">切り替え</div>
+        </div>
+        <button id="settingsCloseBtn" type="button">閉じる</button>
+      </div>
+      <div id="settingsBody"></div>
+    </div>
+  </div>
+
+  <!-- 結果確認画面（新規） -->
+  <div id="resultOverlay">
+    <div id="resultPanel">
+      <div id="resultHeader">
+        <div id="resultTitle">和了結果</div>
+        <div id="resultSubtitle">クリックで次へ</div>
+      </div>
+
+      <div id="resultBody">
+        <div id="resultTopRow">
+          <div id="resultWinType">ツモ</div>
+          <div id="resultWinner">あなた</div>
+        </div>
+
+        <div id="resultHandBlock">
+          <div class="resultBlockTitle">手牌</div>
+          <div id="resultHandTiles"></div>
+        </div>
+
+        <div id="resultInfoRow">
+          <div id="resultDoraBlock">
+            <div class="resultBlockTitle">ドラ</div>
+            <div id="resultDoraTiles"></div>
+          </div>
+
+          <div id="resultUraDoraBlock">
+            <div class="resultBlockTitle">裏ドラ</div>
+            <div id="resultUraDoraTiles"></div>
+          </div>
+        </div>
+
+        <div id="resultYakuBlock">
+          <div class="resultBlockTitle">役</div>
+          <div id="resultYakuList"></div>
+        </div>
+
+        <div id="resultScoreBlock">
+          <div id="resultHanFu">0翻 0符</div>
+          <div id="resultPointText">0点</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 演出：カン -->
+  <div id="kanOverlay" aria-hidden="true">
+    <div class="inner">
+      <img src="../../img/kan.png" alt="カン" />
+    </div>
+  </div>
+
+  <!-- 演出：ポン -->
+  <div id="ponOverlay" aria-hidden="true">
+    <div class="inner">
+      <img src="../../img/pon.png" alt="ポン" />
+    </div>
+  </div>
+
+  <!-- 演出：リーチ -->
+  <div id="riichiOverlay" aria-hidden="true">
+    <div class="inner">
+      <img src="../../img/riichi.png" alt="リーチ" />
+    </div>
+  </div>
+
+  <!-- 演出：ツモ文字 -->
+  <div id="drawOverlay">
+    <div class="inner">
+      <div class="drawText">ツモ</div>
+    </div>
+  </div>
+
+  <script>
+    (function(){
+      const ACTIVE_SESSION_STORAGE_KEY = "mbsanma_app_active_session_v1";
+      const LEGACY_ACTIVE_SESSION_STORAGE_KEY = "mbsanma_visitor_active_session_v1";
+      const badge = document.getElementById("activeAccountBadge");
+
+      if (!badge) return;
+
+      function normalizeAccountId(value){
+        return String(value || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+      }
+
+      function readActiveSession(){
+        const keys = [ACTIVE_SESSION_STORAGE_KEY, LEGACY_ACTIVE_SESSION_STORAGE_KEY];
+        for (const key of keys){
+          try{
+            const raw = sessionStorage.getItem(key);
+            if (!raw) continue;
+            const parsed = JSON.parse(raw);
+            const mode = parsed && parsed.mode;
+            if (mode === "account"){
+              return {
+                mode,
+                accountId: normalizeAccountId(parsed && parsed.accountId || "")
+              };
+            }
+            if (mode === "local"){
+              return { mode, accountId: "" };
+            }
+          }catch(e){}
+        }
+        return { mode: "", accountId: "" };
+      }
+
+      function renderActiveAccountBadge(){
+        const session = readActiveSession();
+
+        if (session.mode === "account" && session.accountId){
+          badge.textContent = `ID: ${session.accountId}`;
+          badge.hidden = false;
+          return;
+        }
+
+        badge.hidden = true;
+        badge.textContent = "";
+      }
+
+      function bindTopBackButton(){
+        const backBtn = document.getElementById("appTopBackBtn");
+        if (!backBtn) return;
+        backBtn.addEventListener("click", ()=>{
+          location.href = "index_app.html";
+        });
+      }
+
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", ()=>{
+          renderActiveAccountBadge();
+          bindTopBackButton();
+        }, { once: true });
+      } else {
+        renderActiveAccountBadge();
+        bindTopBackButton();
+      }
+    })();
+  </script>
+
+  <script>
+    (function(){
+      const BOARD_W = 1600;
+      const BOARD_H = 900;
+
+      function fitGameBoard(){
+        const viewport = document.getElementById("boardViewport");
+        const board = document.querySelector(".gameBoard");
+        if (!viewport || !board) return;
+
+        const rect = viewport.getBoundingClientRect();
+        if (!rect.width || !rect.height) return;
+
+        const scale = Math.min(rect.width / BOARD_W, rect.height / BOARD_H);
+
+        board.style.width = BOARD_W + "px";
+        board.style.height = BOARD_H + "px";
+        board.style.left = "50%";
+        board.style.top = "50%";
+        board.style.transform = `translate(-50%, -50%) scale(${scale})`;
+      }
+
+      function requestFit(){
+        requestAnimationFrame(fitGameBoard);
+      }
+
+      window.fitGameBoard = fitGameBoard;
+
+      document.addEventListener("DOMContentLoaded", requestFit);
+      window.addEventListener("load", requestFit);
+      window.addEventListener("resize", requestFit);
+      window.addEventListener("orientationchange", requestFit);
+
+      if (window.visualViewport){
+        window.visualViewport.addEventListener("resize", requestFit);
+        window.visualViewport.addEventListener("scroll", requestFit);
+      }
+
+      if (window.ResizeObserver){
+        let ro = null;
+        document.addEventListener("DOMContentLoaded", ()=>{
+          const viewport = document.getElementById("boardViewport");
+          if (!viewport) return;
+          ro = new ResizeObserver(requestFit);
+          ro.observe(viewport);
+        });
+      }
+    })();
+  </script>
+
+  <!-- JS（../../js/ 配下が正） -->
+  <script>
+    (function(){
+      // ログイン中ならルール系キーをアカウント別に。ゲスト時は従来キーを使うので既存ユーザー非破壊。
+      function getActiveAccountIdForRuleScope(){
+        const normalize = (v)=> String(v || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+
+        // 1) sessionStorage の active session を最優先
+        try {
+          const raw = sessionStorage.getItem("mbsanma_app_active_session_v1")
+                   || sessionStorage.getItem("mbsanma_visitor_active_session_v1");
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            if (parsed && parsed.mode === "account") {
+              const sid = normalize(parsed.accountId);
+              if (sid) return sid;
+            }
+            if (parsed && parsed.mode === "local") return "";
+          }
+        } catch(e){}
+
+        // 2) フォールバック: localStorage のログインアカウント
+        try {
+          const fromLocal = normalize(localStorage.getItem("mbsanma_app_current_login_account_v1"));
+          if (fromLocal) return fromLocal;
+        } catch(e){}
+
+        // 3) さらにフォールバック: sessionStorage の個別キー
+        try {
+          const fromSession = normalize(sessionStorage.getItem("mbsanma_app_current_login_account_session_v1"));
+          if (fromSession) return fromSession;
+        } catch(e){}
+
+        return "";
+      }
+      function buildScopedRuleStorageKey(baseKey){
+        const accountId = getActiveAccountIdForRuleScope();
+        if (!accountId) return baseKey;
+        return "mbsanma_app_account_" + accountId + "_" + String(baseKey || "").replace(/^mbsanma_/, "");
+      }
+
+      const RULE_STORAGE_KEY = buildScopedRuleStorageKey("mbsanma_rules_settings_v1");
+      const ACTIVE_RULE_SET_STORAGE_KEY = buildScopedRuleStorageKey("mbsanma_rules_active_v1");
+      const LEGACY_RULE_UI_STORAGE_KEY = "mbsanma_rules_ui_v2"; // sessionStorage の UI フォールバック。スコープしない。
+      const TILE_COMPOSITION_TILE_CODES = [
+        "1m","9m",
+        "1p","2p","3p","4p","5p","6p","7p","8p","9p",
+        "1s","2s","3s","4s","5s","6s","7s","8s","9s",
+        "1z","2z","3z","4z","5z","6z","7z"
+      ];
+      const TILE_COLOR_KEYS = ["r", "b", "g", "n"];
+
+      function createEmptyTileColorCounts(){
+        return { r: 0, b: 0, g: 0, n: 0 };
+      }
+
+      function createDefaultChipTargetTileSetting(){
+        return {
+          dora: false,
+          doraCount: "0",
+          chipValue: "0",
+          targetMode: "menzen",
+          useDetailedDora: false,
+          useDetailedChip: false,
+          doraMenzenCount: "0",
+          doraFuroCount: "0",
+          chipMenzenCount: "0",
+          chipFuroCount: "0"
+        };
+      }
+
+      function normalizeChipTargetTileSettingValue(value){
+        const src = (value && typeof value === "object") ? value : {};
+        let rawMode = String(src.targetMode != null ? src.targetMode : "menzen");
+        if (rawMode !== "naki") rawMode = "menzen";
+
+        const baseDoraCount = String(src.doraCount != null ? src.doraCount : "0");
+        const baseChipValue = String(src.chipValue != null ? src.chipValue : "0");
+        const useDetailedDora = !!src.useDetailedDora;
+        const useDetailedChip = !!src.useDetailedChip;
+
+        return {
+          dora: !!src.dora,
+          doraCount: baseDoraCount,
+          chipValue: baseChipValue,
+          targetMode: rawMode,
+          useDetailedDora: useDetailedDora,
+          useDetailedChip: useDetailedChip,
+          doraMenzenCount: useDetailedDora
+            ? String(src.doraMenzenCount != null ? src.doraMenzenCount : baseDoraCount)
+            : baseDoraCount,
+          doraFuroCount: useDetailedDora
+            ? String(src.doraFuroCount != null ? src.doraFuroCount : baseDoraCount)
+            : baseDoraCount,
+          chipMenzenCount: useDetailedChip
+            ? String(src.chipMenzenCount != null ? src.chipMenzenCount : baseChipValue)
+            : baseChipValue,
+          chipFuroCount: useDetailedChip
+            ? String(src.chipFuroCount != null ? src.chipFuroCount : baseChipValue)
+            : baseChipValue
+        };
+      }
+
+      function cloneChipTargetSettingsValue(value){
+        const src = (value && typeof value === "object") ? value : {};
+        const out = {};
+        Object.keys(src).forEach((tileCode)=> {
+          out[tileCode] = normalizeChipTargetTileSettingValue(src[tileCode]);
+        });
+        return out;
+      }
+
+      function normalizeChipTargetSettingsValue(value){
+        return cloneChipTargetSettingsValue(value);
+      }
+
+      function buildChipTargetOverviewBaseSetting(targetMode){
+        return normalizeChipTargetTileSettingValue({
+          targetMode: targetMode === "naki" ? "naki" : "menzen"
+        });
+      }
+
+      function isChipTargetSettingSameAsOverview(setting, overviewMode){
+        const base = buildChipTargetOverviewBaseSetting(overviewMode);
+        const row = normalizeChipTargetTileSettingValue(setting);
+        return (
+          row.dora === base.dora &&
+          row.doraCount === base.doraCount &&
+          row.chipValue === base.chipValue &&
+          row.targetMode === base.targetMode &&
+          row.useDetailedDora === base.useDetailedDora &&
+          row.useDetailedChip === base.useDetailedChip &&
+          row.doraMenzenCount === base.doraMenzenCount &&
+          row.doraFuroCount === base.doraFuroCount &&
+          row.chipMenzenCount === base.chipMenzenCount &&
+          row.chipFuroCount === base.chipFuroCount
+        );
+      }
+
+      function compactChipTargetSettingsValue(value, overviewMode){
+        const src = normalizeChipTargetSettingsValue(value);
+        const out = {};
+        Object.keys(src).forEach((tileCode)=> {
+          const row = normalizeChipTargetTileSettingValue(src[tileCode]);
+          if (!isChipTargetSettingSameAsOverview(row, overviewMode)) {
+            out[tileCode] = row;
+          }
+        });
+        return out;
+      }
+
+      function buildDefaultChipTargetSettings(){
+        return normalizeChipTargetSettingsValue({
+          "5p": {
+            dora: true,
+            doraCount: "1",
+            chipValue: "1",
+            targetMode: "menzen"
+          },
+          "5s": {
+            dora: true,
+            doraCount: "1",
+            chipValue: "1",
+            targetMode: "menzen"
+          },
+          "4z": {
+            dora: true,
+            doraCount: "1",
+            chipValue: "1",
+            targetMode: "naki"
+          }
+        });
+      }
+
+      function buildDefaultTileComposition(){
+        const tiles = {};
+        TILE_COMPOSITION_TILE_CODES.forEach((code)=> {
+          tiles[code] = createEmptyTileColorCounts();
+        });
+        tiles["5p"].r = 2;
+        tiles["5s"].r = 2;
+        tiles["4z"].n = 1;
+        return {
+          version: 1,
+          tiles
+        };
+      }
+
+      function cloneTileCompositionValue(value){
+        const src = (value && typeof value === "object") ? value : buildDefaultTileComposition();
+        const srcTiles = (src.tiles && typeof src.tiles === "object") ? src.tiles : {};
+        const out = {
+          version: 1,
+          tiles: {}
+        };
+        TILE_COMPOSITION_TILE_CODES.forEach((code)=> {
+          const row = (srcTiles[code] && typeof srcTiles[code] === "object") ? srcTiles[code] : createEmptyTileColorCounts();
+          out.tiles[code] = {
+            r: Number(row.r) || 0,
+            b: Number(row.b) || 0,
+            g: Number(row.g) || 0,
+            n: Number(row.n) || 0
+          };
+        });
+        return out;
+      }
+
+      function normalizeTileCompositionValue(value){
+        const base = cloneTileCompositionValue(value);
+        const out = {
+          version: 1,
+          tiles: {}
+        };
+
+        TILE_COMPOSITION_TILE_CODES.forEach((code)=> {
+          const srcRow = (base.tiles && base.tiles[code] && typeof base.tiles[code] === "object")
+            ? base.tiles[code]
+            : createEmptyTileColorCounts();
+          const nextRow = createEmptyTileColorCounts();
+          let used = 0;
+
+          TILE_COLOR_KEYS.forEach((colorKey)=> {
+            let count = Math.round(clampNumber(srcRow[colorKey], 0, 0, 4));
+            if (!Number.isFinite(count) || count < 0) count = 0;
+            if ((used + count) > 4) count = Math.max(0, 4 - used);
+            nextRow[colorKey] = count;
+            used += count;
+          });
+
+          out.tiles[code] = nextRow;
+        });
+
+        return out;
+      }
+
+      const DEFAULTS = Object.freeze({
+        "overview-game-type": "hanchan",
+        "overview-rate": "100p",
+        "overview-chip-unit": "200",
+        "overview-start-score": "35000",
+        "overview-return-score": "40000",
+        "overview-renchan-type": "tenpai",
+        "overview-chip-target-ippatsu-ura": "both",
+        "overview-chip-target-colored": "menzen",
+        "overview-chip-target-shiro-pocchi": "off",
+        "overview-chip-target-shiro-pocchi-count": "1",
+        "score-uma-2": "-5",
+        "score-uma-3": "-10",
+        "score-kubi-enabled": "off",
+        "score-kubi-point": "40000",
+        "score-kubi-uma-2": "5",
+        "score-kubi-uma-3": "-15",
+        "score-tsumoson": "off",
+        "score-fu-calc": "on",
+        "score-rounding-type": "ceil",
+        "extra-kiriage-mangan": "on",
+        "extra-nagashi-mode": "baiman",
+        "extra-double-yakuman": "on",
+        "extra-kazoe-yakuman": "on",
+        "extra-yakuman-pao": "off",
+        "extra-daiminkan-pao": "off",
+        "extra-kokushi-ankan-ron": "off",
+        "extra-riichi-without-tsumo": "on",
+        "extra-open-riichi": "off",
+        "score-honba-ron": "1000",
+        "score-honba-tsumo-each": "1000",
+        "score-tenpai-fee": "1000",
+        "score-cold-end-point": "80000",
+        "score-tobi-chip": "200",
+        "score-tobi-end": "on",
+        "score-hakoshita-type": "off",
+        "basic-keishiki-tenpai": "on",
+        "basic-kuitan-type": "on",
+        "basic-atozuke-type": "allow",
+        "basic-outebisha-type": "allow",
+        "basic-tsumopin": "on",
+        "basic-chiitoi-4mai": "on",
+        "basic-kyuushu": "off",
+        "basic-furiten-riichi": "on",
+        "basic-riichi-skip": "on",
+        "basic-double-ron": "double",
+        "tiles-wall-end-type": "7ton",
+        "tiles-pei-type": "nuki",
+        "tiles-hanahai-type": "off",
+        "tiles-uradora": true,
+        "tiles-kandora": true,
+        "tiles-kanura": true,
+        "yaku-riichi": true,
+        "yaku-ippatsu": true,
+        "yaku-tsumo": true,
+        "yaku-tanyao": true,
+        "yaku-pinfu": true,
+        "yaku-iipeikou": true,
+        "yaku-yakuhai": true,
+        "yaku-haitei": true,
+        "yaku-houtei": true,
+        "yaku-rinshan": true,
+        "yaku-chankan": true,
+        "yaku-double-riichi": true,
+        "yaku-chiitoitsu": true,
+        "yaku-toitoi": true,
+        "yaku-sanankou": true,
+        "yaku-sanshoku-doukou": true,
+        "yaku-sankantsu": true,
+        "yaku-chanta": true,
+        "yaku-junchan": true,
+        "yaku-ittsuu": true,
+        "yaku-honroutou": true,
+        "yaku-shousangen": true,
+        "yaku-honitsu": true,
+        "yaku-ryanpeikou": true,
+        "yaku-chinitsu": true,
+        "yaku-nagashi-baiman-base": true,
+        "yaku-renhou": true,
+        "yaku-kokushi": true,
+        "yaku-suuankou": true,
+        "yaku-daisangen": true,
+        "yaku-tsuuiisou": true,
+        "yaku-ryuuiisou": true,
+        "yaku-chinroutou": true,
+        "yaku-shousuushii": true,
+        "yaku-daisuushii": true,
+        "yaku-chuuren": true,
+        "yaku-suukantsu": true,
+        "yaku-tenhou": true,
+        "yaku-chiihou": true,
+        "yaku-local-sanpuu": false,
+        "yaku-local-sanrenkou": false,
+        "yaku-local-shousharin": false,
+        "yaku-local-suurenkou": false,
+        "yaku-local-daisharin": false,
+        "yaku-local-manzu-honitsu": "off",
+        "tiles-tile-composition": buildDefaultTileComposition(),
+        "tiles-chip-target-settings": buildDefaultChipTargetSettings()
+      });
+
+      function clampNumber(value, fallback, min, max){
+        const n = Number(value);
+        if (!Number.isFinite(n)) return fallback;
+        if (Number.isFinite(min) && n < min) return min;
+        if (Number.isFinite(max) && n > max) return max;
+        return n;
+      }
+
+      function normalizeChoice(value, allowed, fallback){
+        const text = String(value || "").toLowerCase();
+        return allowed.indexOf(text) >= 0 ? text : fallback;
+      }
+
+      function normalizeBool(value, fallback){
+        if (typeof value === "boolean") return value;
+        const text = String(value == null ? "" : value).toLowerCase();
+        if (text === "true" || text === "1" || text === "on") return true;
+        if (text === "false" || text === "0" || text === "off") return false;
+        return !!fallback;
+      }
+
+      function normalizeRuleState(raw){
+        const src = (raw && typeof raw === "object") ? raw : {};
+        const overviewChipTargetColored = normalizeChoice(src["overview-chip-target-colored"], ["menzen", "naki"], DEFAULTS["overview-chip-target-colored"]);
+        return {
+          "overview-game-type": normalizeChoice(src["overview-game-type"], ["hanchan", "tonpuu"], DEFAULTS["overview-game-type"]),
+          "overview-rate": normalizeChoice(src["overview-rate"], ["100p", "50p", "30p"], DEFAULTS["overview-rate"]),
+          "overview-chip-unit": String(Math.round(clampNumber(src["overview-chip-unit"], Number(DEFAULTS["overview-chip-unit"]), 0, 999999))),
+          "overview-start-score": String(Math.round(clampNumber(src["overview-start-score"], Number(DEFAULTS["overview-start-score"]), 0, 999999))),
+          "overview-return-score": String(Math.round(clampNumber(src["overview-return-score"], Number(DEFAULTS["overview-return-score"]), 0, 999999))),
+          "overview-renchan-type": normalizeChoice(src["overview-renchan-type"], ["tenpai", "agari"], DEFAULTS["overview-renchan-type"]),
+          "overview-chip-target-ippatsu-ura": normalizeChoice(src["overview-chip-target-ippatsu-ura"], ["both", "ippatsu", "ura", "none"], DEFAULTS["overview-chip-target-ippatsu-ura"]),
+          "overview-chip-target-colored": overviewChipTargetColored,
+          "overview-chip-target-shiro-pocchi": normalizeChoice(src["overview-chip-target-shiro-pocchi"], ["on", "off"], DEFAULTS["overview-chip-target-shiro-pocchi"]),
+          "overview-chip-target-shiro-pocchi-count": String(Math.round(clampNumber(src["overview-chip-target-shiro-pocchi-count"], Number(DEFAULTS["overview-chip-target-shiro-pocchi-count"]), 0, 99))),
+          "score-uma-2": String(Math.round(clampNumber(src["score-uma-2"], Number(DEFAULTS["score-uma-2"]), -999, 999))),
+          "score-uma-3": String(Math.round(clampNumber(src["score-uma-3"], Number(DEFAULTS["score-uma-3"]), -999, 999))),
+          "score-kubi-enabled": normalizeChoice(src["score-kubi-enabled"], ["on", "off"], DEFAULTS["score-kubi-enabled"]),
+          "score-kubi-point": String(Math.round(clampNumber(src["score-kubi-point"], Number(DEFAULTS["score-kubi-point"]), 0, 999999))),
+          "score-kubi-uma-2": String(Math.round(clampNumber(src["score-kubi-uma-2"], Number(DEFAULTS["score-kubi-uma-2"]), -999, 999))),
+          "score-kubi-uma-3": String(Math.round(clampNumber(src["score-kubi-uma-3"], Number(DEFAULTS["score-kubi-uma-3"]), -999, 999))),
+          "score-tsumoson": normalizeChoice(src["score-tsumoson"], ["on", "off"], DEFAULTS["score-tsumoson"]),
+          "score-fu-calc": normalizeChoice(src["score-fu-calc"], ["on", "off"], DEFAULTS["score-fu-calc"]),
+          "score-rounding-type": normalizeChoice(src["score-rounding-type"], ["ceil", "ari"], DEFAULTS["score-rounding-type"]),
+          "extra-kiriage-mangan": normalizeChoice(src["extra-kiriage-mangan"], ["on", "off"], DEFAULTS["extra-kiriage-mangan"]),
+          "extra-nagashi-mode": normalizeChoice(src["extra-nagashi-mode"], ["baiman", "mangan", "off"], DEFAULTS["extra-nagashi-mode"]),
+          "extra-double-yakuman": normalizeChoice(src["extra-double-yakuman"], ["on", "off"], DEFAULTS["extra-double-yakuman"]),
+          "extra-kazoe-yakuman": normalizeChoice(src["extra-kazoe-yakuman"], ["on", "off"], DEFAULTS["extra-kazoe-yakuman"]),
+          "extra-yakuman-pao": normalizeChoice(src["extra-yakuman-pao"], ["on", "off"], DEFAULTS["extra-yakuman-pao"]),
+          "extra-daiminkan-pao": normalizeChoice(src["extra-daiminkan-pao"], ["on", "off"], DEFAULTS["extra-daiminkan-pao"]),
+          "extra-kokushi-ankan-ron": normalizeChoice(src["extra-kokushi-ankan-ron"], ["on", "off"], DEFAULTS["extra-kokushi-ankan-ron"]),
+          "extra-riichi-without-tsumo": normalizeChoice(src["extra-riichi-without-tsumo"], ["on", "off"], DEFAULTS["extra-riichi-without-tsumo"]),
+          "extra-open-riichi": normalizeChoice(src["extra-open-riichi"], ["on", "off"], DEFAULTS["extra-open-riichi"]),
+          "score-honba-ron": String(Math.round(clampNumber(src["score-honba-ron"], Number(DEFAULTS["score-honba-ron"]), 0, 999999))),
+          "score-honba-tsumo-each": String(Math.round(clampNumber(src["score-honba-tsumo-each"], Number(DEFAULTS["score-honba-tsumo-each"]), 0, 999999))),
+          "score-tenpai-fee": String(Math.round(clampNumber(src["score-tenpai-fee"], Number(DEFAULTS["score-tenpai-fee"]), 0, 999999))),
+          "score-cold-end-point": String(Math.round(clampNumber(src["score-cold-end-point"], Number(DEFAULTS["score-cold-end-point"]), 0, 999999))),
+          "score-tobi-chip": String(Math.round(clampNumber(src["score-tobi-chip"], Number(DEFAULTS["score-tobi-chip"]), 0, 999999))),
+          "score-tobi-end": normalizeChoice(src["score-tobi-end"], ["on", "off"], DEFAULTS["score-tobi-end"]),
+          "score-hakoshita-type": normalizeChoice(src["score-hakoshita-type"], ["on", "off"], DEFAULTS["score-hakoshita-type"]),
+          "basic-keishiki-tenpai": normalizeChoice(src["basic-keishiki-tenpai"], ["on", "off"], DEFAULTS["basic-keishiki-tenpai"]),
+          "basic-kuitan-type": normalizeChoice(src["basic-kuitan-type"], ["on", "off"], DEFAULTS["basic-kuitan-type"]),
+          "basic-atozuke-type": normalizeChoice((String(src["basic-atozuke-type"] || "").toLowerCase() === "on") ? "allow" : (((String(src["basic-atozuke-type"] || "").toLowerCase() === "off") || (String(src["basic-atozuke-type"] || "").toLowerCase() === "no_atozuke")) ? "kanzen_sakizuke" : src["basic-atozuke-type"]), ["allow", "kanzen_sakizuke"], DEFAULTS["basic-atozuke-type"]),
+          "basic-outebisha-type": normalizeChoice(src["basic-outebisha-type"], ["allow", "menzen_only", "deny"], DEFAULTS["basic-outebisha-type"]),
+          "basic-tsumopin": normalizeChoice(src["basic-tsumopin"], ["on", "off"], DEFAULTS["basic-tsumopin"]),
+          "basic-chiitoi-4mai": normalizeChoice(src["basic-chiitoi-4mai"], ["on", "off"], DEFAULTS["basic-chiitoi-4mai"]),
+          "basic-kyuushu": normalizeChoice(src["basic-kyuushu"], ["on", "off"], DEFAULTS["basic-kyuushu"]),
+          "basic-furiten-riichi": normalizeChoice(src["basic-furiten-riichi"], ["on", "off"], DEFAULTS["basic-furiten-riichi"]),
+          "basic-riichi-skip": normalizeChoice(src["basic-riichi-skip"], ["on", "off"], DEFAULTS["basic-riichi-skip"]),
+          "basic-double-ron": normalizeChoice(src["basic-double-ron"], ["double", "atamahane"], DEFAULTS["basic-double-ron"]),
+          "tiles-wall-end-type": normalizeChoice(src["tiles-wall-end-type"], ["7ton", "all"], DEFAULTS["tiles-wall-end-type"]),
+          "tiles-pei-type": normalizeChoice(src["tiles-pei-type"], ["nuki", "bakaze", "otakaze"], DEFAULTS["tiles-pei-type"]),
+          "tiles-hanahai-type": normalizeChoice(src["tiles-hanahai-type"], ["on", "off"], DEFAULTS["tiles-hanahai-type"]),
+          "tiles-uradora": normalizeBool(src["tiles-uradora"], DEFAULTS["tiles-uradora"]),
+          "tiles-kandora": normalizeBool(src["tiles-kandora"], DEFAULTS["tiles-kandora"]),
+          "tiles-kanura": normalizeBool(src["tiles-kanura"], DEFAULTS["tiles-kanura"]),
+          "yaku-riichi": normalizeBool(src["yaku-riichi"], DEFAULTS["yaku-riichi"]),
+          "yaku-ippatsu": normalizeBool(src["yaku-ippatsu"], DEFAULTS["yaku-ippatsu"]),
+          "yaku-tsumo": normalizeBool(src["yaku-tsumo"], DEFAULTS["yaku-tsumo"]),
+          "yaku-tanyao": normalizeBool(src["yaku-tanyao"], DEFAULTS["yaku-tanyao"]),
+          "yaku-pinfu": normalizeBool(src["yaku-pinfu"], DEFAULTS["yaku-pinfu"]),
+          "yaku-iipeikou": normalizeBool(src["yaku-iipeikou"], DEFAULTS["yaku-iipeikou"]),
+          "yaku-yakuhai": normalizeBool(src["yaku-yakuhai"], DEFAULTS["yaku-yakuhai"]),
+          "yaku-haitei": normalizeBool(src["yaku-haitei"], DEFAULTS["yaku-haitei"]),
+          "yaku-houtei": normalizeBool(src["yaku-houtei"], DEFAULTS["yaku-houtei"]),
+          "yaku-rinshan": normalizeBool(src["yaku-rinshan"], DEFAULTS["yaku-rinshan"]),
+          "yaku-chankan": normalizeBool(src["yaku-chankan"], DEFAULTS["yaku-chankan"]),
+          "yaku-double-riichi": normalizeBool(src["yaku-double-riichi"], DEFAULTS["yaku-double-riichi"]),
+          "yaku-chiitoitsu": normalizeBool(src["yaku-chiitoitsu"], DEFAULTS["yaku-chiitoitsu"]),
+          "yaku-toitoi": normalizeBool(src["yaku-toitoi"], DEFAULTS["yaku-toitoi"]),
+          "yaku-sanankou": normalizeBool(src["yaku-sanankou"], DEFAULTS["yaku-sanankou"]),
+          "yaku-sanshoku-doukou": normalizeBool(src["yaku-sanshoku-doukou"], DEFAULTS["yaku-sanshoku-doukou"]),
+          "yaku-sankantsu": normalizeBool(src["yaku-sankantsu"], DEFAULTS["yaku-sankantsu"]),
+          "yaku-chanta": normalizeBool(src["yaku-chanta"], DEFAULTS["yaku-chanta"]),
+          "yaku-junchan": normalizeBool(src["yaku-junchan"], DEFAULTS["yaku-junchan"]),
+          "yaku-ittsuu": normalizeBool(src["yaku-ittsuu"], DEFAULTS["yaku-ittsuu"]),
+          "yaku-honroutou": normalizeBool(src["yaku-honroutou"], DEFAULTS["yaku-honroutou"]),
+          "yaku-shousangen": normalizeBool(src["yaku-shousangen"], DEFAULTS["yaku-shousangen"]),
+          "yaku-honitsu": normalizeBool(src["yaku-honitsu"], DEFAULTS["yaku-honitsu"]),
+          "yaku-ryanpeikou": normalizeBool(src["yaku-ryanpeikou"], DEFAULTS["yaku-ryanpeikou"]),
+          "yaku-chinitsu": normalizeBool(src["yaku-chinitsu"], DEFAULTS["yaku-chinitsu"]),
+          "yaku-nagashi-baiman-base": normalizeBool(src["yaku-nagashi-baiman-base"], DEFAULTS["yaku-nagashi-baiman-base"]),
+          "yaku-renhou": normalizeBool(src["yaku-renhou"], DEFAULTS["yaku-renhou"]),
+          "yaku-kokushi": normalizeBool(src["yaku-kokushi"], DEFAULTS["yaku-kokushi"]),
+          "yaku-suuankou": normalizeBool(src["yaku-suuankou"], DEFAULTS["yaku-suuankou"]),
+          "yaku-daisangen": normalizeBool(src["yaku-daisangen"], DEFAULTS["yaku-daisangen"]),
+          "yaku-tsuuiisou": normalizeBool(src["yaku-tsuuiisou"], DEFAULTS["yaku-tsuuiisou"]),
+          "yaku-ryuuiisou": normalizeBool(src["yaku-ryuuiisou"], DEFAULTS["yaku-ryuuiisou"]),
+          "yaku-chinroutou": normalizeBool(src["yaku-chinroutou"], DEFAULTS["yaku-chinroutou"]),
+          "yaku-shousuushii": normalizeBool(src["yaku-shousuushii"], DEFAULTS["yaku-shousuushii"]),
+          "yaku-daisuushii": normalizeBool(src["yaku-daisuushii"], DEFAULTS["yaku-daisuushii"]),
+          "yaku-chuuren": normalizeBool(src["yaku-chuuren"], DEFAULTS["yaku-chuuren"]),
+          "yaku-suukantsu": normalizeBool(src["yaku-suukantsu"], DEFAULTS["yaku-suukantsu"]),
+          "yaku-tenhou": normalizeBool(src["yaku-tenhou"], DEFAULTS["yaku-tenhou"]),
+          "yaku-chiihou": normalizeBool(src["yaku-chiihou"], DEFAULTS["yaku-chiihou"]),
+          "yaku-local-sanpuu": normalizeBool(src["yaku-local-sanpuu"], DEFAULTS["yaku-local-sanpuu"]),
+          "yaku-local-sanrenkou": normalizeBool(src["yaku-local-sanrenkou"], DEFAULTS["yaku-local-sanrenkou"]),
+          "yaku-local-shousharin": normalizeBool(src["yaku-local-shousharin"], DEFAULTS["yaku-local-shousharin"]),
+          "yaku-local-suurenkou": normalizeBool(src["yaku-local-suurenkou"], DEFAULTS["yaku-local-suurenkou"]),
+          "yaku-local-daisharin": normalizeBool(src["yaku-local-daisharin"], DEFAULTS["yaku-local-daisharin"]),
+          "yaku-local-manzu-honitsu": normalizeChoice(src["yaku-local-manzu-honitsu"], ["off", "baiman", "yakuman"], DEFAULTS["yaku-local-manzu-honitsu"]),
+          "tiles-tile-composition": normalizeTileCompositionValue(src["tiles-tile-composition"]),
+          "tiles-chip-target-settings": compactChipTargetSettingsValue(src["tiles-chip-target-settings"], overviewChipTargetColored)
+        };
+      }
+
+      function readRawRuleState(){
+        try{
+          if (typeof localStorage !== "undefined"){
+            const rawActive = localStorage.getItem(ACTIVE_RULE_SET_STORAGE_KEY);
+            if (rawActive){
+              const parsedActive = JSON.parse(rawActive);
+              if (parsedActive && parsedActive.rules && typeof parsedActive.rules === "object") return parsedActive.rules;
+            }
+          }
+        }catch(e){}
+
+        try{
+          if (typeof localStorage !== "undefined"){
+            const raw = localStorage.getItem(RULE_STORAGE_KEY);
+            if (raw) return JSON.parse(raw);
+          }
+        }catch(e){}
+
+        try{
+          if (typeof sessionStorage !== "undefined"){
+            const legacy = sessionStorage.getItem(LEGACY_RULE_UI_STORAGE_KEY);
+            if (legacy) return JSON.parse(legacy);
+          }
+        }catch(e){}
+
+        return {};
+      }
+
+      function readActiveRuleSetMeta(){
+        try{
+          if (typeof localStorage !== "undefined"){
+            const raw = localStorage.getItem(ACTIVE_RULE_SET_STORAGE_KEY);
+            if (raw){
+              const parsed = JSON.parse(raw);
+              if (parsed && typeof parsed === "object"){
+                return {
+                  ruleSetId: String(parsed.presetId || "standard"),
+                  ruleSetName: String(parsed.displayName || "標準ルール")
+                };
+              }
+            }
+          }
+        }catch(e){}
+        return {
+          ruleSetId: "standard",
+          ruleSetName: "標準ルール"
+        };
+      }
+
+      function getChipTargetSettingStorageKey(tileCode){
+        const code = String(tileCode || "");
+        if (/^[rbgn]/.test(code) && code.length >= 3){
+          return code.slice(1);
+        }
+        return code;
+      }
+
+      function renderAppliedRuleSetBadge(){
+        const badgeEl = document.getElementById("boardTopRuleBadge");
+        if (!badgeEl) return;
+        const meta = readActiveRuleSetMeta();
+        badgeEl.textContent = meta.ruleSetName;
+        badgeEl.title = meta.ruleSetName;
+      }
+
+      function persistRuleState(state){
+        const normalized = normalizeRuleState(state);
+        try{
+          if (typeof localStorage !== "undefined"){
+            localStorage.setItem(RULE_STORAGE_KEY, JSON.stringify(normalized));
+          }
+        }catch(e){}
+        try{
+          if (typeof sessionStorage !== "undefined"){
+            sessionStorage.setItem(LEGACY_RULE_UI_STORAGE_KEY, JSON.stringify(normalized));
+          }
+        }catch(e){}
+        return normalized;
+      }
+
+      const api = {
+        storageKey: RULE_STORAGE_KEY,
+        activeStorageKey: ACTIVE_RULE_SET_STORAGE_KEY,
+        defaults: { ...DEFAULTS },
+        read(){
+          return normalizeRuleState(readRawRuleState());
+        },
+        getRuleSetMeta(){
+          return readActiveRuleSetMeta();
+        },
+        write(nextState){
+          return persistRuleState(nextState);
+        },
+        getValue(key, fallback){
+          const state = this.read();
+          if (Object.prototype.hasOwnProperty.call(state, key)){
+            if (key === "tiles-tile-composition") return cloneTileCompositionValue(state[key]);
+            if (key === "tiles-chip-target-settings") return cloneChipTargetSettingsValue(state[key]);
+            return state[key];
+          }
+          if (Object.prototype.hasOwnProperty.call(DEFAULTS, key)){
+            if (key === "tiles-tile-composition") return cloneTileCompositionValue(DEFAULTS[key]);
+            if (key === "tiles-chip-target-settings") return cloneChipTargetSettingsValue(DEFAULTS[key]);
+            return DEFAULTS[key];
+          }
+          return fallback;
+        },
+        getNumber(key, fallback){
+          const raw = this.getValue(key, fallback);
+          const n = Number(raw);
+          return Number.isFinite(n) ? n : fallback;
+        },
+        getTileComposition(){
+          return cloneTileCompositionValue(this.getValue("tiles-tile-composition", DEFAULTS["tiles-tile-composition"]));
+        },
+        getChipTargetSettings(){
+          return cloneChipTargetSettingsValue(this.getValue("tiles-chip-target-settings", DEFAULTS["tiles-chip-target-settings"]));
+        },
+        getChipTargetSetting(tileCode){
+          const all = this.getChipTargetSettings();
+          const key = String(tileCode || "");
+          if (key && Object.prototype.hasOwnProperty.call(all, key)) {
+            return normalizeChipTargetTileSettingValue(all[key]);
+          }
+          const normalizedKey = getChipTargetSettingStorageKey(tileCode);
+          if (normalizedKey && Object.prototype.hasOwnProperty.call(all, normalizedKey)) {
+            return normalizeChipTargetTileSettingValue(all[normalizedKey]);
+          }
+          return buildChipTargetOverviewBaseSetting(this.getValue("overview-chip-target-colored", DEFAULTS["overview-chip-target-colored"]));
+        },
+        getEffectiveChipTargetSetting(tileCode){
+          const setting = this.getChipTargetSetting(tileCode);
+          const targetMode = setting.targetMode === "naki" ? "naki" : "menzen";
+          const doraCount = setting.useDetailedDora
+            ? {
+                menzen: String(setting.doraMenzenCount != null ? setting.doraMenzenCount : setting.doraCount),
+                furo: String(setting.doraFuroCount != null ? setting.doraFuroCount : setting.doraCount)
+              }
+            : {
+                menzen: String(setting.doraCount),
+                furo: String(setting.doraCount)
+              };
+          const chipCount = setting.useDetailedChip
+            ? {
+                menzen: String(setting.chipMenzenCount != null ? setting.chipMenzenCount : setting.chipValue),
+                furo: String(setting.chipFuroCount != null ? setting.chipFuroCount : setting.chipValue)
+              }
+            : {
+                menzen: String(setting.chipValue),
+                furo: targetMode === "naki" ? String(setting.chipValue) : "0"
+              };
+
+          return {
+            ...setting,
+            targetMode,
+            doraCount,
+            chipCount
+          };
+        }
+      };
+
+      Object.defineProperty(api, "ruleSetId", {
+        get(){
+          return readActiveRuleSetMeta().ruleSetId;
+        }
+      });
+
+      Object.defineProperty(api, "ruleSetName", {
+        get(){
+          return readActiveRuleSetMeta().ruleSetName;
+        }
+      });
+
+      window.MBSanmaRulesConfig = api;
+      renderAppliedRuleSetBadge();
+    })();
+  </script>
+
+  <script src="../../js/core.js"></script>
+  <script src="../../js/core2.js"></script>
+  <script src="../../js/shanten.js"></script>
+  <script src="../../js/fu.js"></script>
+  <script src="../../js/yaku.js"></script>
+  <script src="../../js/yakuman.js"></script>
+
+  <script src="../../js/render_stats.js"></script>
+  <script src="../../js/render_right.js"></script>
+  <script src="../../js/render_cpu.js"></script>
+  <script src="../../js/render_center.js"></script>
+  <script src="../../js/render.js"></script>
+
+  <script src="../../js/actions.js"></script>
+  <script src="../../js/kan.js"></script>
+  <script src="../../js/pei.js"></script>
+  <script src="../../js/riichi.js"></script>
+  <script src="../../js/cpai.js"></script>
+  <script src="../../js/cpu_actions.js"></script>
+  <script src="../../js/cpu_call_policy.js"></script>
+  <script src="../../js/cpu_open_profiles.js"></script>
+  <script src="../../js/cpu_open_eval.js"></script>
+  <script src="../../js/cpu_discard_profiles.js"></script>
+  <script src="../../js/cpu_discard_eval.js"></script>
+  <script src="../../js/cpu_discard_snapshot.js"></script>
+  <script src="../../js/cpu_snapshot.js"></script>
+  <script src="../../js/cpu_api_bridge.js"></script>
+  <script src="../../js/cpu_calls.js"></script>
+  <script src="../../js/turn.js"></script>
+  <script src="../../js/turn2.js"></script>
+  <script src="../../js/call.js"></script>
+  <script src="../../js/tensukeisan.js"></script>
+  <script src="../../js/seisan.js"></script>
+  <script src="../../js/result.js"></script>
+  <script src="../../js/supabase_client.js"></script>
+  <script src="../../js/match_log.js"></script>
+  <script src="../../js/log_normalizer.js"></script>
+  <script src="../../js/log_metrics.js"></script>
+  <script src="../../js/main.js"></script>
+  <script src="../../js/furiten.js"></script>
+  <script src="../../js/debug.js"></script>
+  <script src="../../js/doubleRonOverlayPatch.js"></script>
+  <script src="../../js/verify_run_control.js"></script>
+  <script src="../../js/app_play_ui.js"></script>
+  <script src="../../js/analysis_ui.js"></script>
+</body>
+</html>

@@ -1,0 +1,504 @@
+/* ========= cpu.css ========= */
+
+/* ===== CPUエリア ===== */
+.cpuSide{
+  position: absolute;
+  top: 20%;
+  width: 24%;
+  height: 52%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  pointer-events: none;
+  z-index: 5;
+}
+
+.cpuLeftSide{
+  left: 13.5%;
+  justify-content: flex-start;
+}
+
+.cpuRightSide{
+  right: 13.5%;
+  justify-content: flex-end;
+}
+
+.cpuSideInner{
+  display: contents;
+}
+
+.cpuOpenStack{
+  display: contents;
+}
+
+/* ===== CPU手牌 ===== */
+.cpuHand{
+  width: clamp(50px, 7.2cqw, 88px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.cpuHandBody{
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.cpuHand img{
+  width: clamp(36px, 6cqw, 50px);
+  height: auto;
+  border-radius: 8px;
+  margin: clamp(-10px, -0.85cqw, -12px) 0;
+  box-shadow: 0 6px 14px rgba(0,0,0,0.10);
+  transform-origin: center;
+  display: block;
+}
+
+.cpuLeftSide .cpuHand img{
+  transform: rotate(90deg);
+}
+
+.cpuRightSide .cpuHand img{
+  transform: rotate(-90deg);
+}
+
+.cpuDrawnSlot{
+  position: absolute;
+  left: 50%;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.cpuDrawnBottom{
+  top: 100%;
+  transform: translateX(-50%);
+  margin-top: clamp(6px, 0.9cqw, 8px);
+}
+
+.cpuDrawnTop{
+  bottom: 100%;
+  transform: translateX(-50%);
+  margin-bottom: clamp(6px, 0.9cqw, 8px);
+}
+
+.cpuHand img.cpuDrawnTile{
+  margin: 0;
+}
+
+/* ===== CPU捨て牌 ===== */
+.cpuRiver{
+  width: var(--riverW);
+  display: grid;
+  grid-template-columns: repeat(var(--cols), var(--tile));
+  gap: var(--gap);
+  grid-auto-rows: auto;
+  height: var(--cpuBoxH);
+  overflow: visible;
+  align-content: start;
+  justify-content: center;
+}
+
+.cpuRiver img{
+  width: var(--tile);
+  height: auto;
+  object-fit: cover;
+  display: block;
+  border-radius: 6px;
+}
+
+.cpuLeftSide .cpuRiver img.riichiDeclare{
+  transform: rotate(90deg) scale(1);
+  transform-origin: 50% 50%;
+}
+
+.cpuRightSide .cpuRiver img.riichiDeclare{
+  transform: rotate(-90deg) scale(1);
+  transform-origin: 50% 50%;
+}
+
+/* ===== CPU河 ===== */
+.cpuLeftSide .cpuRiver,
+.cpuRightSide .cpuRiver{
+  position: absolute;
+  z-index: 6;
+  pointer-events: none;
+  transform-origin: center;
+}
+
+.cpuLeftSide .cpuRiver{
+  top: 0%;
+  left: 125%;
+  transform: translateX(-100%) rotate(90deg);
+}
+
+.cpuRightSide .cpuRiver{
+  top: 0%;
+  left: -25%;
+  transform: rotate(-90deg);
+}
+
+/* ===== CPU北抜き表示 ===== */
+.cpuPeiArea{
+  position: absolute;
+  z-index: 7;
+  pointer-events: none;
+}
+
+.cpuPeis{
+  display: flex;
+  gap: 2px;
+  flex-wrap: nowrap;
+  justify-content: center;
+  align-items: center;
+  background: transparent;
+}
+
+.cpuPeis img{
+  width: clamp(44px, 8cqw, 44px);
+  height: auto;
+  display: block;
+  border-radius: 8px;
+}
+
+.cpuLeftPeiArea{
+  left: calc(-20% + clamp(20px, 3.1cqw, 34px));
+  top: 130%;
+  transform: translate(-50%, 0) rotate(90deg);
+  transform-origin: top center;
+  width: clamp(112px, 14cqw, 176px);
+}
+
+.cpuLeftPeiArea .cpuPeis{
+  position: absolute;
+  top: 0;
+  left: auto;
+  right: 0;
+  display: flex;
+  flex-direction: row-reverse;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 2px;
+  flex-wrap: nowrap;
+  width: max-content;
+}
+
+.cpuRightPeiArea{
+  right: calc(-18% + clamp(20px, 3.1cqw, 34px));
+  top: -20%;
+  transform: translate(50%, 0) rotate(-90deg);
+  transform-origin: top center;
+  width: clamp(112px, 14cqw, 176px);
+}
+
+.cpuRightPeiArea .cpuPeis{
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: flex;
+  flex-direction: row-reverse;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 2px;
+  flex-wrap: nowrap;
+  width: max-content;
+}
+
+/* ===== CPU副露表示 ===== */
+.cpuMeldArea{
+  position: absolute;
+  z-index: 7;
+  pointer-events: none;
+}
+
+.cpuMelds{
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  justify-content: flex-start;
+  align-items: flex-start;
+  background: transparent;
+  width: max-content;
+}
+
+.cpuMelds .meld{
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: flex-start;
+  gap: 0;
+  line-height: 0;
+}
+
+.cpuMelds img{
+  width: clamp(44px, 8cqw, 44px);
+  height: auto;
+  display: block;
+  border-radius: 8px;
+}
+
+.cpuLeftMeldArea{
+  left: -30%;
+  top: 144%;
+  transform: translate(-50%, 0) rotate(90deg);
+  transform-origin: top center;
+  width: 40px;
+}
+
+.cpuLeftMeldArea .cpuMelds{
+  position: absolute;
+  top: 0;
+  left: auto;
+  right: 0;
+  flex-direction: row-reverse;
+}
+
+.cpuRightMeldArea{
+  right: -29%;
+  top: -34%;
+  transform: translate(50%, 0) rotate(-90deg);
+  transform-origin: top center;
+  width: 40px;
+}
+
+.cpuRightMeldArea .cpuMelds{
+  position: absolute;
+  top: 0;
+  right: 0;
+  flex-direction: row-reverse;
+}
+
+@media (max-width: 700px){
+  .cpuSideInner{
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+
+  .cpuOpenStack{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+  }
+
+  .cpuSide{
+    top: 19%;
+    width: 18%;
+    height: 50%;
+  }
+
+  .cpuLeftSide{
+    left: 12.6%;
+  }
+
+  .cpuRightSide{
+    right: 12.6%;
+  }
+
+  .cpuHand{
+    width: 62px;
+  }
+
+  .cpuHand img{
+    width: 48px;
+    margin: -14px 0;
+    border-radius: 7px;
+  }
+
+  .cpuDrawnBottom{
+    margin-top: 8px;
+  }
+
+  .cpuDrawnTop{
+    margin-bottom: 8px;
+  }
+
+  .cpuLeftSide .cpuRiver{
+    top: 2%;
+    left: 128%;
+  }
+
+  .cpuRightSide .cpuRiver{
+    top: 2%;
+    left: -28%;
+  }
+
+  .cpuPeis{
+    gap: 1px;
+  }
+
+  .cpuMelds{
+    gap: 4px;
+  }
+
+  .cpuPeis img,
+  .cpuMelds img{
+    width: 46px;
+    border-radius: 6px;
+  }
+
+  .cpuLeftPeiArea{
+    position: static;
+    left: auto;
+    top: auto;
+    transform: rotate(90deg);
+    width: 86px;
+  }
+
+  .cpuRightPeiArea{
+    position: static;
+    right: auto;
+    top: auto;
+    transform: rotate(-90deg);
+    width: 86px;
+  }
+
+  .cpuLeftMeldArea{
+    position: static;
+    left: auto;
+    top: auto;
+    transform: rotate(90deg);
+    width: 32px;
+  }
+
+  .cpuRightMeldArea{
+    position: static;
+    right: auto;
+    top: auto;
+    transform: rotate(-90deg);
+    width: 32px;
+  }
+
+  .cpuLeftPeiArea .cpuPeis,
+  .cpuLeftMeldArea .cpuMelds,
+  .cpuRightPeiArea .cpuPeis,
+  .cpuRightMeldArea .cpuMelds{
+    position: static;
+    top: auto;
+    left: auto;
+    right: auto;
+  }
+}
+
+@media (orientation: landscape) and (max-height: 520px){
+  .cpuSideInner{
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .cpuOpenStack{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+
+  .cpuSide{
+    top: 18%;
+    width: 21%;
+    height: 52%;
+  }
+
+  .cpuLeftSide{
+    left: 15.5%;
+  }
+
+  .cpuRightSide{
+    right: 15.5%;
+  }
+
+  .cpuHand{
+    width: 75px;
+  }
+
+  .cpuHand img{
+    width: 56px;
+    margin: -16px 0;
+    border-radius: 8px;
+  }
+
+    .cpuDrawnBottom{
+    margin-top: 11px;
+  }
+
+  .cpuDrawnTop{
+    margin-bottom: 11px;
+  }
+
+  .cpuRiver img{
+    width: var(--tile);
+    border-radius: 8px;
+  }
+
+  .cpuLeftSide .cpuRiver{
+    top: 6%;
+    left: 136%;
+  }
+
+  .cpuRightSide .cpuRiver{
+    top: 6%;
+    left: -35%;
+  }
+
+  .cpuPeis img,
+  .cpuMelds img{
+    width: 60px;
+    border-radius: 6px;
+  }
+
+  .cpuLeftPeiArea{
+    position: static;
+    left: auto;
+    top: auto;
+    transform: rotate(90deg);
+    width: 92px;
+  }
+
+  .cpuRightPeiArea{
+    position: static;
+    right: auto;
+    top: auto;
+    transform: rotate(-90deg);
+    width: 92px;
+  }
+
+  .cpuLeftMeldArea{
+    position: static;
+    left: auto;
+    top: auto;
+    transform: rotate(90deg);
+    width: 32px;
+  }
+
+  .cpuRightMeldArea{
+    position: static;
+    right: auto;
+    top: auto;
+    transform: rotate(-90deg);
+    width: 32px;
+  }
+
+  .cpuLeftPeiArea .cpuPeis,
+  .cpuLeftMeldArea .cpuMelds,
+  .cpuRightPeiArea .cpuPeis,
+  .cpuRightMeldArea .cpuMelds{
+    position: static;
+    top: auto;
+    left: auto;
+    right: auto;
+  }
+}

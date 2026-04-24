@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MB体験版 クーポン確認</title>
+  <style>
+    :root{
+      --bg:#0c1511;
+      --panel:rgba(17,25,21,0.94);
+      --line:rgba(255,255,255,0.12);
+      --text:#f6f7f3;
+      --muted:rgba(246,247,243,0.70);
+      --gold:#f1d48d;
+      --green:#8ff0c6;
+      --yellow:#ffe18a;
+      --red:#ffb7b7;
+    }
+    *{ box-sizing:border-box; }
+    html,body{ margin:0; min-height:100%; }
+    body{
+      min-height:100vh;
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      color:var(--text);
+      background:linear-gradient(180deg,#123025 0%, #0a1712 58%, #08110d 100%);
+      padding:20px;
+    }
+    .page{ width:min(100%, 980px); margin:0 auto; display:grid; gap:16px; }
+    .panel{
+      border-radius:20px;
+      border:1px solid var(--line);
+      background:var(--panel);
+      padding:18px;
+      box-shadow:0 20px 44px rgba(0,0,0,0.28);
+    }
+    .title{ font-size:28px; font-weight:900; margin-bottom:6px; }
+    .lead{ font-size:13px; line-height:1.7; color:var(--muted); }
+    .formRow{ display:grid; grid-template-columns:minmax(0,1fr) auto; gap:10px; margin-top:14px; }
+    .input{
+      min-height:52px; border-radius:14px; border:1px solid rgba(255,255,255,0.14);
+      background:rgba(255,255,255,0.05); color:var(--text); padding:0 14px; font-size:16px; font-weight:700;
+    }
+    .btn{
+      appearance:none; border:1px solid rgba(255,255,255,0.12); border-radius:14px; min-height:52px;
+      padding:0 16px; background:rgba(255,255,255,0.05); color:#fff; font-size:14px; font-weight:800; cursor:pointer;
+    }
+    .btn.isPrimary{
+      border-color:rgba(255,214,111,0.28);
+      background:linear-gradient(180deg, rgba(255,214,111,0.20), rgba(255,214,111,0.10));
+      color:#fff4c9;
+    }
+    .btn.isCompact{
+      min-height:42px;
+      padding:0 14px;
+      font-size:13px;
+    }
+    .message{ min-height:22px; margin-top:10px; font-size:13px; font-weight:700; color:var(--gold); }
+    .message.is-error{ color:var(--red); }
+    .adminEmptyCard,
+    .adminCouponCodeBox,
+    .adminMetaItem,
+    .adminListShell{
+      border-radius:16px; border:1px solid rgba(255,255,255,0.10); background:rgba(255,255,255,0.05); padding:14px;
+    }
+    .adminEmptyTitle{ font-size:18px; font-weight:900; margin-bottom:6px; }
+    .adminEmptyText{ font-size:14px; line-height:1.7; color:var(--muted); }
+    .adminCouponHero{
+      display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;
+      border-radius:18px; padding:18px; border:1px solid rgba(255,255,255,0.12);
+      background:linear-gradient(180deg, rgba(29,48,41,0.96), rgba(15,25,21,0.94));
+      margin-bottom:12px;
+    }
+    .adminCouponRank{ font-size:28px; font-weight:900; color:#fff3c5; line-height:1; }
+    .adminCouponReward{ font-size:24px; font-weight:900; color:#ffffff; line-height:1.2; margin-top:6px; }
+    .adminCouponStatus{ display:inline-flex; align-items:center; min-height:36px; padding:0 14px; border-radius:999px; font-size:13px; font-weight:900; }
+    .adminCouponStatus.is-unused{ background:rgba(118,214,170,0.14); border:1px solid rgba(118,214,170,0.24); color:#eafff2; }
+    .adminCouponStatus.is-used{ background:rgba(255,213,111,0.14); border:1px solid rgba(255,213,111,0.26); color:#fff4c9; }
+    .adminCouponStatus.is-expired{ background:rgba(255,132,132,0.12); border:1px solid rgba(255,132,132,0.24); color:#ffdada; }
+    .adminCouponCodeLabel,.adminMetaLabel,.adminListLabel{ font-size:11px; font-weight:800; color:var(--muted); margin-bottom:4px; }
+    .adminCouponCodeValue{ font-size:22px; font-weight:900; letter-spacing:0.06em; word-break:break-all; }
+    .adminMetaGrid{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; margin-top:12px; }
+    .adminMetaValue{ font-size:16px; font-weight:900; color:#fff; }
+    .adminMetaValueSmall{ font-size:13px; word-break:break-all; }
+    .footerActions{ display:flex; justify-content:flex-end; gap:10px; margin-top:14px; }
+    .footnote{ font-size:12px; line-height:1.7; color:var(--muted); }
+
+    .adminFilterRow{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-bottom:12px;
+    }
+    .adminCheck{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      font-size:13px;
+      font-weight:800;
+      color:#fff;
+    }
+    .adminListTable{
+      display:grid;
+      gap:8px;
+    }
+    .adminListHead,
+    .adminListRow{
+      display:grid;
+      grid-template-columns:minmax(0,2.2fr) 88px minmax(0,1.5fr) 160px 120px;
+      gap:10px;
+      align-items:center;
+    }
+    .adminListHead{
+      padding:0 8px;
+      color:var(--muted);
+      font-size:12px;
+      font-weight:800;
+    }
+    .adminListRow{
+      appearance:none;
+      width:100%;
+      text-align:left;
+      min-height:58px;
+      padding:10px 12px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,0.08);
+      background:rgba(255,255,255,0.04);
+      color:#fff;
+      cursor:pointer;
+    }
+    .adminListRow.is-selected{
+      border-color:rgba(255,214,111,0.28);
+      background:linear-gradient(180deg, rgba(255,214,111,0.14), rgba(255,214,111,0.06));
+    }
+    .adminListCode{
+      font-size:13px;
+      font-weight:900;
+      letter-spacing:0.03em;
+      word-break:break-all;
+    }
+    .adminListRank,
+    .adminListReward,
+    .adminListIssued{
+      font-size:13px;
+      font-weight:700;
+    }
+    .adminListEmpty{
+      padding:10px 2px 2px;
+      font-size:13px;
+      line-height:1.7;
+      color:var(--muted);
+    }
+
+    @media (max-width:860px){
+      .page{ width:min(100%, 100%); }
+      .adminListHead{ display:none; }
+      .adminListRow{
+        grid-template-columns:1fr;
+        gap:6px;
+        align-items:flex-start;
+      }
+      .adminListCode{ font-size:14px; }
+    }
+
+    @media (max-width:640px){
+      body{ padding:12px; }
+      .formRow,.adminMetaGrid{ grid-template-columns:1fr; }
+      .title{ font-size:24px; }
+      .adminCouponRank{ font-size:24px; }
+      .adminCouponReward{ font-size:20px; }
+      .adminCouponCodeValue{ font-size:18px; }
+      .adminFilterRow{ align-items:flex-start; }
+      .footerActions{ justify-content:stretch; }
+      .footerActions .btn{ width:100%; }
+    }
+  </style>
+  <script>
+    window.MB_SANMA_MBTRIAL_SUPABASE_CONFIG = {
+      url: "https://edcsvszqscbfeizfmilp.supabase.co",
+      anonKey: "sb_publishable_vLIhwWFFomM4WwSaupoOxw_UOUNihF0"
+    };
+  </script>
+</head>
+<body>
+  <main class="page">
+    <section class="panel">
+      <div class="title">MB体験版 クーポン確認</div>
+      <div class="lead">店頭で提示されたクーポンコードを入力して検索し、使用後に「使用済みにする」を押してください。</div>
+      <div class="formRow">
+        <input id="couponCodeInput" class="input" type="text" inputmode="latin" autocomplete="off" placeholder="例：MB-260405-ABCD-9X7K" />
+        <button id="searchCouponBtn" type="button" class="btn isPrimary">検索</button>
+      </div>
+      <div id="couponAdminMessage" class="message"></div>
+    </section>
+
+    <section class="panel">
+      <div id="couponAdminResult"></div>
+      <div class="footerActions">
+        <button id="markCouponUsedBtn" type="button" class="btn" hidden>使用済みにする</button>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="adminFilterRow">
+        <div>
+          <div class="adminListLabel">発行済みクーポン一覧</div>
+          <label class="adminCheck">
+            <input id="unusedOnlyCheckbox" type="checkbox" />
+            <span>未使用だけ表示</span>
+          </label>
+        </div>
+        <button id="refreshCouponListBtn" type="button" class="btn isCompact">一覧を更新</button>
+      </div>
+      <div id="couponAdminList" class="adminListShell"></div>
+    </section>
+
+    <section class="panel">
+      <div class="footnote">
+        この管理ページは簡易運用向けです。<br />
+        現状の構成では、URLやコードを知っている相手からの不正操作を完全には防げません。<br />
+        本格運用する場合は、Supabase Auth や Edge Functions で店員ログイン付きにしてください。
+      </div>
+    </section>
+  </main>
+
+  <script src="../../js/mbtrial_coupon_client.js"></script>
+  <script src="../../js/mbtrial_coupon_admin.js"></script>
+</body>
+</html>

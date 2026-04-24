@@ -1,0 +1,618 @@
+/* ========= hand.css ========= */
+
+/* ===== 手牌ゾーン ===== */
+.hand-wrap{
+  position: absolute;
+  left: 2.6%;
+  right: 2.6%;
+  bottom: 4.2%;
+
+  padding: 0;
+  box-sizing: border-box;
+
+  height: 29%;
+  z-index: 8;
+}
+
+.hand-wrap h3{
+  position:absolute;
+  left: 14px;
+  bottom: 100%;
+  margin-bottom: 6px;
+  font-size: 14px;
+  opacity: .75;
+}
+
+.playerHandRow{
+  display: contents;
+}
+
+/* ===== アクションボタン ===== */
+.actionbar{
+  position: absolute;
+  right: 17.5%;
+  bottom: clamp(78px, 11cqh, 126px);
+  transform: none;
+  display: flex;
+  gap: clamp(8px, 0.9cqw, 12px);
+  align-items: center;
+  justify-content: flex-end;
+  z-index: 10;
+
+  width: auto;
+  max-width: min(43%, 520px);
+  min-height: clamp(46px, 5.6cqw, 60px);
+
+  padding: clamp(8px, 0.9cqw, 12px);
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background:
+    linear-gradient(180deg, rgba(18,27,23,0.78) 0%, rgba(9,14,12,0.70) 100%),
+    rgba(8,12,10,0.46);
+  box-shadow:
+    0 18px 36px rgba(0,0,0,0.30),
+    inset 0 1px 0 rgba(255,255,255,0.10),
+    inset 0 -1px 0 rgba(0,0,0,0.24);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition:
+    opacity 150ms ease,
+    transform 150ms ease,
+    visibility 150ms ease;
+}
+
+.actionbar.isVisible{
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+.actionbar.actionbarHidden{
+  transform: translateY(8px);
+}
+
+.actionBtn{
+  min-width: clamp(68px, 5.8cqw, 92px);
+  height: clamp(42px, 4.6cqw, 52px);
+  padding: 0 clamp(12px, 1.1cqw, 16px);
+  box-sizing: border-box;
+
+  display: none;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  white-space: nowrap;
+
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.14);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.04) 100%),
+    rgba(28,36,33,0.92);
+  color: rgba(246,249,244,0.96);
+  box-shadow:
+    0 10px 22px rgba(0,0,0,0.20),
+    inset 0 1px 0 rgba(255,255,255,0.14),
+    inset 0 -1px 0 rgba(0,0,0,0.24);
+  user-select: none;
+  font-weight: 900;
+  font-size: clamp(12px, 1.1cqw, 15px);
+  letter-spacing: .04em;
+  line-height: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+  transition:
+    transform 120ms ease,
+    box-shadow 120ms ease,
+    border-color 120ms ease,
+    filter 120ms ease,
+    background 120ms ease,
+    color 120ms ease;
+}
+
+.actionBtn:hover{
+  transform: translateY(-1px);
+  box-shadow:
+    0 14px 24px rgba(0,0,0,0.24),
+    inset 0 1px 0 rgba(255,255,255,0.16),
+    inset 0 -1px 0 rgba(0,0,0,0.20);
+}
+
+.actionBtn.enabled{
+  filter: none;
+}
+
+.actionBtn:active{
+  transform: translateY(1px);
+}
+
+#ronBtn.enabled{
+  border-color: rgba(255, 120, 108, 0.58);
+  background:
+    linear-gradient(180deg, rgba(255,140,124,0.26) 0%, rgba(255,102,78,0.10) 100%),
+    rgba(61, 24, 20, 0.94);
+  color: #fff0ec;
+}
+
+#tsumoBtn.enabled{
+  border-color: rgba(255, 214, 116, 0.58);
+  background:
+    linear-gradient(180deg, rgba(255,220,130,0.28) 0%, rgba(255,190,74,0.10) 100%),
+    rgba(59, 44, 17, 0.94);
+  color: #fff6de;
+}
+
+#riichiBtn.enabled{
+  border-color: rgba(164, 198, 255, 0.58);
+  background:
+    linear-gradient(180deg, rgba(168,204,255,0.24) 0%, rgba(96,140,255,0.10) 100%),
+    rgba(24, 34, 62, 0.94);
+  color: #eef5ff;
+}
+
+#riichiCancelBtn.enabled{
+  border-color: rgba(255, 188, 214, 0.54);
+  background:
+    linear-gradient(180deg, rgba(255,196,220,0.22) 0%, rgba(255,124,174,0.10) 100%),
+    rgba(54, 24, 44, 0.94);
+  color: #fff1f7;
+}
+
+#kanBtn.enabled{
+  border-color: rgba(220, 174, 110, 0.54);
+  background:
+    linear-gradient(180deg, rgba(223,178,118,0.24) 0%, rgba(194,128,56,0.10) 100%),
+    rgba(58, 37, 16, 0.94);
+  color: #fff1df;
+}
+
+#ponBtn.enabled{
+  border-color: rgba(255, 176, 112, 0.56);
+  background:
+    linear-gradient(180deg, rgba(255,182,118,0.24) 0%, rgba(255,142,68,0.10) 100%),
+    rgba(62, 34, 18, 0.94);
+  color: #fff2e7;
+}
+
+#peiBtn.enabled{
+  border-color: rgba(118, 220, 214, 0.50);
+  background:
+    linear-gradient(180deg, rgba(132,224,218,0.22) 0%, rgba(72,176,170,0.08) 100%),
+    rgba(20, 48, 46, 0.94);
+  color: #ebfffd;
+}
+
+#passBtn.enabled{
+  border-color: rgba(214, 219, 226, 0.32);
+  background:
+    linear-gradient(180deg, rgba(226,231,238,0.16) 0%, rgba(180,188,198,0.08) 100%),
+    rgba(42, 48, 52, 0.94);
+  color: #f0f4f8;
+}
+
+/* ===== ステータス（受け入れ表示） ===== */
+#stats{
+  position: absolute;
+  right: 20%;
+  top: 50%;
+  transform: none;
+  z-index: 8;
+
+  display: none;
+
+  font-size: 12px;
+  color: #333;
+  background: rgba(255,255,255,0.96);
+  border: 1px solid rgba(0,0,0,0.10);
+  border-radius: 12px;
+
+  padding: 8px 8px;
+  box-shadow: 0 10px 22px rgba(0,0,0,0.08);
+
+  width: min(270px, 15.5%);
+  min-width: 188px;
+  max-width: min(270px, 15.5%);
+
+  max-height: 24%;
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  -webkit-overflow-scrolling: touch;
+}
+
+#stats:empty{
+  display: none !important;
+}
+
+#stats[style*="display:block"],
+#stats[style*="display: block"],
+#stats[style*="display:flex"],
+#stats[style*="display: flex"],
+#stats.show,
+#stats.isOpen,
+#stats.is-open,
+#stats[data-open="true"],
+#stats[aria-hidden="false"]{
+  display: block;
+}
+
+#stats::-webkit-scrollbar{
+  width: 10px;
+}
+#stats::-webkit-scrollbar-thumb{
+  background: rgba(0,0,0,0.18);
+  border-radius: 999px;
+}
+
+#stats .line{
+  display:flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+#stats .line span{
+  white-space: nowrap;
+  font-size: 12px;
+}
+
+#stats .tiles{
+  margin-bottom: 10px;
+}
+
+#stats .tiles.tiles4{
+  --uTile: 26px;
+  --uGap: 3px;
+
+  display: grid;
+  grid-template-columns: repeat(6, var(--uTile));
+  grid-auto-flow: row;
+  grid-auto-rows: auto;
+
+  gap: var(--uGap);
+
+  padding: 6px 0 2px;
+
+  overflow-x: hidden;
+  overflow-y: hidden;
+
+  justify-content: start;
+  align-content: start;
+}
+
+#stats .tileChip{
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#stats .tileChip img{
+  width: var(--uTile);
+  height: auto;
+  display: block;
+  border-radius: 5px;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.10);
+}
+
+#stats .tileChip .badge{
+  position: absolute;
+  right: -3px;
+  bottom: 2px;
+
+  min-width: 14px;
+  height: 14px;
+  padding: 0 5px;
+  border-radius: 999px;
+
+  background: rgba(0,0,0,0.6);
+  color: rgba(255,255,255,0.98);
+
+  font-size: 10px;
+  font-weight: 900;
+  line-height: 14px;
+  text-align: center;
+
+  box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+
+  pointer-events: none;
+  user-select: none;
+}
+
+#stats.riichiPreviewMode{
+  left: 52%;
+  right: auto;
+  top: auto;
+  bottom: clamp(112px, 15.2cqh, 170px);
+  transform: translateX(-50%);
+  width: min(320px, 22.5%);
+  min-width: 220px;
+  max-width: min(320px, 22.5%);
+
+  color: #eff6ff;
+  background:
+    linear-gradient(180deg, rgba(17,24,36,0.94) 0%, rgba(10,15,24,0.92) 100%),
+    rgba(9,14,20,0.86);
+  border: 1px solid rgba(160,188,255,0.24);
+  box-shadow:
+    0 16px 32px rgba(0,0,0,0.26),
+    inset 0 1px 0 rgba(255,255,255,0.08);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+#stats.riichiPreviewMode .line span{
+  color: #eff6ff;
+}
+
+#stats.riichiPreviewMode .line span:last-child{
+  color: #cfe0ff;
+}
+
+#stats.riichiPreviewMode .tileChip .badge{
+  background: rgba(8, 12, 20, 0.84);
+  color: #ffffff;
+}
+
+/* ===== 手牌 ===== */
+#hand{
+  position: absolute;
+  left: 0;
+  right: 2%;
+  bottom: 0;
+
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+
+  gap: 2px;
+
+  padding: 0 10px 2px;
+  box-sizing: border-box;
+  touch-action: manipulation;
+}
+
+#hand button{
+  border: none;
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  border-radius: 8px;
+}
+
+#hand img{
+  width: clamp(44px, 10cqw, 60px);
+  height: auto;
+  display: block;
+  border-radius: 8px;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+  transition:
+    transform 120ms ease,
+    box-shadow 120ms ease,
+    outline-color 120ms ease;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+#hand .drawnTile{
+  margin-left: 16px;
+}
+
+#hand .newTile{
+  outline: 2px solid rgba(255, 200, 0, 0.95);
+  outline-offset: 2px;
+}
+#hand .blink{
+  animation: blink 0.8s ease-in-out 1;
+}
+@keyframes blink{
+  0%{ transform: translateY(0); }
+  30%{ transform: translateY(-6px); }
+  100%{ transform: translateY(0); }
+}
+
+#hand .selectedTile{
+  transform: translateY(-12px);
+  outline: 2px solid rgba(0, 140, 255, 0.95);
+  outline-offset: 2px;
+  box-shadow: 0 14px 24px rgba(0,0,0,0.18);
+}
+
+#hand .riichiPick{
+  outline: 3px solid rgba(255, 0, 120, 0.95);
+  outline-offset: 2px;
+}
+#hand .riichiDim{
+  opacity: 0.25;
+  filter: grayscale(1);
+}
+
+@media (max-width: 700px){
+  .playerHandRow{
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 4px;
+  }
+
+  .playerHandRow .rightArea{
+    order: 2;
+  }
+
+  .hand-wrap{
+    left: 1.8%;
+    right: 1.8%;
+    bottom: 4.8%;
+    height: 28%;
+  }
+
+  .actionbar{
+    right: 18%;
+    bottom: clamp(72px, 12.5cqh, 110px);
+    gap: 6px;
+    padding: 8px;
+    max-width: min(54%, 360px);
+    border-radius: 16px;
+  }
+
+  .actionBtn{
+    min-width: clamp(50px, 8.2cqw, 68px);
+    height: clamp(36px, 5.8cqw, 44px);
+    padding: 0 clamp(8px, 1.2cqw, 12px);
+    font-size: clamp(10px, 2.0cqw, 13px);
+    border-radius: 12px;
+  }
+
+  #stats{
+    right: 30%;
+    top: 64%;
+    width: min(250px, 28%);
+    min-width: 170px;
+    max-width: min(250px, 28%);
+  }
+
+  #stats.riichiPreviewMode{
+    left: 50%;
+    right: auto;
+    bottom: clamp(100px, 15cqh, 138px);
+    transform: translateX(-50%);
+    width: min(250px, 34%);
+    min-width: 170px;
+    max-width: min(250px, 34%);
+  }
+
+  #stats .tiles.tiles4{
+    --uTile: 22px;
+    --uGap: 2px;
+  }
+
+  #hand{
+    position: static;
+    left: auto;
+    right: auto;
+    bottom: auto;
+    order: 1;
+    padding: 0 2px 1px;
+    gap: 1px;
+  }
+
+  #hand img{
+    width: clamp(46px, 11.2cqw, 62px);
+    border-radius: 7px;
+  }
+
+  #hand .drawnTile{
+    margin-left: 12px;
+  }
+}
+
+
+@media (orientation: landscape) and (max-height: 520px){
+  .playerHandRow{
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 4px;
+  }
+
+  .playerHandRow .rightArea{
+    order: 2;
+  }
+
+  .hand-wrap{
+    left: 1.6%;
+    right: 1.6%;
+    bottom: 6%;
+    height: 28%;
+  }
+
+  .actionbar{
+    right: 28%;
+    bottom: 104px;
+    gap: 6px;
+    padding: 8px;
+    max-width: min(46%, 420px);
+    min-height: 40px;
+    border-radius: 16px;
+  }
+
+  .actionBtn{
+    min-width: 132px;
+    height: 84px;
+    padding: 0 10px;
+    font-size: 40px;
+    border-radius: 10px;
+  }
+
+  #stats{
+    right: 30%;
+    top: 56%;
+    width: min(260px, 22%);
+    min-width: 170px;
+    max-width: min(260px, 22%);
+    max-height: 24%;
+    padding: 8px;
+    font-size: 11px;
+  }
+
+  #stats .line span{
+    font-size: 11px;
+  }
+
+  #stats .tiles.tiles4{
+    --uTile: 22px;
+    --uGap: 2px;
+  }
+
+  #stats .tileChip .badge{
+    right: -2px;
+    bottom: 1px;
+    min-width: 12px;
+    height: 12px;
+    padding: 0 3px;
+    font-size: 8px;
+    line-height: 12px;
+  }
+
+  #stats.riichiPreviewMode{
+    bottom: 118px;
+    width: min(260px, 22%);
+    min-width: 170px;
+    max-width: min(260px, 22%);
+  }
+
+  #hand{
+    position: static;
+    left: auto;
+    right: auto;
+    bottom: auto;
+    order: 1;
+    padding: 0 2px 1px;
+  }
+
+  #hand img{
+    width: 64px;
+    border-radius: 8px;
+  }
+
+  #hand button{
+    border-radius: 8px;
+  }
+
+  #hand .drawnTile{
+    margin-left: 18px;
+  }
+}

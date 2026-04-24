@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>麻雀MB 三人麻雀ルール</title>
+  <meta name="description" content="麻雀MBの三人麻雀ルール案内ページです。点数・祝儀・基本ルール・補足ルール・罰則・マナーまで1ページで確認できます。" />
+  <style>
+    :root {
+      --bg: #0b0f14;
+      --bg2: #121823;
+      --card: rgba(255,255,255,.055);
+      --card-strong: rgba(255,255,255,.08);
+      --line: rgba(255,255,255,.1);
+      --text: #f4f7fb;
+      --muted: #b9c2cf;
+      --gold: #d7b66d;
+      --blue: #86cfff;
+      --green: #95e7c6;
+      --red: #ffb7b7;
+      --max: 1120px;
+      --radius: 24px;
+      --shadow: 0 18px 42px rgba(0,0,0,.28);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--text);
+      font-family: "Hiragino Sans", "Yu Gothic", "Meiryo", system-ui, sans-serif;
+      line-height: 1.75;
+      background:
+        radial-gradient(circle at top left, rgba(134,207,255,.14), transparent 32%),
+        radial-gradient(circle at top right, rgba(215,182,109,.13), transparent 28%),
+        linear-gradient(180deg, var(--bg) 0%, var(--bg2) 100%);
+    }
+
+    a { color: inherit; text-decoration: none; }
+    .wrap { width: min(calc(100% - 28px), var(--max)); margin: 0 auto; }
+
+    .hero {
+      padding: 24px 0 14px;
+    }
+
+    .hero-box {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 32px;
+      background: linear-gradient(135deg, rgba(255,255,255,.07), rgba(255,255,255,.03));
+      box-shadow: var(--shadow);
+      padding: 26px 18px 22px;
+    }
+
+    .hero-box::before,
+    .hero-box::after {
+      content: "";
+      position: absolute;
+      border-radius: 50%;
+      pointer-events: none;
+      filter: blur(10px);
+      opacity: .75;
+    }
+
+    .hero-box::before {
+      width: 220px;
+      height: 220px;
+      top: -80px;
+      right: -70px;
+      background: rgba(134,207,255,.12);
+    }
+
+    .hero-box::after {
+      width: 180px;
+      height: 180px;
+      bottom: -70px;
+      left: -60px;
+      background: rgba(215,182,109,.12);
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 12px;
+      border-radius: 999px;
+      background: rgba(215,182,109,.10);
+      border: 1px solid rgba(215,182,109,.28);
+      color: var(--gold);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      margin-bottom: 14px;
+    }
+
+    h1, h2, h3, p { margin: 0; }
+
+    h1 {
+      font-size: clamp(30px, 7vw, 56px);
+      line-height: 1.12;
+      letter-spacing: .02em;
+      margin-bottom: 14px;
+    }
+
+    .lead {
+      max-width: 760px;
+      color: var(--muted);
+      font-size: clamp(14px, 3.8vw, 18px);
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 46px;
+      padding: 0 18px;
+      border-radius: 999px;
+      font-size: 14px;
+      font-weight: 700;
+      transition: transform .18s ease;
+    }
+
+    .btn:hover { transform: translateY(-1px); }
+
+    .btn-primary {
+      color: #141414;
+      background: linear-gradient(135deg, #d7b66d, #efd79e);
+    }
+
+    .btn-sub {
+      background: rgba(255,255,255,.045);
+      border: 1px solid rgba(255,255,255,.12);
+      color: var(--text);
+    }
+
+    .mini-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .mini {
+      background: rgba(255,255,255,.035);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 18px;
+      padding: 13px 12px;
+    }
+
+    .mini strong {
+      display: block;
+      font-size: 16px;
+      margin-bottom: 2px;
+    }
+
+    .mini span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .nav-wrap {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      backdrop-filter: blur(12px);
+      background: rgba(10,14,20,.66);
+      border-bottom: 1px solid rgba(255,255,255,.06);
+    }
+
+    .page-nav {
+      display: flex;
+      gap: 10px;
+      overflow-x: auto;
+      padding: 12px 0;
+      scrollbar-width: none;
+    }
+
+    .page-nav::-webkit-scrollbar { display: none; }
+
+    .nav-chip {
+      white-space: nowrap;
+      padding: 9px 13px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.045);
+      border: 1px solid rgba(255,255,255,.08);
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .section { padding: 24px 0 8px; }
+
+    .section-head {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+
+    .section-head h2 {
+      font-size: clamp(24px, 5vw, 36px);
+      line-height: 1.18;
+    }
+
+    .section-head p {
+      color: var(--muted);
+      font-size: 14px;
+      max-width: 620px;
+    }
+
+    .grid { display: grid; gap: 14px; }
+    .grid.two { grid-template-columns: 1fr; }
+    .grid.three { grid-template-columns: 1fr; }
+
+    .card {
+      background: linear-gradient(180deg, var(--card-strong), var(--card));
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: var(--radius);
+      padding: 18px;
+      box-shadow: var(--shadow);
+    }
+
+    .card h3 {
+      font-size: 20px;
+      margin-bottom: 12px;
+    }
+
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 4px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 9px 12px;
+      border-radius: 999px;
+      background: rgba(134,207,255,.08);
+      border: 1px solid rgba(134,207,255,.23);
+      color: #dff3ff;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .rule-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .rule {
+      background: rgba(255,255,255,.03);
+      border: 1px solid rgba(255,255,255,.06);
+      border-radius: 16px;
+      padding: 12px 13px;
+    }
+
+    .rule strong {
+      display: block;
+      font-size: 15px;
+      margin-bottom: 4px;
+    }
+
+    .rule p {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .strong-gold strong { color: var(--gold); }
+    .strong-blue strong { color: var(--blue); }
+    .strong-green strong { color: var(--green); }
+    .strong-red strong { color: var(--red); }
+
+    .notice {
+      border-left: 3px solid var(--gold);
+      background: rgba(215,182,109,.08);
+      border-radius: 0 16px 16px 0;
+      padding: 12px 14px;
+      color: var(--text);
+      font-size: 14px;
+      margin-top: 12px;
+    }
+
+    details {
+      background: rgba(255,255,255,.035);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 18px;
+      padding: 14px 16px;
+    }
+
+    summary {
+      list-style: none;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 15px;
+      position: relative;
+      padding-right: 26px;
+    }
+
+    summary::-webkit-details-marker { display: none; }
+
+    summary::after {
+      content: "+";
+      position: absolute;
+      right: 0;
+      top: 0;
+      font-size: 20px;
+      line-height: 1;
+      color: var(--gold);
+    }
+
+    details[open] summary::after { content: "–"; }
+
+    details p {
+      color: var(--muted);
+      font-size: 14px;
+      margin-top: 10px;
+    }
+
+    .cta {
+      padding: 26px 0 40px;
+    }
+
+    .cta-box {
+      border-radius: 28px;
+      padding: 22px 18px;
+      background: linear-gradient(135deg, rgba(215,182,109,.15), rgba(134,207,255,.11));
+      border: 1px solid rgba(255,255,255,.10);
+      box-shadow: var(--shadow);
+    }
+
+    .cta-box h2 {
+      font-size: clamp(24px, 5vw, 36px);
+      margin-bottom: 10px;
+    }
+
+    .cta-box p {
+      font-size: 14px;
+      color: var(--text);
+      opacity: .94;
+    }
+
+    footer {
+      padding: 0 0 26px;
+      text-align: center;
+      font-size: 12px;
+      color: #98a4b6;
+    }
+
+    @media (min-width: 760px) {
+      .hero-box { padding: 34px 30px 28px; }
+      .mini-grid { grid-template-columns: repeat(4, 1fr); }
+      .grid.two { grid-template-columns: repeat(2, 1fr); }
+      .grid.three { grid-template-columns: repeat(3, 1fr); }
+      .card { padding: 22px; }
+    }
+
+    @media (min-width: 1040px) {
+      .mini-grid { grid-template-columns: repeat(6, 1fr); }
+    }
+  </style>
+</head>
+<body id="top">
+  <header class="hero">
+    <div class="wrap">
+      <div class="hero-box">
+        <div class="badge">Mahjong MB / Pin Sanma Rules</div>
+        <h1>麻雀MB<br>三人麻雀ルール</h1>
+        <p class="lead">
+          麻雀MBで採用しているピン三人麻雀ルールを、できるだけ見やすく整理した案内ページです。点数・祝儀・基本ルール・補足ルール・罰則・マナーまで、このページでまとめて確認できます。
+        </p>
+
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="#outline">まずは概要を見る</a>
+          <a class="btn btn-sub" href="#faq">よくある質問へ</a>
+        </div>
+
+        <div class="mini-grid">
+          <div class="mini"><strong>1000点100P</strong><span>レート</span></div>
+          <div class="mini"><strong>ゲーム代別清算</strong><span>ラス400P / 2着500P / トップ600P</span></div>
+          <div class="mini"><strong>東南戦</strong><span>35,000点持ち40,000点返し</span></div>
+          <div class="mini"><strong>祝儀あり</strong><span>一発・赤・裏 各300P / 虹北は鳴き祝儀1枚</span></div>
+          <div class="mini"><strong>北抜きドラ</strong><span>喰いタン・後付けあり</span></div>
+          <div class="mini"><strong>80,000点コールド</strong><span>箱下精算なし</span></div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="nav-wrap">
+    <div class="wrap">
+      <nav class="page-nav">
+        <a class="nav-chip" href="#outline">概要</a>
+        <a class="nav-chip" href="#settlement">点数・精算</a>
+        <a class="nav-chip" href="#basic">基本ルール</a>
+        <a class="nav-chip" href="#supplement">補足ルール</a>
+        <a class="nav-chip" href="#penalty">罰則</a>
+        <a class="nav-chip" href="#manner">マナー</a>
+        <a class="nav-chip" href="#faq">Q&A</a>
+      </nav>
+    </div>
+  </div>
+
+  <main>
+    <section class="section" id="outline">
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <h2>概要</h2>
+            <p>最初に確認したい内容だけを、短くまとめています。</p>
+          </div>
+        </div>
+        <div class="grid two">
+          <article class="card">
+            <h3>レート・祝儀</h3>
+            <div class="rule-list strong-gold">
+              <div class="rule"><strong>1000点100P</strong><p>ピン三人麻雀の基本レートです。</p></div>
+              <div class="rule"><strong>ゲーム代は半荘終了時清算</strong><p>ラス400P / 2着500P / トップ600Pです。</p></div>
+              <div class="rule"><strong>一発・赤・裏 各300P</strong><p>面前祝儀です。1枚ごとに200Pです。</p></div>
+              <div class="rule"><strong>役満祝儀</strong><p>ツモアガリは2,000Pオール、ロンアガリは3,000Pです。</p></div>
+            </div>
+          </article>
+
+          <article class="card">
+            <h3>ゲームの大枠</h3>
+            <div class="rule-list strong-blue">
+              <div class="rule"><strong>東南戦</strong><p>35,000点持ち、40,000点返しです。</p></div>
+              <div class="rule"><strong>箱下精算なし</strong><p>トビ時はトビチップ1枚です。</p></div>
+              <div class="rule"><strong>コールド終了</strong><p>80,000点以上で終了です。</p></div>
+              <div class="rule"><strong>ちょうど0点</strong><p>飛び扱いです。なお、1,000点ちょうどのリーチは可能です。</p></div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="settlement">
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <h2>点数・精算</h2>
+            <p>ウマや順位精算まわりを分けて見やすくしています。</p>
+          </div>
+        </div>
+
+        <div class="grid two">
+          <article class="card">
+            <h3>順位ウマ</h3>
+            <div class="rule-list strong-green">
+              <div class="rule"><strong>通常時</strong><p>1位 +15 / 2位 -5 / 3位 -10（ゲーム代は別清算）</p></div>
+              <div class="rule"><strong>2着が40,000点以上の場合</strong><p>1位 +10 / 2位 +5 / 3位 -15</p></div>
+            </div>
+          </article>
+        </div>
+
+        <div class="grid two" style="margin-top:14px;">
+          <article class="card">
+            <h3>アガリ・供託まわり</h3>
+            <div class="rule-list strong-blue">
+              <div class="rule"><strong>一本場</strong><p>1本場につき1,000点です。</p></div>
+              <div class="rule"><strong>親</strong><p>親は聴牌連荘です。形式聴牌ありです。</p></div>
+            </div>
+          </article>
+
+          <article class="card">
+            <h3>ドラ・祝儀牌</h3>
+            <div class="pill-row">
+              <div class="pill">赤5索 × 2</div>
+              <div class="pill">赤5筒 × 2</div>
+              <div class="pill">北抜きドラ</div>
+              <div class="pill">虹北 × 1</div>
+            </div>
+            <div class="notice">北は手の中では限られた役満以外には使えませんが、河に切ることは可能です。虹北のみ、鳴き祝儀が1枚つきます。</div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="basic">
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <h2>基本ルール</h2>
+            <p>卓に入る前に見ておきたい標準ルールです。</p>
+          </div>
+        </div>
+
+        <div class="grid two">
+          <article class="card">
+            <h3>進行・アガリまわり</h3>
+            <div class="rule-list strong-blue">
+              <div class="rule"><strong>親は聴牌連荘</strong><p>形式聴牌ありです。</p></div>
+              <div class="rule"><strong>北抜きドラ / 喰いタン / 後付け / ツモピンあり</strong><p>三麻の基本仕様として採用しています。虹北のみ鳴き祝儀1枚です。</p></div>
+              <div class="rule"><strong>ツモ損なし</strong><p>ツモ損なしルールです。</p></div>
+              <div class="rule"><strong>符計算あり</strong><p>点数は符計算を含めて扱います。</p></div>
+              <div class="rule"><strong>途中流局なし</strong><p>九種九牌などの途中流局はありません。</p></div>
+            </div>
+          </article>
+
+          <article class="card">
+            <h3>リーチ・山・終了条件</h3>
+            <div class="rule-list strong-gold">
+              <div class="rule"><strong>リーチ後の見逃しあり</strong><p>フリテンリーチもありです。</p></div>
+              <div class="rule"><strong>山は七トン残し</strong><p>終局判定の基準として採用しています。</p></div>
+              <div class="rule"><strong>80,000点以上でコールド終了</strong><p>到達時点で終了です。</p></div>
+              <div class="rule"><strong>ダブロンあり</strong><p>チェックなしです。</p></div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="supplement">
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <h2>補足ルール</h2>
+            <p>細かい裁定や例外ルールをまとめています。</p>
+          </div>
+        </div>
+
+        <div class="grid two">
+          <article class="card">
+            <h3>役・アガリ関係</h3>
+            <div class="rule-list strong-green">
+              <div class="rule"><strong>数え役満あり</strong><p>祝儀はつきません。</p></div>
+              <div class="rule"><strong>ダブル役満あり</strong><p>該当時はダブル役満として扱います。</p></div>
+              <div class="rule"><strong>大三元・四喜和のパオなし</strong><p>責任払いはありません。</p></div>
+              <div class="rule"><strong>流し倍満あり</strong><p>流し満貫ではなく流し倍満です。</p></div>
+              <div class="rule"><strong>人和は4翻役</strong><p>役満ではなく4翻役です。</p></div>
+            </div>
+          </article>
+
+          <article class="card">
+            <h3>槓・リーチ関係</h3>
+            <div class="rule-list strong-blue">
+              <div class="rule"><strong>大明槓の責任払いなし</strong><p>槓に関する責任払いはありません。</p></div>
+              <div class="rule"><strong>国士無双の暗槓ロンなし</strong><p>このケースは認めません。</p></div>
+              <div class="rule"><strong>オープンリーチなし</strong><p>採用していません。</p></div>
+              <div class="rule"><strong>リーチ後の暗槓</strong><p>待ちが変わらなければ可能です。</p></div>
+              <div class="rule"><strong>全ての槓はドラ先めくり</strong><p>槓ドラは先めくりで処理します。</p></div>
+            </div>
+          </article>
+        </div>
+
+        <div class="grid two" style="margin-top:14px;">
+          <article class="card">
+            <h3>符・風牌・自摸番</h3>
+            <div class="rule-list strong-gold">
+              <div class="rule"><strong>連風牌の雀頭は2符</strong><p>4符ではなく2符扱いです。</p></div>
+              <div class="rule"><strong>自摸番のないリーチ可能</strong><p>自摸番がなくてもリーチできます。</p></div>
+            </div>
+          </article>
+
+          <article class="card">
+            <h3>北について</h3>
+            <div class="rule-list strong-gold">
+              <div class="rule"><strong>北は抜きドラ</strong><p>役牌としては使いません。</p></div>
+              <div class="rule"><strong>手中利用の制限あり</strong><p>限られた役満以外では手牌の構成牌として使えません。</p></div>
+              <div class="rule"><strong>河に切るのは可能</strong><p>不要なら通常の捨て牌として処理できます。</p></div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="penalty">
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <h2>罰則について</h2>
+            <p>トラブルを防ぐため、卓上ルールとは別にこちらもご確認ください。</p>
+          </div>
+        </div>
+
+        <div class="grid two">
+          <article class="card">
+            <h3>軽度のミス</h3>
+            <div class="rule-list strong-red">
+              <div class="rule"><strong>誤発声の取り消し</strong><p>供託1,000点です。</p></div>
+              <div class="rule"><strong>誤ロン・誤ツモ</strong><p>アガリ放棄です。</p></div>
+              <div class="rule"><strong>多牌・少牌</strong><p>アガリ放棄です。</p></div>
+              <div class="rule"><strong>喰い替え・晒し間違い</strong><p>アガリ放棄です。</p></div>
+            </div>
+          </article>
+
+          <article class="card">
+            <h3>重大なミス</h3>
+            <div class="rule-list strong-red">
+              <div class="rule"><strong>続行不可能な倒牌</strong><p>チョンボ裁定です。</p></div>
+              <div class="rule"><strong>山崩し</strong><p>チョンボ裁定です。</p></div>
+              <div class="rule"><strong>チョンボ時</strong><p>その局をノーカウントとし、5,000点オールの支払いです。</p></div>
+              <div class="rule"><strong>その他</strong><p>細かな裁定はスタッフの指示に従ってください。</p></div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="manner">
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <h2>マナーについて</h2>
+            <p>みなさまが気持ちよく遊べるよう、ご協力をお願いします。</p>
+          </div>
+        </div>
+
+        <div class="grid two">
+          <article class="card">
+            <h3>卓上マナー</h3>
+            <div class="rule-list strong-blue">
+              <div class="rule"><strong>発声ははっきり正しく</strong><p>ロン・ポン・チー・カンなどの発声は明確にお願いします。</p></div>
+              <div class="rule"><strong>先ヅモはご遠慮ください</strong><p>著しい場合はアガリ放棄になることがあります。</p></div>
+              <div class="rule"><strong>手牌に関する発言・三味線はご遠慮ください</strong><p>対局進行の妨げになる発言はお控えください。</p></div>
+              <div class="rule"><strong>捨て牌は6枚切り3段で</strong><p>見やすい河づくりにご協力ください。</p></div>
+              <div class="rule"><strong>山は少し前に出してください</strong><p>山が上がってきた段階でお願いします。</p></div>
+              <div class="rule"><strong>倒牌時は必ず理牌してください</strong><p>確認しやすい形での開示をお願いします。</p></div>
+            </div>
+          </article>
+
+          <article class="card">
+            <h3>店内でのお願い</h3>
+            <div class="rule-list strong-blue">
+              <div class="rule"><strong>強打・点棒の投げ捨てはご遠慮ください</strong><p>卓や備品を大切にご使用ください。</p></div>
+              <div class="rule"><strong>他家の打牌・アガリの批判はしないでください</strong><p>楽しく打てる雰囲気づくりにご協力ください。</p></div>
+              <div class="rule"><strong>極端に悪い姿勢・両手打牌はご遠慮ください</strong><p>周囲に配慮した所作をお願いします。</p></div>
+              <div class="rule"><strong>トラブル時はスタッフをお呼びください</strong><p>その場で判断せず、まずスタッフへお願いします。</p></div>
+              <div class="rule"><strong>ラス半コールをお願いします</strong><p>終了意思の共有をお願いします。</p></div>
+              <div class="rule"><strong>メンバーの打牌に規則はありません</strong><p>あらかじめご了承ください。</p></div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="faq">
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <h2>よくある質問</h2>
+            <p>リッチメニューから飛んだ人がざっと確認しやすいよう、短くまとめています。</p>
+          </div>
+        </div>
+        <div class="grid" style="gap:12px;">
+          <details>
+            <summary>北は役牌ですか？</summary>
+            <p>いいえ。北は抜きドラです。手の中では限られた役満以外に使えず、河に切ることは可能です。</p>
+          </details>
+          <details>
+            <summary>赤牌はありますか？</summary>
+            <p>あります。赤5索2枚、赤5筒2枚の合計4枚です。</p>
+          </details>
+          <details>
+            <summary>符計算はありますか？</summary>
+            <p>あります。ツモ損なしの三麻ですが、符計算ありです。</p>
+          </details>
+          <details>
+            <summary>途中流局はありますか？</summary>
+            <p>ありません。途中流局なしです。</p>
+          </details>
+          <details>
+            <summary>コールド終了はありますか？</summary>
+            <p>あります。80,000点以上でコールド終了です。</p>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <section class="cta">
+      <div class="wrap">
+        <div class="cta-box">
+          <h2>お問い合わせ</h2>
+          <p>ルールの細かな確認や卓状況のお問い合わせは、公式LINEからご連絡ください。<br>ここに公式LINEのURLを入れれば、そのまま案内ページとして使えます。</p>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="#">公式LINEはこちら</a>
+            <a class="btn btn-sub" href="#top">ページ上部へ戻る</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    © 麻雀MB / Rules Guide
+  </footer>
+</body>
+</html>

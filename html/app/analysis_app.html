@@ -1,0 +1,1205 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SANMA LAB / 分析</title>
+  <meta name="description" content="検証モードで保存した対局から、全体の傾向を確認できるページです。" />
+  <style>
+    :root{
+      --bg:#08120e;
+      --bg2:#103126;
+      --panel:rgba(8,20,15,0.84);
+      --panel-strong:rgba(15,31,24,0.94);
+      --panel-soft:rgba(255,255,255,0.04);
+      --line:rgba(255,255,255,0.12);
+      --text:#f6f7f3;
+      --muted:rgba(246,247,243,0.72);
+      --gold:#d9bb72;
+      --gold-strong:#f3d78e;
+      --accent:#8dd8c4;
+      --danger:#ffb7ac;
+      --shadow:0 18px 54px rgba(0,0,0,0.32);
+    }
+
+    *{ box-sizing:border-box; }
+    html, body{ margin:0; min-height:100%; }
+
+    body{
+      min-height:100vh;
+      color:var(--text);
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      background:
+        radial-gradient(circle at 50% 12%, rgba(241,212,141,0.16), transparent 24%),
+        radial-gradient(circle at 50% 100%, rgba(31,94,67,0.26), transparent 36%),
+        linear-gradient(180deg, var(--bg2) 0%, var(--bg) 58%, #050c09 100%);
+      overflow-x:hidden;
+    }
+
+    body::before,
+    body::after{
+      content:"";
+      position:fixed;
+      inset:auto;
+      pointer-events:none;
+      border-radius:50%;
+      opacity:0.52;
+      filter:blur(2px);
+    }
+
+    body::before{
+      width:360px;
+      height:360px;
+      top:-120px;
+      left:-120px;
+      background:radial-gradient(circle, rgba(255,255,255,0.08), transparent 68%);
+    }
+
+    body::after{
+      width:320px;
+      height:320px;
+      right:-100px;
+      bottom:-100px;
+      background:radial-gradient(circle, rgba(217,187,114,0.16), transparent 68%);
+    }
+
+    button,
+    select,
+    a{
+      color:inherit;
+      font:inherit;
+    }
+
+    .page{
+      width:min(100%, 1440px);
+      margin:0 auto;
+      padding:24px;
+      position:relative;
+      z-index:1;
+    }
+
+    .shell{
+      border-radius:30px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02)),
+        var(--panel);
+      border:1px solid var(--line);
+      box-shadow:var(--shadow);
+      backdrop-filter:blur(10px);
+      overflow:hidden;
+      position:relative;
+    }
+
+    .shell::before{
+      content:"";
+      position:absolute;
+      inset:-160px auto auto 50%;
+      width:380px;
+      height:380px;
+      transform:translateX(-50%);
+      border-radius:50%;
+      background:radial-gradient(circle, rgba(217,187,114,0.14), transparent 70%);
+      pointer-events:none;
+    }
+
+    .shellInner{
+      position:relative;
+      z-index:1;
+      padding:24px;
+      display:grid;
+      gap:18px;
+    }
+
+    .topRow{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:16px;
+      flex-wrap:wrap;
+    }
+
+    .topRowLeft{
+      display:grid;
+      gap:10px;
+      min-width:0;
+      flex:1 1 640px;
+    }
+
+    .topActions{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:nowrap;
+      width:100%;
+      min-width:0;
+    }
+
+    .topActionsLeft,
+    .topActionsRight{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:nowrap;
+      min-width:0;
+      flex:0 0 auto;
+    }
+
+    .topActionsRight{
+      margin-left:auto;
+    }
+
+    .backBtn,
+    .refreshBtn,
+    .hintBtn,
+    .tabBtn{
+      appearance:none;
+      border:none;
+      cursor:pointer;
+      min-height:44px;
+      padding:0 16px;
+      border-radius:14px;
+      font-size:14px;
+      font-weight:800;
+      transition:transform 0.16s ease, opacity 0.16s ease, background 0.16s ease, border-color 0.16s ease;
+    }
+
+    .backBtn:hover,
+    .refreshBtn:hover,
+    .hintBtn:hover,
+    .tabBtn:hover,
+    .filterSelect:hover{
+      transform:translateY(-1px);
+    }
+
+    .backBtn{
+      background:linear-gradient(180deg, #f2d58f 0%, #d9bb72 100%);
+      color:#1e1402;
+      text-decoration:none;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+    }
+
+    .refreshBtn,
+    .hintBtn,
+    .tabBtn{
+      background:rgba(255,255,255,0.06);
+      color:var(--text);
+      border:1px solid rgba(255,255,255,0.12);
+    }
+
+    .tabBtn.isActive{
+      background:linear-gradient(180deg, rgba(255,255,255,0.18), rgba(255,255,255,0.06)), rgba(76,119,98,0.78);
+      border-color:rgba(182,227,201,0.24);
+      color:#ffffff;
+      box-shadow:0 10px 18px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.12);
+    }
+
+    .brandKicker{
+      font-size:12px;
+      font-weight:800;
+      letter-spacing:0.22em;
+      color:var(--gold-strong);
+    }
+
+    .brandTitle{
+      font-size:clamp(34px, 5vw, 64px);
+      font-weight:900;
+      line-height:1;
+      letter-spacing:0.05em;
+      text-shadow:0 10px 28px rgba(0,0,0,0.24);
+    }
+
+    .brandSub{
+      font-size:clamp(18px, 2vw, 24px);
+      font-weight:800;
+      color:rgba(255,255,255,0.92);
+    }
+
+    .leadText{
+      margin:0;
+      font-size:14px;
+      line-height:1.9;
+      color:var(--muted);
+      max-width:58em;
+    }
+
+    .statusCard{
+      min-width:0;
+      max-width:none;
+      padding:6px 10px;
+      border-radius:14px;
+      background:rgba(255,255,255,0.04);
+      border:1px solid rgba(255,255,255,0.10);
+      display:flex;
+      align-items:center;
+      gap:8px;
+      flex:0 0 auto;
+    }
+
+    .statusHead{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      flex-wrap:nowrap;
+    }
+
+    .statusLabel{
+      font-size:11px;
+      font-weight:800;
+      letter-spacing:0.10em;
+      color:var(--gold-strong);
+      white-space:nowrap;
+    }
+
+    .statusBadge{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      min-height:30px;
+      padding:0 10px;
+      border-radius:999px;
+      background:rgba(255,255,255,0.06);
+      border:1px solid rgba(255,255,255,0.12);
+      font-size:12px;
+      font-weight:800;
+      white-space:nowrap;
+    }
+
+    .statusBadge.isAccount{
+      color:#1b1403;
+      background:linear-gradient(180deg, #f2d58f 0%, #d9bb72 100%);
+      border-color:transparent;
+    }
+
+    .statusBadge.isLocal{
+      color:rgba(255,255,255,0.9);
+    }
+
+    .statusNote{
+      font-size:13px;
+      line-height:1.7;
+      color:var(--muted);
+    }
+
+    .statusMeta,
+    .tabRow{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+
+    .miniPill{
+      display:inline-flex;
+      align-items:center;
+      min-height:30px;
+      padding:0 10px;
+      border-radius:999px;
+      background:rgba(141,216,196,0.12);
+      border:1px solid rgba(141,216,196,0.18);
+      color:#f7fffb;
+      font-size:12px;
+      font-weight:700;
+    }
+
+    .filterCard,
+    .messageCard,
+    .metricSection,
+    .placeholderSection,
+    .tabCard,
+    .chartCard,
+    .tableCard{
+      border-radius:22px;
+      border:1px solid rgba(255,255,255,0.10);
+      background:var(--panel-soft);
+      padding:18px;
+    }
+
+    .filterCardTitle,
+    .messageTitle,
+    .sectionTitle,
+    .tabTitle,
+    .chartTitle,
+    .tableTitle{
+      font-size:18px;
+      font-weight:900;
+      margin-bottom:10px;
+    }
+
+    .sectionSub,
+    .messageText,
+    .placeholderText,
+    .filterNote,
+    .tabSub,
+    .chartSub,
+    .tableSub{
+      font-size:13px;
+      line-height:1.75;
+      color:var(--muted);
+    }
+
+    .filterGrid,
+    .summaryGrid,
+    .metricGrid{
+      display:grid;
+      gap:12px;
+      margin-top:12px;
+    }
+
+    .compactControlRow{
+      display:flex;
+      align-items:center;
+      justify-content:flex-end;
+      width:auto;
+      flex:0 0 auto;
+    }
+
+    .compactFilterBox{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      padding:6px 10px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,0.10);
+      background:rgba(255,255,255,0.03);
+      flex:0 0 auto;
+    }
+
+    .compactFilterLabel{
+      font-size:11px;
+      font-weight:800;
+      letter-spacing:0.04em;
+      color:var(--gold-strong);
+      white-space:nowrap;
+    }
+
+    .compactFilterBox .filterSelect{
+      width:108px;
+      min-height:30px;
+      padding:0 10px;
+      border-radius:10px;
+      font-size:12px;
+    }
+
+    .filterGrid{
+      grid-template-columns:repeat(4, minmax(0, 1fr));
+    }
+
+    .summaryGrid{
+      grid-template-columns:repeat(6, minmax(0, 1fr));
+    }
+
+    .metricGrid{
+      grid-template-columns:repeat(4, minmax(0, 1fr));
+    }
+
+    .filterField{
+      display:grid;
+      gap:7px;
+    }
+
+    .filterLabel{
+      font-size:12px;
+      font-weight:800;
+      color:rgba(245,247,244,0.76);
+    }
+
+    .filterSelect{
+      width:100%;
+      min-height:42px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,0.14);
+      background:rgba(255,255,255,0.05);
+      color:var(--text);
+      padding:0 12px;
+      box-sizing:border-box;
+      transition:transform 0.16s ease, border-color 0.16s ease, background 0.16s ease;
+    }
+
+    .metricCard{
+      border-radius:18px;
+      border:1px solid rgba(255,255,255,0.08);
+      background:rgba(0,0,0,0.16);
+      padding:14px 13px;
+      display:grid;
+      gap:6px;
+      min-height:108px;
+    }
+
+    .metricCardLabel{
+      font-size:12px;
+      font-weight:700;
+      color:rgba(245,247,244,0.64);
+    }
+
+    .metricCardValue{
+      font-size:24px;
+      font-weight:900;
+      line-height:1.05;
+      color:#ffd56f;
+      word-break:break-word;
+    }
+
+    .metricCardHint{
+      font-size:11px;
+      color:rgba(245,247,244,0.48);
+      line-height:1.45;
+    }
+
+    .tabPanel{
+      display:none;
+    }
+
+    .tabPanel.isActive{
+      display:block;
+    }
+
+    .placeholderSection{
+      display:grid;
+      gap:10px;
+      background:linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
+    }
+
+    .placeholderList{
+      display:grid;
+      grid-template-columns:repeat(3, minmax(0, 1fr));
+      gap:10px;
+    }
+
+    .placeholderItem{
+      border-radius:14px;
+      border:1px dashed rgba(255,255,255,0.18);
+      background:rgba(255,255,255,0.03);
+      padding:12px;
+      display:grid;
+      gap:6px;
+    }
+
+    .placeholderItemTitle{
+      font-size:13px;
+      font-weight:800;
+      color:#fff3c5;
+    }
+
+    .placeholderItemText{
+      font-size:12px;
+      line-height:1.7;
+      color:var(--muted);
+    }
+
+    .emptyCard{
+      border-radius:18px;
+      border:1px dashed rgba(255,255,255,0.18);
+      background:rgba(255,255,255,0.03);
+      padding:18px;
+      font-size:14px;
+      line-height:1.8;
+      color:rgba(245,247,244,0.82);
+    }
+
+    .messageCard.warn{
+      border-color:rgba(255,183,172,0.22);
+      background:rgba(255,183,172,0.08);
+    }
+
+    .messageCard.ok{
+      border-color:rgba(141,216,196,0.20);
+      background:rgba(141,216,196,0.08);
+    }
+
+    @media (max-width: 1180px){
+      .summaryGrid{
+        grid-template-columns:repeat(3, minmax(0, 1fr));
+      }
+
+      .metricGrid,
+      .filterGrid{
+        grid-template-columns:repeat(2, minmax(0, 1fr));
+      }
+
+      .placeholderList{
+        grid-template-columns:repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 720px){
+      .page{ padding:16px; }
+      .shellInner{ padding:16px; }
+      .topRow{ gap:12px; }
+      .statusCard{ width:auto; }
+      .topActions{
+        align-items:flex-start;
+        flex-wrap:wrap;
+      }
+      .topActionsLeft,
+      .topActionsRight{
+        flex-wrap:wrap;
+      }
+      .topActionsRight{
+        width:100%;
+        justify-content:flex-start;
+        margin-left:0;
+      }
+      .compactControlRow{
+        justify-content:flex-start;
+      }
+      .compactFilterBox{
+        width:auto;
+      }
+      .summaryGrid,
+      .metricGrid,
+      .filterGrid,
+      .placeholderList{
+        grid-template-columns:1fr;
+      }
+      .brandTitle{ letter-spacing:0.03em; }
+    }
+  </style>
+  <script>
+    window.MB_SANMA_SUPABASE_CONFIG = {
+      url: "https://edcsvszqscbfeizfmilp.supabase.co",
+      anonKey: "sb_publishable_vLIhwWFFomM4WwSaupoOxw_UOUNihF0"
+    };
+  </script>
+</head>
+<body>
+  <main class="page">
+    <section class="shell" aria-label="分析ページ">
+      <div class="shellInner">
+        <div class="topRow">
+          <div class="topRowLeft">
+            <div class="topActions">
+              <div class="topActionsLeft">
+                <a class="backBtn" href="index_app.html">トップに戻る</a>
+                <button id="analysisRefreshBtn" type="button" class="refreshBtn">再読み込み</button>
+                <button id="analysisHintBtn" type="button" class="hintBtn">見方</button>
+              </div>
+              <div class="topActionsRight">
+                <aside class="statusCard" aria-label="分析対象">
+                  <div class="statusHead">
+                    <div class="statusLabel">集計対象</div>
+                    <div id="analysisSessionBadge" class="statusBadge isLocal">ローカル</div>
+                  </div>
+                </aside>
+                <div class="compactControlRow" aria-label="対象半荘数">
+                  <div class="compactFilterBox">
+                    <div class="compactFilterLabel">対象半荘数</div>
+                    <select id="filterLimit" class="filterSelect">
+                      <option value="all">すべて</option>
+                      <option value="20">最新20</option>
+                      <option value="50">最新50</option>
+                      <option value="100">最新100</option>
+                      <option value="200">最新200</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="compactControlRow" aria-label="対象ルール">
+                  <div class="compactFilterBox">
+                    <div class="compactFilterLabel">対象ルール</div>
+                    <select id="filterRuleSetId" class="filterSelect">
+                      <option value="all">すべて</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="brandKicker">SANMA LAB / 検証結果まとめ</div>
+            <div class="brandTitle">分析ページ</div>
+            <div class="brandSub">保存した検証対局の傾向を見る</div>
+            <p class="leadText">
+              検証モードで保存した対局をもとに、打ち筋や結果の傾向を見返せるページです。<br />
+              和了しやすさ、放銃の出やすさ、打点の傾向などを、ひと目で確認できます。<br />
+              ルールや設定を変えたときの違いを見比べたいときに向いています。
+            </p>
+          </div>
+        </div>
+
+        <div id="analysisAppRoot"></div>
+      </div>
+    </section>
+  </main>
+
+  <script src="../../js/match_log.js"></script>
+  <script src="../../js/log_normalizer.js"></script>
+  <script src="../../js/log_metrics.js"></script>
+  <script>
+    (function(){
+      "use strict";
+
+      const FILTER_STORAGE_KEY = "mbsanma_analysis_app_filters_v1";
+      const ACTIVE_SESSION_STORAGE_KEY = "mbsanma_app_active_session_v1";
+      const LEGACY_ACTIVE_SESSION_STORAGE_KEY = "mbsanma_visitor_active_session_v1";
+      const CURRENT_LOGIN_ACCOUNT_STORAGE_KEY = "mbsanma_app_current_login_account_v1";
+
+      const TAB_KEYS = ["overview", "agari", "riichi", "loss", "flow", "yaku"];
+      const TAB_LABELS = {
+        overview: "全体",
+        agari: "和了",
+        riichi: "リーチ",
+        loss: "放銃 / 被ツモ",
+        flow: "流局 / 進行",
+        yaku: "役"
+      };
+
+      const filterEls = {
+        limit: document.getElementById("filterLimit"),
+        ruleSetId: document.getElementById("filterRuleSetId")
+      };
+
+      const refreshBtn = document.getElementById("analysisRefreshBtn");
+      const hintBtn = document.getElementById("analysisHintBtn");
+      const root = document.getElementById("analysisAppRoot");
+      const badgeEl = document.getElementById("analysisSessionBadge");
+
+      const state = {
+        filters: loadFilters(),
+        activeTab: "overview"
+      };
+
+      function normalizeAccountId(value){
+        return String(value || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+      }
+
+      function loadFilters(){
+        try{
+          const raw = localStorage.getItem(FILTER_STORAGE_KEY);
+          const parsed = raw ? JSON.parse(raw) : null;
+          const normalized = window.MBSanmaLogMetrics.normalizeAnalysisFilters(parsed);
+          return {
+            ...normalized,
+            limit: ["20", "50", "100", "200", "all"].includes(String(parsed && parsed.limit || "")) ? String(parsed.limit) : "all",
+            matchMode: "batch",
+            sessionMode: "all",
+            dealer: "all",
+            ruleSetId: String(parsed && parsed.ruleSetId || "all")
+          };
+        }catch(e){
+          return {
+            ...window.MBSanmaLogMetrics.normalizeAnalysisFilters(null),
+            limit: "all",
+            matchMode: "batch",
+            sessionMode: "all",
+            dealer: "all",
+            ruleSetId: "all"
+          };
+        }
+      }
+
+      function saveFilters(){
+        try{
+          localStorage.setItem(FILTER_STORAGE_KEY, JSON.stringify(state.filters));
+        }catch(e){}
+      }
+
+      function syncRuleSetFilterOptions(logs){
+        const select = filterEls.ruleSetId;
+        if (!select) return;
+        if (!window.MBSanmaLogMetrics || typeof window.MBSanmaLogMetrics.listAnalysisRuleSetOptions !== "function") return;
+        const options = window.MBSanmaLogMetrics.listAnalysisRuleSetOptions(logs);
+        const seen = Object.create(null);
+        const merged = [];
+        options.forEach((item)=> {
+          seen[item.value] = true;
+          merged.push(item);
+        });
+        try{
+          const rawPresetStore = localStorage.getItem("mbsanma_rules_presets_v1");
+          const parsedPresetStore = rawPresetStore ? JSON.parse(rawPresetStore) : null;
+          const slots = parsedPresetStore && parsedPresetStore.slots && typeof parsedPresetStore.slots === "object" ? parsedPresetStore.slots : {};
+          ["slot1", "slot2", "slot3", "slot4", "slot5"].forEach((slotId, index)=> {
+            if (seen[slotId]) return;
+            const entry = slots[slotId] && typeof slots[slotId] === "object" ? slots[slotId] : null;
+            const name = entry && entry.name ? String(entry.name) : `プリセット${index + 1}`;
+            merged.push({ value: slotId, label: name });
+            seen[slotId] = true;
+          });
+        }catch(e){}
+        if (!seen.standard){
+          merged.splice(1, 0, { value: "standard", label: "標準ルール" });
+          seen.standard = true;
+        }
+        const currentValue = String(state.filters.ruleSetId || "all");
+        select.innerHTML = "";
+        merged.forEach((item)=> {
+          const option = document.createElement("option");
+          option.value = item.value;
+          option.textContent = item.label;
+          if (item.value === currentValue) option.selected = true;
+          select.appendChild(option);
+        });
+        if (!merged.some((item)=> item.value === currentValue)){
+          state.filters.ruleSetId = "all";
+          select.value = "all";
+        }
+      }
+
+      function writeActiveSessionSnapshot(mode, accountId){
+        const payload = {
+          mode: mode === "account" ? "account" : "local",
+          accountId: mode === "account" ? normalizeAccountId(accountId) : ""
+        };
+        try{
+          const serialized = JSON.stringify(payload);
+          sessionStorage.setItem(ACTIVE_SESSION_STORAGE_KEY, serialized);
+          sessionStorage.setItem(LEGACY_ACTIVE_SESSION_STORAGE_KEY, serialized);
+        }catch(e){}
+        return payload;
+      }
+
+      function readActiveSession(){
+        try{
+          const loginId = normalizeAccountId(localStorage.getItem(CURRENT_LOGIN_ACCOUNT_STORAGE_KEY) || "");
+          if (loginId) return writeActiveSessionSnapshot("account", loginId);
+        }catch(e){}
+
+        const keys = [ACTIVE_SESSION_STORAGE_KEY, LEGACY_ACTIVE_SESSION_STORAGE_KEY];
+        for (const key of keys){
+          try{
+            const raw = sessionStorage.getItem(key);
+            if (!raw) continue;
+            const parsed = JSON.parse(raw);
+            const mode = parsed && parsed.mode === "account" ? "account" : (parsed && parsed.mode === "local" ? "local" : "");
+            if (!mode) continue;
+            return writeActiveSessionSnapshot(mode, mode === "account" ? normalizeAccountId(parsed && parsed.accountId || "") : "");
+          }catch(e){}
+        }
+
+        return writeActiveSessionSnapshot("local", "");
+      }
+
+      function syncTopStatus(summary){
+        const session = readActiveSession();
+        if (badgeEl){
+          if (session.mode === "account" && session.accountId){
+            badgeEl.textContent = session.accountId;
+            badgeEl.classList.remove("isLocal");
+            badgeEl.classList.add("isAccount");
+          } else {
+            badgeEl.textContent = "ローカル";
+            badgeEl.classList.remove("isAccount");
+            badgeEl.classList.add("isLocal");
+          }
+        }
+      }
+
+      async function getStoredLogsAsync(){
+        try{
+          if (window.MBSanmaMatchLog){
+            if (typeof window.MBSanmaMatchLog.getStoredLogsAsync === "function"){
+              const logs = await window.MBSanmaMatchLog.getStoredLogsAsync();
+              return Array.isArray(logs) ? logs.filter((item)=> item && typeof item === "object") : [];
+            }
+            if (typeof window.MBSanmaMatchLog.getStoredLogs === "function"){
+              const logs = window.MBSanmaMatchLog.getStoredLogs();
+              return Array.isArray(logs) ? logs.filter((item)=> item && typeof item === "object") : [];
+            }
+          }
+        }catch(e){}
+        return [];
+      }
+
+      function renderLoading(){
+        if (!root) return;
+        root.innerHTML = "";
+        const empty = document.createElement("section");
+        empty.className = "emptyCard";
+        empty.innerHTML = "保存済み半荘ログを読み込み中です。";
+        root.appendChild(empty);
+      }
+
+      function formatRate(value){
+        return Number.isFinite(value) ? `${(value * 100).toFixed(1)}%` : "—";
+      }
+
+      function formatAvgScore(value){
+        return Number.isFinite(value) ? `${value > 0 ? "+" : ""}${value.toFixed(1)}` : "—";
+      }
+
+      function formatAvgPoint(value){
+        return Number.isFinite(value) ? `${Math.round(value).toLocaleString("ja-JP")}点` : "—";
+      }
+
+      function formatAvgJunme(value){
+        return Number.isFinite(value) ? `${value.toFixed(2)}巡目` : "—";
+      }
+
+      function formatAvgCount(value, suffix = ""){
+        return Number.isFinite(value) ? `${value.toFixed(2)}${suffix}` : "—";
+      }
+
+      function formatCount(value){
+        return `${Number(value) || 0}`;
+      }
+
+      function formatModeCount(summary){
+        const parts = [];
+        if (summary.matchCounts.batch > 0) parts.push(`検証 ${summary.matchCounts.batch}`);
+        if (summary.matchCounts.normal > 0) parts.push(`対局 ${summary.matchCounts.normal}`);
+        if (summary.matchCounts.unknown > 0) parts.push(`未分類 ${summary.matchCounts.unknown}`);
+        return parts.length ? parts.join(" / ") : "—";
+      }
+
+      function createMetricCard(label, value, hint){
+        const card = document.createElement("div");
+        card.className = "metricCard";
+
+        const labelEl = document.createElement("div");
+        labelEl.className = "metricCardLabel";
+        labelEl.textContent = label;
+
+        const valueEl = document.createElement("div");
+        valueEl.className = "metricCardValue";
+        valueEl.textContent = value;
+
+        const hintEl = document.createElement("div");
+        hintEl.className = "metricCardHint";
+        hintEl.textContent = hint || "";
+
+        card.appendChild(labelEl);
+        card.appendChild(valueEl);
+        card.appendChild(hintEl);
+        return card;
+      }
+
+      function createSummarySection(summary){
+        const section = document.createElement("section");
+        section.className = "tabCard";
+
+        const title = document.createElement("div");
+        title.className = "tabTitle";
+        title.textContent = "対象サマリー";
+        section.appendChild(title);
+
+        const sub = document.createElement("div");
+        sub.className = "tabSub";
+        sub.textContent = "今回どの範囲の対局を集計しているかを見る欄です。ここを確認してから、下のタブで細かく振り返れます。";
+        section.appendChild(sub);
+
+        const grid = document.createElement("div");
+        grid.className = "summaryGrid";
+        [
+          createMetricCard("対象半荘", formatCount(summary.scope.includedMatchCount), "条件に合う半荘"),
+          createMetricCard("対象局", formatCount(summary.overall.kyokuCount), "局ベース"),
+          createMetricCard("対象和了件数", formatCount(summary.agari.count), "和了全体"),
+          createMetricCard("対象リーチ件数", formatCount(summary.riichi.count), "リーチ全体"),
+          createMetricCard("対象放銃件数", formatCount(summary.hoju.count), "放銃全体"),
+          createMetricCard("対象ツモ和了件数", formatCount(summary.agari.tsumoCount), "ツモ和了のみ")
+        ].forEach((card)=> grid.appendChild(card));
+        section.appendChild(grid);
+        return section;
+      }
+
+      function createTabRow(){
+        const row = document.createElement("div");
+        row.className = "tabRow";
+        TAB_KEYS.forEach((key)=> {
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = `tabBtn${state.activeTab === key ? " isActive" : ""}`;
+          btn.textContent = TAB_LABELS[key];
+          btn.dataset.tabKey = key;
+          btn.addEventListener("click", ()=> {
+            state.activeTab = key;
+            render().catch(()=>{});
+          });
+          row.appendChild(btn);
+        });
+        return row;
+      }
+
+      function createTabPanel(key, titleText, subText, cards){
+        const panel = document.createElement("section");
+        panel.className = `tabPanel${state.activeTab === key ? " isActive" : ""}`;
+
+        const card = document.createElement("div");
+        card.className = "tabCard";
+
+        const title = document.createElement("div");
+        title.className = "tabTitle";
+        title.textContent = titleText;
+        card.appendChild(title);
+
+        const sub = document.createElement("div");
+        sub.className = "tabSub";
+        sub.textContent = subText;
+        card.appendChild(sub);
+
+        const grid = document.createElement("div");
+        grid.className = "metricGrid";
+        cards.forEach((metric)=> grid.appendChild(metric));
+        card.appendChild(grid);
+
+        panel.appendChild(card);
+        return panel;
+      }
+
+      function createMessageCard(type, titleText, text){
+        const card = document.createElement("section");
+        card.className = `messageCard ${type}`;
+
+        const title = document.createElement("div");
+        title.className = "messageTitle";
+        title.textContent = titleText;
+
+        const body = document.createElement("div");
+        body.className = "messageText";
+        body.textContent = text;
+
+        card.appendChild(title);
+        card.appendChild(body);
+        return card;
+      }
+
+      function createPlaceholderSection(summary){
+        const section = document.createElement("section");
+        section.className = "placeholderSection";
+
+        const title = document.createElement("div");
+        title.className = "sectionTitle";
+        title.textContent = "今後の追加予定";
+        section.appendChild(title);
+
+        const text = document.createElement("div");
+        text.className = "placeholderText";
+        text.textContent = "まずは見やすさを優先して、よく使う項目を中心にまとめています。今後は比較表示や役・打点の見やすさもさらに強化していきます。";
+        section.appendChild(text);
+
+        const list = document.createElement("div");
+        list.className = "placeholderList";
+
+        [
+          {
+            title: "比較表示",
+            text: "親番と子番、ルール違い、設定違いなどを並べて見比べやすくしていきます。"
+          },
+          {
+            title: "役と打点の見やすさ",
+            text: `点数データ ${summary.availability.pointDataCount}件 / 役データ ${summary.availability.yakuDataCount}件 / ドラデータ ${summary.availability.doraDataCount}件 をもとに、さらに見やすく広げていきます。`
+          },
+          {
+            title: "使いやすさ",
+            text: "条件保存やお気に入りの比較など、何度も見返しやすい導線を追加していきます。"
+          }
+        ].forEach((item)=> {
+          const card = document.createElement("div");
+          card.className = "placeholderItem";
+
+          const t = document.createElement("div");
+          t.className = "placeholderItemTitle";
+          t.textContent = item.title;
+
+          const d = document.createElement("div");
+          d.className = "placeholderItemText";
+          d.textContent = item.text;
+
+          card.appendChild(t);
+          card.appendChild(d);
+          list.appendChild(card);
+        });
+
+        section.appendChild(list);
+        return section;
+      }
+
+      function buildTabPanels(summary){
+        return [
+          createTabPanel(
+            "overview",
+            "全体",
+            "まずは全体の傾向を見るタブです。和了・放銃・流局の出やすさと、平均的な打点をここで確認できます。",
+            [
+              createMetricCard("リーチ率", formatRate(summary.riichi.rate), "全局基準"),
+              createMetricCard("副露率", formatRate(summary.open.rate), "全局基準"),
+              createMetricCard("和了率", formatRate(summary.agari.rate), "全局基準"),
+              createMetricCard("放銃率", formatRate(summary.hoju.rate), "全局基準"),
+              createMetricCard("被ツモ率", formatRate(summary.hitByTsumo.rate), "全局基準"),
+              createMetricCard("流局率", formatRate(summary.ryukyoku.rate), "全局基準"),
+              createMetricCard("横移動率", formatRate(summary.horizontal.rate), "自分が無関係で終わる率"),
+              createMetricCard("平均打点", formatAvgPoint(summary.overall.averagePoint), "純粋なアガリ打点の平均"),
+              createMetricCard("和了時平均チップ枚数", formatAvgCount(summary.overall.averageAgariChipCount, "枚"), "和了した手のみ"),
+              createMetricCard("1着時平均スコア", formatAvgScore(summary.overall.averageRank1Score), "精算画面基準の最終スコア＋チップ"),
+              createMetricCard("2着時平均スコア", formatAvgScore(summary.overall.averageRank2Score), "精算画面基準の最終スコア＋チップ"),
+              createMetricCard("3着時平均スコア", formatAvgScore(summary.overall.averageRank3Score), "精算画面基準の最終スコア＋チップ"),
+              createMetricCard("被ツモ時平均失点", formatAvgPoint(summary.overall.averageHitByTsumoPoint), "被ツモ時の実支払い平均"),
+              createMetricCard("放銃時平均失点", formatAvgPoint(summary.overall.averageHojuPoint), "放銃した相手手の純粋な打点"),
+              createMetricCard("平均ドラ枚数", formatAvgCount(summary.overall.averageDoraCount, "枚"), "和了詳細ありの分のみ")
+            ]
+          ),
+          createTabPanel(
+            "agari",
+            "和了",
+            "和了したときの割合と打点の傾向を見るタブです。ツモ寄りかロン寄りか、リーチや副露でどれくらい上がれているかを確認できます。",
+            [
+              createMetricCard("和了率", formatRate(summary.agari.rate), "全局基準"),
+              createMetricCard("和了時ツモ割合", formatRate(summary.agari.tsumoRate), "和了局基準"),
+              createMetricCard("和了時ロン割合", formatRate(summary.agari.ronRate), "和了局基準"),
+              createMetricCard("親和了割合", formatRate(summary.agari.dealerRate), "和了局基準"),
+              createMetricCard("和了時リーチ割合", formatRate(summary.agari.riichiRate), "和了局基準"),
+              createMetricCard("和了時副露割合", formatRate(summary.agari.openRate), "和了局基準"),
+              createMetricCard("平均打点", formatAvgPoint(summary.agari.averagePoint), "純粋なアガリ打点の平均"),
+              createMetricCard("リーチ時平均打点", formatAvgPoint(summary.agari.averagePointRiichi), "リーチ和了の純粋な打点"),
+              createMetricCard("リーチ時和了率", formatRate(summary.agari.riichiAgariRate), "リーチした局基準"),
+              createMetricCard("副露時平均打点", formatAvgPoint(summary.agari.averagePointOpen), "副露和了の純粋な打点"),
+              createMetricCard("副露時和了率", formatRate(summary.agari.openAgariRate), "副露した局基準"),
+              createMetricCard("ダマ平均打点", formatAvgPoint(summary.agari.averagePointDama), "ダマ和了のみ"),
+              createMetricCard("ダマ和了率", formatRate(summary.agari.damaAgariRate), "最終的にダマテン維持で終わったテンパイ局基準"),
+              createMetricCard("ツモ平均打点", formatAvgPoint(summary.agari.averagePointTsumo), "ツモ和了の純粋な打点"),
+              createMetricCard("ロン平均打点", formatAvgPoint(summary.agari.averagePointRon), "ロン和了の純粋な打点")
+            ]
+          ),
+          createTabPanel(
+            "riichi",
+            "リーチ",
+            "リーチした局だけに絞って、和了しやすさ・打点・待ちの広さを確認するタブです。両面以上と愚形の差もここで見られます。",
+            [
+              createMetricCard("リーチ時和了率", formatRate(summary.agari.riichiAgariRate), "リーチした局基準"),
+              createMetricCard("リーチ時平均打点", formatAvgPoint(summary.riichi.averagePoint), "リーチ和了の純粋な打点"),
+              createMetricCard("平均リーチ巡目", formatAvgJunme(summary.riichi.averageJunme), "リーチ局のみ"),
+              createMetricCard("リーチ時平均待ち種類数", formatAvgCount(summary.riichi.averageWaitTypeCount, "種"), "待ち形データがあるリーチのみ"),
+              createMetricCard("リーチ時平均待ち枚数", formatAvgCount(summary.riichi.averageWaitTileCount, "枚"), "リーチ局のみ"),
+              createMetricCard("両面以上リーチ率", formatRate(summary.riichi.ryanmenRate), "両面・三面張・マルチ両面を含む"),
+              createMetricCard("両面以上リーチ和了率", formatRate(summary.riichi.ryanmenAgariRate), "両面以上でリーチした局基準"),
+              createMetricCard("両面以上リーチツモ和了率", formatRate(summary.riichi.ryanmenTsumoAgariRate), "両面以上でリーチした局基準"),
+              createMetricCard("愚形リーチ率", formatRate(summary.riichi.gukeiRate), "カンちゃん・単騎・しゃぼ・ペンちゃん"),
+              createMetricCard("愚形リーチ和了率", formatRate(summary.riichi.gukeiAgariRate), "愚形でリーチした局基準"),
+              createMetricCard("愚形リーチツモ和了率", formatRate(summary.riichi.gukeiTsumoAgariRate), "愚形でリーチした局基準")
+            ]
+          ),
+          createTabPanel(
+            "loss",
+            "放銃 / 被ツモ",
+            "失点の傾向を見るタブです。どんな相手に放銃しやすいか、被ツモした手の平均打点がどれくらいかを確認できます。",
+            [
+              createMetricCard("放銃率", formatRate(summary.hoju.rate), "全局基準"),
+              createMetricCard("放銃中親への放銃割合", formatRate(summary.hoju.dealerWinnerRate), "放銃局基準"),
+              createMetricCard("リーチへの放銃率", formatRate(summary.hoju.riichiRate), "放銃局基準"),
+              createMetricCard("副露への放銃率", formatRate(summary.hoju.openRate), "放銃局基準"),
+              createMetricCard("放銃時平均失点", formatAvgPoint(summary.hoju.averagePoint), "放銃した相手手の純粋な打点"),
+              createMetricCard("放銃時テンパイ率", formatRate(summary.hoju.tenpaiRate), "記録が残っている分のみ"),
+              createMetricCard("被ツモ率", formatRate(summary.hitByTsumo.rate), "全局基準"),
+              createMetricCard("被ツモ時平均失点", formatAvgPoint(summary.hitByTsumo.averagePoint), "被ツモ時の実支払い平均")
+            ]
+          ),
+          createTabPanel(
+            "flow",
+            "流局 / 進行",
+            "局全体の進み方を見るタブです。流局の多さや半荘の進行ペースなど、全体の流れをここで確認できます。",
+            [
+              createMetricCard("流局率", formatRate(summary.ryukyoku.rate), "全局基準"),
+              createMetricCard("流局時聴牌率", formatRate(summary.ryukyoku.tenpaiRate), "流局局基準"),
+              createMetricCard("平均リーチ巡目", formatAvgJunme(summary.riichi.averageJunme), "リーチ局のみ"),
+              createMetricCard("半荘あたりリーチ出現率", formatAvgCount(summary.riichi.averageCountPerMatch, "回"), "対象半荘あたり"),
+              createMetricCard("1半荘あたり平均局数", formatAvgCount(summary.overall.averageKyokuCountPerMatch, "局"), "対象半荘ベース"),
+              createMetricCard("一局あたり平均巡目数", formatAvgJunme(summary.overall.averageJunmePerKyoku), "各局の到達巡目ベース"),
+              createMetricCard("横移動率", formatRate(summary.horizontal.rate), "自分無関係ロンの率"),
+              createMetricCard("流し出現率", formatRate(summary.nagashi.rate), "局ベース")
+            ]
+          ),
+          createTabPanel(
+            "yaku",
+            "役",
+            "よく出る役や打点の傾向を見るタブです。和了した手にどんな役がどれくらい混ざっているかを確認できます。",
+            [
+              createMetricCard("平均ドラ枚数", formatAvgCount(summary.agari.averageDoraCount, "枚"), "和了詳細ありの分のみ"),
+              createMetricCard("和了時面前清自摸和複合率", formatRate(summary.agari.yakuCompositeRates.menzenTsumo), "役データが残っている和了のみ"),
+              createMetricCard("和了時ダブル立直複合率", formatRate(summary.agari.yakuCompositeRates.doubleRiichi), "役データが残っている和了のみ"),
+              createMetricCard("和了時タンヤオ複合率", formatRate(summary.agari.yakuCompositeRates.tanyao), "役データが残っている和了のみ"),
+              createMetricCard("和了時ピンフ率", formatRate(summary.agari.yakuCompositeRates.pinfu), "役データが残っている和了のみ"),
+              createMetricCard("和了時七対子複合率", formatRate(summary.agari.yakuCompositeRates.chiitoi), "役データが残っている和了のみ"),
+              createMetricCard("和了時対々和複合率", formatRate(summary.agari.yakuCompositeRates.toitoi), "役データが残っている和了のみ"),
+              createMetricCard("和了時染め手複合率", formatRate(summary.agari.yakuCompositeRates.honitsuOrChinitsu), "混一色 / 清一色"),
+              createMetricCard("和了時場風複合率", formatRate(summary.agari.yakuCompositeRates.roundWind), "役データが残っている和了のみ"),
+              createMetricCard("和了時自風複合率", formatRate(summary.agari.yakuCompositeRates.seatWind), "役データが残っている和了のみ"),
+              createMetricCard("和了時三元牌複合率", formatRate(summary.agari.yakuCompositeRates.dragons), "白 / 發 / 中のいずれか"),
+              createMetricCard("和了時一盃口複合率", formatRate(summary.agari.yakuCompositeRates.iipeiko), "役データが残っている和了のみ"),
+              createMetricCard("和了時チャンタ複合率", formatRate(summary.agari.yakuCompositeRates.chanta), "役データが残っている和了のみ"),
+              createMetricCard("和了時一気通貫複合率", formatRate(summary.agari.yakuCompositeRates.ittsu), "役データが残っている和了のみ"),
+              createMetricCard("役満出現率", formatRate(summary.agari.yakuCompositeRates.yakuman), "和了局基準")
+            ]
+          )
+        ];
+      }
+
+      async function render(){
+        if (!root) return;
+
+        Object.keys(filterEls).forEach((key)=> {
+          if (filterEls[key]) filterEls[key].value = state.filters[key];
+        });
+
+        renderLoading();
+
+        const logs = await getStoredLogsAsync();
+        syncRuleSetFilterOptions(logs);
+        const summary = window.MBSanmaLogMetrics.buildAnalysisSummary(logs, state.filters);
+        syncTopStatus(summary);
+
+        root.innerHTML = "";
+
+        if (summary.overall.kyokuCount <= 0){
+          const empty = document.createElement("section");
+          empty.className = "emptyCard";
+          empty.innerHTML = "条件に合う局がまだありません。<br>まずは検証モードで半荘を終わらせて保存するか、条件を広げてみてください。";
+          root.appendChild(empty);
+          return;
+        }
+
+        root.appendChild(createSummarySection(summary));
+        root.appendChild(createTabRow());
+        buildTabPanels(summary).forEach((panel)=> root.appendChild(panel));
+
+        if (summary.availability.pointDataCount <= 0 && summary.availability.yakuDataCount <= 0){
+          root.appendChild(createMessageCard(
+            "warn",
+            "役や打点の詳しい表示は一部準備中です",
+            "役の組み合わせや点数の詳しい内容は、保存されている対局データがある分から順に反映しています。今後さらに見やすく増やしていきます。"
+          ));
+        } else {
+          root.appendChild(createMessageCard(
+            "ok",
+            "役や打点の詳しい情報も表示できます",
+            `点数データ ${summary.availability.pointDataCount}件 / 役データ ${summary.availability.yakuDataCount}件 / ドラデータ ${summary.availability.doraDataCount}件 を使って表示しています。`
+          ));
+        }
+
+      }
+
+      Object.keys(filterEls).forEach((key)=> {
+        const el = filterEls[key];
+        if (!el) return;
+        el.addEventListener("change", ()=> {
+          state.filters[key] = String(el.value || "");
+          state.filters = {
+            ...window.MBSanmaLogMetrics.normalizeAnalysisFilters(state.filters),
+            matchMode: "batch",
+            sessionMode: "all",
+            dealer: "all",
+            ruleSetId: String(state.filters.ruleSetId || "all")
+          };
+          saveFilters();
+          render().catch(()=>{});
+        });
+      });
+
+      if (refreshBtn){
+        refreshBtn.addEventListener("click", ()=> render().catch(()=>{}));
+      }
+
+      if (hintBtn){
+        hintBtn.addEventListener("click", ()=> {
+          alert([
+            "このページでは、検証モードで保存した対局をまとめて振り返れます。",
+            "",
+            "和了率や放銃率、平均打点、よく出る役などをまとめて確認できます。",
+            "ルールや設定を変えたときの違いを見たいときに便利です。",
+            "",
+            "自分の半荘成績を見たい場合は、成績管理ページを使ってください。"
+          ].join("\n"));
+        });
+      }
+
+      render().catch(()=>{});
+    })();
+  </script>
+</body>
+</html>

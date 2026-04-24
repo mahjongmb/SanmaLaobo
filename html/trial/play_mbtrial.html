@@ -1,0 +1,734 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <title>MBサンマチャレンジ</title>
+
+  <script>
+    (function(){
+      window.MBSANMA_ASSET_PREFIX = "../../";
+      const ACTIVE_SESSION_STORAGE_KEY = "mbsanma_mbtrial_active_session_v1";
+      try{
+        const raw = sessionStorage.getItem(ACTIVE_SESSION_STORAGE_KEY);
+        if (!raw){
+          location.replace("../public/index_mbtrial.html");
+          return;
+        }
+        const parsed = JSON.parse(raw);
+        const mode = parsed && parsed.mode;
+        if (mode !== "trial"){
+          location.replace("../public/index_mbtrial.html");
+        }
+      }catch(e){
+        location.replace("../public/index_mbtrial.html");
+      }
+    })();
+  </script>
+
+  <!-- CSS（style/ 配下が正） -->
+  <link rel="stylesheet" href="../../style/base.css" />
+  <link rel="stylesheet" href="../../style/overlay.css" />
+  <link rel="stylesheet" href="../../style/hand.css" />
+  <link rel="stylesheet" href="../../style/center.css" />
+  <link rel="stylesheet" href="../../style/cpu.css" />
+  <link rel="stylesheet" href="../../style/river.css" />
+  <link rel="stylesheet" href="../../style/rightArea.css" />
+
+  <style>
+    #settingsOverlay{
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.58);
+      z-index: 4000;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+    #settingsPanel{
+      width: min(920px, 96vw);
+      min-height: min(620px, 84vh);
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: rgba(18, 24, 20, 0.96);
+      color: #f3f5f2;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      border-radius: 16px;
+      box-shadow: 0 18px 48px rgba(0, 0, 0, 0.45);
+      padding: 18px;
+      box-sizing: border-box;
+      backdrop-filter: blur(8px);
+    }
+    #settingsHeader{
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+      flex: 0 0 auto;
+    }
+    #settingsTitleWrap{
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    #settingsTitle{
+      font-size: 22px;
+      font-weight: 800;
+      line-height: 1.2;
+    }
+    #settingsSubTitle{
+      font-size: 12px;
+      opacity: 0.72;
+      line-height: 1.3;
+    }
+    #settingsCloseBtn{
+      appearance: none;
+      border: 0;
+      border-radius: 10px;
+      padding: 10px 14px;
+      cursor: pointer;
+      font-weight: 700;
+    }
+    #settingsBody{
+      flex: 1 1 auto;
+      min-height: 0;
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr);
+      gap: 12px;
+      overflow: hidden;
+    }
+    #settingsTabs{
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      flex: 0 0 auto;
+    }
+    .settingsTabBtn{
+      appearance: none;
+      border: 1px solid rgba(255,255,255,0.10);
+      border-radius: 12px;
+      min-height: 42px;
+      padding: 0 14px;
+      background: rgba(255,255,255,0.04);
+      color: rgba(243,245,242,0.76);
+      font-size: 14px;
+      font-weight: 800;
+      letter-spacing: 0.03em;
+      cursor: pointer;
+      transition: background 140ms ease, color 140ms ease, border-color 140ms ease, transform 140ms ease, box-shadow 140ms ease;
+    }
+    .settingsTabBtn:hover{
+      transform: translateY(-1px);
+    }
+    .settingsTabBtn.isActive{
+      border-color: rgba(182, 227, 201, 0.24);
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.05) 100%),
+        rgba(62, 101, 81, 0.82);
+      color: #ffffff;
+      box-shadow:
+        0 10px 18px rgba(0,0,0,0.18),
+        inset 0 1px 0 rgba(255,255,255,0.12);
+    }
+    #settingsTabPanels{
+      min-height: 0;
+      overflow: hidden;
+    }
+    .settingsTabPane{
+      height: 100%;
+      display: none;
+    }
+    .settingsTabPane.isActive{
+      display: block;
+    }
+    .settingsPaneInner{
+      height: 100%;
+      overflow: hidden;
+    }
+    .settingsSection{
+      height: 100%;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.10);
+      border-radius: 14px;
+      padding: 14px;
+      box-sizing: border-box;
+      overflow: hidden;
+    }
+    .settingsSectionTitle{
+      font-size: 16px;
+      font-weight: 800;
+      margin-bottom: 12px;
+    }
+    .settingsSectionNote{
+      display: none;
+    }
+    .settingsToggleRow{
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .settingsCheck{
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      font-weight: 700;
+    }
+    .settingsSeats{
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      height: 100%;
+    }
+    .settingsSeatCard{
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 12px;
+      box-sizing: border-box;
+    }
+    .settingsSeatTitle{
+      font-size: 15px;
+      font-weight: 800;
+      margin-bottom: 12px;
+    }
+    .settingsField{
+      display: grid;
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+    .settingsField:last-child{
+      margin-bottom: 0;
+    }
+    .settingsLabel{
+      font-size: 13px;
+      font-weight: 700;
+      opacity: 0.92;
+    }
+    .settingsPlayerModeRow{
+      display: grid;
+      gap: 10px;
+    }
+    .settingsModeSwitch{
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      width: fit-content;
+      padding: 6px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(0, 0, 0, 0.24);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.08),
+        0 8px 18px rgba(0,0,0,0.18);
+    }
+    .settingsModeSwitchBtn{
+      appearance: none;
+      border: 0;
+      min-width: 112px;
+      min-height: 42px;
+      padding: 0 18px;
+      border-radius: 999px;
+      background: transparent;
+      color: rgba(243, 245, 242, 0.82);
+      font-size: 14px;
+      font-weight: 800;
+      letter-spacing: 0.03em;
+      cursor: pointer;
+      transition:
+        background 140ms ease,
+        color 140ms ease,
+        transform 140ms ease,
+        box-shadow 140ms ease;
+    }
+    .settingsModeSwitchBtn:hover{
+      transform: translateY(-1px);
+    }
+    .settingsModeSwitchBtn.isActive{
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.20) 0%, rgba(255,255,255,0.06) 100%),
+        rgba(76, 119, 98, 0.78);
+      color: #ffffff;
+      box-shadow:
+        0 10px 18px rgba(0,0,0,0.20),
+        inset 0 1px 0 rgba(255,255,255,0.14);
+    }
+    .settingsModeSummary{
+      display: grid;
+      gap: 6px;
+      margin-top: 4px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.03);
+    }
+    .settingsModeSummaryItem{
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      font-size: 12px;
+      line-height: 1.4;
+      color: rgba(243, 245, 242, 0.88);
+    }
+    .settingsModeSummaryLabel{
+      opacity: 0.72;
+      font-weight: 700;
+    }
+    .settingsModeSummaryValue{
+      font-weight: 800;
+      color: #ffffff;
+    }
+    .settingsHint{
+      display: none;
+    }
+    .settingsSelect{
+      width: 100%;
+      min-height: 40px;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      background: rgba(0, 0, 0, 0.28);
+      color: #f3f5f2;
+      padding: 8px 10px;
+      box-sizing: border-box;
+    }
+    .settingsSelect:disabled{
+      opacity: 0.42;
+      cursor: not-allowed;
+    }
+    @media (orientation: landscape) and (max-height: 520px){
+      #settingsOverlay{
+        padding: 8px;
+      }
+      #settingsPanel{
+        width: min(96vw, 1280px);
+        min-height: 0;
+        max-height: 96vh;
+        padding: 10px 12px;
+        border-radius: 14px;
+      }
+      #settingsHeader{
+        gap: 8px;
+        margin-bottom: 8px;
+      }
+      #settingsTitle{
+        font-size: 18px;
+      }
+      #settingsSubTitle{
+        display: none;
+      }
+      #settingsCloseBtn{
+        min-height: 34px;
+        padding: 0 12px;
+        font-size: 12px;
+      }
+      #settingsBody{
+        gap: 8px;
+      }
+      #settingsTabs{
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 6px;
+      }
+      .settingsTabBtn{
+        min-height: 34px;
+        padding: 0 10px;
+        font-size: 11px;
+        border-radius: 10px;
+      }
+      #settingsTabPanels{
+        min-height: 0;
+      }
+      .settingsPaneInner{
+        height: 100%;
+        overflow: auto;
+      }
+      .settingsSection{
+        padding: 10px;
+        overflow: auto;
+      }
+      .settingsSectionTitle{
+        font-size: 14px;
+        margin-bottom: 8px;
+      }
+      .settingsToggleRow{
+        gap: 10px 14px;
+      }
+      .settingsCheck{
+        font-size: 12px;
+      }
+      .settingsSeats{
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+        height: auto;
+      }
+      .settingsSeatCard{
+        padding: 10px;
+      }
+      .settingsSeatTitle{
+        font-size: 13px;
+        margin-bottom: 8px;
+      }
+      .settingsField{
+        gap: 4px;
+        margin-bottom: 8px;
+      }
+      .settingsLabel{
+        font-size: 11px;
+      }
+      .settingsPlayerModeRow{
+        gap: 8px;
+      }
+      .settingsModeSwitch{
+        width: 100%;
+        gap: 4px;
+        padding: 4px;
+      }
+      .settingsModeSwitchBtn{
+        min-width: 0;
+        flex: 1 1 0;
+        min-height: 34px;
+        padding: 0 10px;
+        font-size: 11px;
+      }
+      .settingsModeSummary{
+        gap: 4px;
+        margin-top: 2px;
+        padding: 8px 10px;
+      }
+      .settingsModeSummaryItem{
+        font-size: 10px;
+        gap: 8px;
+      }
+      .settingsSelect{
+        min-height: 34px;
+        padding: 6px 8px;
+        font-size: 12px;
+      }
+    }
+  </style>
+
+
+  <script>
+    window.MB_SANMA_MBTRIAL_SUPABASE_CONFIG = {
+      url: "https://edcsvszqscbfeizfmilp.supabase.co",
+      anonKey: "sb_publishable_vLIhwWFFomM4WwSaupoOxw_UOUNihF0"
+    };
+  </script>
+
+</head>
+
+<body>
+  <div class="app">
+
+    <!-- 盤面ステージ -->
+    <div class="boardStage">
+      <div class="boardViewport" id="boardViewport">
+        <div class="gameBoard">
+
+        
+        <!-- マット内上部ボタン群 -->
+        <div class="boardTopControls" aria-label="top controls">
+          <div class="boardTopLeftControls boardTopMainControls">
+            <button id="newBtn" type="button" class="topMenuBtn topMenuBtnPrimary">チャレンジ案内</button>
+            <button id="debugOpenBtn" type="button" class="topMenuBtn">ルール</button>
+            <button id="settingsBtn" type="button" class="topMenuBtn topMenuBtnAccent">取得クーポン</button>
+          </div>
+        </div>
+
+        <!-- 中央ゾーン -->
+        <div id="centerUi"></div>
+
+        <!-- CPU：左 -->
+        <div class="cpuSide cpuLeftSide">
+          <div class="cpuSideInner cpuLeftSideInner">
+            <div class="cpuHand" id="cpuLeftHand"></div>
+            <div class="cpuOpenStack cpuLeftOpenStack">
+              <div class="cpuMeldArea cpuLeftMeldArea">
+                <div class="cpuMelds" id="cpuLeftMelds"></div>
+              </div>
+              <div class="cpuPeiArea cpuLeftPeiArea">
+                <div class="cpuPeis" id="cpuLeftPeis"></div>
+              </div>
+            </div>
+          </div>
+          <div class="cpuRiver" id="cpuLeftRiver"></div>
+        </div>
+
+        <!-- CPU：右 -->
+        <div class="cpuSide cpuRightSide">
+          <div class="cpuSideInner cpuRightSideInner">
+            <div class="cpuOpenStack cpuRightOpenStack">
+              <div class="cpuPeiArea cpuRightPeiArea">
+                <div class="cpuPeis" id="cpuRightPeis"></div>
+              </div>
+              <div class="cpuMeldArea cpuRightMeldArea">
+                <div class="cpuMelds" id="cpuRightMelds"></div>
+              </div>
+            </div>
+            <div class="cpuHand" id="cpuRightHand"></div>
+          </div>
+          <div class="cpuRiver" id="cpuRightRiver"></div>
+        </div>
+
+        <!-- 受け入れ表示 -->
+        <div id="stats"></div>
+
+        <!-- 自分の河 -->
+        <div class="river-wrap">
+          <div id="river"></div>
+        </div>
+
+        <!-- 手牌ゾーン -->
+        <div class="hand-wrap">
+          <div class="actionbar" aria-label="actions">
+            <button id="peiBtn" type="button" class="actionBtn">ペー</button>
+            <button id="ponBtn" type="button" class="actionBtn">ポン</button>
+            <button id="kanBtn" type="button" class="actionBtn">カン</button>
+            <button id="passBtn" type="button" class="actionBtn">スキップ</button>
+            <button id="riichiBtn" type="button" class="actionBtn">リーチ</button>
+            <button id="riichiCancelBtn" type="button" class="actionBtn">キャンセル</button>
+            <button id="ronBtn" type="button" class="actionBtn">ロン</button>
+            <button id="tsumoBtn" type="button" class="actionBtn">ツモ</button>
+            <button id="kyuushuBtn" type="button" class="actionBtn">九種九牌</button>
+          </div>
+
+
+          <!-- 右側表示（北抜き・副露） -->
+          <div class="playerHandRow">
+          <div class="rightArea">
+            <div class="rightBlock">
+              <div class="rightLabel">北</div>
+              <div id="peis"></div>
+            </div>
+            <div class="rightBlock">
+              <div class="rightLabel">副露</div>
+              <div id="melds"></div>
+            </div>
+          </div>
+
+          <!-- 手牌 -->
+          <div id="hand"></div>
+          </div>
+        </div>
+
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- オーバーレイ：ツモ -->
+  <div id="tsumoOverlay">
+    <div class="agariStage">
+      <div class="agariFx agariFxTsumo"></div>
+      <div class="agariBadge agariBadgeTsumo">
+        <img src="../../img/tsumo.png" alt="ツモ" />
+      </div>
+      <div class="hint">クリックで閉じる</div>
+    </div>
+  </div>
+
+  <!-- オーバーレイ：流局 -->
+  <div id="ryukyokuOverlay">
+    <div class="inner">
+      <img src="../../img/ryukyoku.png" alt="流局" />
+      <div class="hint">クリックで閉じる</div>
+    </div>
+  </div>
+
+  <!-- オーバーレイ：ロン -->
+  <div id="ronOverlay">
+    <div class="agariStage">
+      <div class="agariFx agariFxRon"></div>
+      <div class="agariBadge agariBadgeRon">
+        <img src="../../img/ron.png" alt="ロン" />
+      </div>
+      <div class="hint">クリックで閉じる</div>
+    </div>
+  </div>
+
+
+  <!-- 設定画面 -->
+  <div id="settingsOverlay" aria-hidden="true">
+    <div id="settingsPanel" role="dialog" aria-modal="true" aria-labelledby="settingsTitle" aria-describedby="settingsSubTitle">
+      <div id="settingsHeader">
+        <div id="settingsTitleWrap">
+          <div id="settingsTitle">設定</div>
+          <div id="settingsSubTitle">切り替え</div>
+        </div>
+        <button id="settingsCloseBtn" type="button">閉じる</button>
+      </div>
+      <div id="settingsBody"></div>
+    </div>
+  </div>
+
+  <!-- 結果確認画面（新規） -->
+  <div id="resultOverlay">
+    <div id="resultPanel">
+      <div id="resultHeader">
+        <div id="resultTitle">和了結果</div>
+        <div id="resultSubtitle">クリックで次へ</div>
+      </div>
+
+      <div id="resultBody">
+        <div id="resultTopRow">
+          <div id="resultWinType">ツモ</div>
+          <div id="resultWinner">あなた</div>
+        </div>
+
+        <div id="resultHandBlock">
+          <div class="resultBlockTitle">手牌</div>
+          <div id="resultHandTiles"></div>
+        </div>
+
+        <div id="resultInfoRow">
+          <div id="resultDoraBlock">
+            <div class="resultBlockTitle">ドラ</div>
+            <div id="resultDoraTiles"></div>
+          </div>
+
+          <div id="resultUraDoraBlock">
+            <div class="resultBlockTitle">裏ドラ</div>
+            <div id="resultUraDoraTiles"></div>
+          </div>
+        </div>
+
+        <div id="resultYakuBlock">
+          <div class="resultBlockTitle">役</div>
+          <div id="resultYakuList"></div>
+        </div>
+
+        <div id="resultScoreBlock">
+          <div id="resultHanFu">0翻 0符</div>
+          <div id="resultPointText">0点</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 演出：カン -->
+  <div id="kanOverlay" aria-hidden="true">
+    <div class="inner">
+      <img src="../../img/kan.png" alt="カン" />
+    </div>
+  </div>
+
+  <!-- 演出：ポン -->
+  <div id="ponOverlay" aria-hidden="true">
+    <div class="inner">
+      <img src="../../img/pon.png" alt="ポン" />
+    </div>
+  </div>
+
+  <!-- 演出：リーチ -->
+  <div id="riichiOverlay" aria-hidden="true">
+    <div class="inner">
+      <img src="../../img/riichi.png" alt="リーチ" />
+    </div>
+  </div>
+
+  <!-- 演出：ツモ文字 -->
+  <div id="drawOverlay">
+    <div class="inner">
+      <div class="drawText">ツモ</div>
+    </div>
+  </div>
+
+  <script>
+    (function(){
+      const BOARD_W = 1600;
+      const BOARD_H = 900;
+
+      function fitGameBoard(){
+        const viewport = document.getElementById("boardViewport");
+        const board = document.querySelector(".gameBoard");
+        if (!viewport || !board) return;
+
+        const rect = viewport.getBoundingClientRect();
+        if (!rect.width || !rect.height) return;
+
+        const scale = Math.min(rect.width / BOARD_W, rect.height / BOARD_H);
+
+        board.style.width = BOARD_W + "px";
+        board.style.height = BOARD_H + "px";
+        board.style.left = "50%";
+        board.style.top = "50%";
+        board.style.transform = `translate(-50%, -50%) scale(${scale})`;
+      }
+
+      function requestFit(){
+        requestAnimationFrame(fitGameBoard);
+      }
+
+      window.fitGameBoard = fitGameBoard;
+
+      document.addEventListener("DOMContentLoaded", requestFit);
+      window.addEventListener("load", requestFit);
+      window.addEventListener("resize", requestFit);
+      window.addEventListener("orientationchange", requestFit);
+
+      if (window.visualViewport){
+        window.visualViewport.addEventListener("resize", requestFit);
+        window.visualViewport.addEventListener("scroll", requestFit);
+      }
+
+      if (window.ResizeObserver){
+        let ro = null;
+        document.addEventListener("DOMContentLoaded", ()=>{
+          const viewport = document.getElementById("boardViewport");
+          if (!viewport) return;
+          ro = new ResizeObserver(requestFit);
+          ro.observe(viewport);
+        });
+      }
+    })();
+  </script>
+
+  <!-- JS（js/ 配下が正） -->
+  <script src="../../js/core.js"></script>
+  <script src="../../js/core2.js"></script>
+  <script src="../../js/shanten.js"></script>
+  <script src="../../js/fu.js"></script>
+  <script src="../../js/yaku.js"></script>
+  <script src="../../js/yakuman.js"></script>
+
+  <script src="../../js/render_stats.js"></script>
+  <script src="../../js/render_right.js"></script>
+  <script src="../../js/render_cpu.js"></script>
+  <script src="../../js/render_center.js"></script>
+  <script src="../../js/render.js"></script>
+
+  <script src="../../js/actions.js"></script>
+  <script src="../../js/kan.js"></script>
+  <script src="../../js/pei.js"></script>
+  <script src="../../js/riichi.js"></script>
+  <script src="../../js/cpai.js"></script>
+  <script src="../../js/cpu_actions.js"></script>
+  <script src="../../js/cpu_call_policy.js"></script>
+  <script src="../../js/cpu_open_profiles.js"></script>
+  <script src="../../js/cpu_open_eval.js"></script>
+  <script src="../../js/cpu_discard_profiles.js"></script>
+  <script src="../../js/cpu_discard_eval.js"></script>
+  <script src="../../js/cpu_discard_snapshot.js"></script>
+  <script src="../../js/cpu_snapshot.js"></script>
+  <script src="../../js/cpu_api_bridge.js"></script>
+  <script src="../../js/cpu_calls.js"></script>
+  <script src="../../js/turn.js"></script>
+  <script src="../../js/turn2.js"></script>
+  <script src="../../js/call.js"></script>
+  <script src="../../js/tensukeisan.js"></script>
+  <script src="../../js/seisan.js"></script>
+  <script src="../../js/result.js"></script>
+  <script src="../../js/main.js"></script>
+  <script src="../../js/furiten.js"></script>
+  <script src="../../js/doubleRonOverlayPatch.js"></script>
+  <script src="../../js/mbtrial_coupon_client.js"></script>
+  <script src="../../js/mbtrial_ui.js"></script>
+</body>
+</html>

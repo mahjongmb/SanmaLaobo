@@ -1,0 +1,1288 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>設定変更</title>
+  <style>
+    :root{
+      --bg-top:#103126;
+      --bg-bottom:#08120e;
+      --panel-bg:rgba(8,20,15,0.84);
+      --panel-border:rgba(255,255,255,0.12);
+      --panel-soft:rgba(255,255,255,0.04);
+      --text:#f6f7f3;
+      --muted:rgba(246,247,243,0.76);
+      --muted-2:rgba(246,247,243,0.56);
+      --gold-1:#f2d58f;
+      --gold-2:#d9bb72;
+      --gold-text:#1e1402;
+      --accent:#8fdcc1;
+      --shadow:0 18px 50px rgba(0,0,0,0.28);
+      --radius-xl:28px;
+      --radius-lg:22px;
+      --radius-md:16px;
+      --radius-sm:12px;
+      --content-w:1120px;
+    }
+
+    *{
+      box-sizing:border-box;
+    }
+
+    html,body{
+      margin:0;
+      min-height:100%;
+    }
+
+    body{
+      min-height:100vh;
+      background:linear-gradient(180deg,var(--bg-top) 0%,var(--bg-bottom) 100%);
+      color:var(--text);
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      padding:24px;
+    }
+
+    button,
+    input{
+      font:inherit;
+    }
+
+    .page{
+      width:min(100%,var(--content-w));
+      margin:0 auto;
+      display:grid;
+      gap:18px;
+    }
+
+    .hero,
+    .tabsWrap{
+      padding:22px;
+      border-radius:var(--radius-xl);
+      background:var(--panel-bg);
+      border:1px solid var(--panel-border);
+      box-shadow:var(--shadow);
+    }
+
+    .hero{
+      display:grid;
+      gap:16px;
+    }
+
+    .heroTop{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:16px;
+      flex-wrap:wrap;
+    }
+
+    .heroTitle{
+      display:grid;
+      gap:10px;
+    }
+
+    .eyebrow{
+      display:inline-flex;
+      align-items:center;
+      width:max-content;
+      min-height:28px;
+      padding:0 12px;
+      border-radius:999px;
+      background:rgba(143,220,193,0.14);
+      border:1px solid rgba(143,220,193,0.22);
+      color:var(--accent);
+      font-size:13px;
+      font-weight:800;
+      letter-spacing:0.04em;
+    }
+
+    h1{
+      margin:0;
+      font-size:34px;
+      line-height:1.15;
+    }
+
+    .heroText{
+      margin:0;
+      max-width:780px;
+      color:var(--muted);
+      line-height:1.8;
+      font-size:15px;
+    }
+
+    .heroActions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-height:48px;
+      padding:0 18px;
+      border-radius:14px;
+      text-decoration:none;
+      font-weight:800;
+      font-size:14px;
+      border:1px solid transparent;
+      transition:transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+      cursor:pointer;
+    }
+
+    .btn:hover{
+      transform:translateY(-1px);
+    }
+
+    .btnPrimary{
+      background:linear-gradient(180deg,var(--gold-1) 0%,var(--gold-2) 100%);
+      color:var(--gold-text);
+    }
+
+    .btnGhost{
+      background:rgba(255,255,255,0.04);
+      color:var(--text);
+      border-color:rgba(255,255,255,0.10);
+    }
+
+    .tabsWrap{
+      display:grid;
+      gap:16px;
+    }
+
+    .tabsHeaderRow{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+
+    .topTabs{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      flex:1 1 auto;
+    }
+
+    .tabResetWrap{
+      display:flex;
+      justify-content:flex-end;
+      margin-left:auto;
+      flex:0 0 auto;
+    }
+
+    .topTabBtn{
+      appearance:none;
+      border:none;
+      min-height:46px;
+      padding:0 16px;
+      border-radius:999px;
+      background:rgba(255,255,255,0.05);
+      border:1px solid rgba(255,255,255,0.08);
+      color:var(--text);
+      font-size:14px;
+      font-weight:800;
+      letter-spacing:0.01em;
+      cursor:pointer;
+      transition:background 0.15s ease,border-color 0.15s ease,transform 0.15s ease,color 0.15s ease;
+    }
+
+    .topTabBtn:hover,
+    .tabActionBtn:hover,
+    .switch:hover,
+    .choiceBtn:hover{
+      transform:translateY(-1px);
+    }
+
+    .topTabBtn[aria-selected="true"]{
+      background:linear-gradient(180deg,var(--gold-1) 0%,var(--gold-2) 100%);
+      color:var(--gold-text);
+      border-color:transparent;
+    }
+
+    .panelToolbar{
+      display:none;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      flex-wrap:wrap;
+      padding:16px 18px;
+      border-radius:18px;
+      background:var(--panel-soft);
+      border:1px solid rgba(255,255,255,0.08);
+    }
+
+    .panelToolbarText{
+      display:grid;
+      gap:6px;
+    }
+
+    .panelToolbarTitle{
+      font-size:22px;
+      font-weight:800;
+      line-height:1.35;
+    }
+
+    .panelToolbarLead{
+      font-size:14px;
+      color:var(--muted);
+      line-height:1.7;
+    }
+
+    .toolbarActions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .tabActionBtn{
+      appearance:none;
+      border:1px solid rgba(255,255,255,0.10);
+      background:rgba(255,255,255,0.04);
+      color:var(--text);
+      min-height:40px;
+      padding:0 14px;
+      border-radius:999px;
+      font-size:13px;
+      font-weight:800;
+      cursor:pointer;
+      transition:background 0.15s ease,border-color 0.15s ease,transform 0.15s ease;
+    }
+
+    .mainPanels,
+    .mainPanel{
+      display:grid;
+      gap:16px;
+    }
+
+    .mainPanel{
+      display:none;
+    }
+
+    .mainPanel.isActive{
+      display:grid;
+    }
+
+    .sectionCard{
+      display:grid;
+      gap:14px;
+      padding:20px;
+      border-radius:22px;
+      background:var(--panel-soft);
+      border:1px solid rgba(255,255,255,0.08);
+    }
+
+    .sectionHead{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:14px;
+      flex-wrap:wrap;
+    }
+
+    .sectionTitleBox{
+      display:grid;
+      gap:6px;
+    }
+
+    .sectionTitle{
+      margin:0;
+      font-size:20px;
+      line-height:1.3;
+    }
+
+    .sectionLead{
+      margin:0;
+      color:var(--muted);
+      font-size:14px;
+      line-height:1.7;
+    }
+
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      min-height:30px;
+      padding:0 12px;
+      border-radius:999px;
+      font-size:12px;
+      font-weight:800;
+      letter-spacing:0.02em;
+      border:1px solid rgba(255,255,255,0.08);
+      background:rgba(255,255,255,0.06);
+      color:var(--text);
+      white-space:nowrap;
+    }
+
+    .pillAccent{
+      color:var(--accent);
+      background:rgba(143,220,193,0.12);
+      border-color:rgba(143,220,193,0.18);
+    }
+
+    .settingList{
+      display:grid;
+      gap:12px;
+    }
+
+    .settingRow{
+      display:grid;
+      grid-template-columns:minmax(0,1.45fr) minmax(240px,0.8fr);
+      gap:14px;
+      align-items:center;
+      padding:16px;
+      border-radius:18px;
+      background:rgba(0,0,0,0.16);
+      border:1px solid rgba(255,255,255,0.08);
+    }
+
+    .settingMeta{
+      display:grid;
+      gap:6px;
+      min-width:0;
+    }
+
+    .settingLabel{
+      font-size:15px;
+      font-weight:800;
+      line-height:1.4;
+    }
+
+    .settingDesc{
+      font-size:13px;
+      color:var(--muted);
+      line-height:1.7;
+    }
+
+    .settingControl{
+      display:flex;
+      justify-content:flex-end;
+      align-items:center;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+
+    .switchWrap{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      justify-content:flex-end;
+      width:100%;
+      max-width:320px;
+      margin-left:auto;
+    }
+
+    .switchLabel{
+      font-size:13px;
+      font-weight:800;
+      color:var(--muted);
+      min-width:72px;
+      text-align:right;
+      white-space:nowrap;
+    }
+
+    .switch{
+      position:relative;
+      width:62px;
+      height:34px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,0.10);
+      background:rgba(255,255,255,0.10);
+      cursor:pointer;
+      transition:background 0.15s ease,border-color 0.15s ease,transform 0.15s ease;
+      flex:0 0 auto;
+    }
+
+    .switch::after{
+      content:"";
+      position:absolute;
+      top:3px;
+      left:3px;
+      width:26px;
+      height:26px;
+      border-radius:50%;
+      background:#ffffff;
+      box-shadow:0 4px 10px rgba(0,0,0,0.24);
+      transition:left 0.15s ease, background 0.15s ease;
+    }
+
+    .switch.isOn{
+      background:rgba(242,213,143,0.28);
+      border-color:rgba(242,213,143,0.24);
+    }
+
+    .switch.isOn::after{
+      left:31px;
+      background:linear-gradient(180deg,var(--gold-1) 0%,var(--gold-2) 100%);
+    }
+
+    .choiceGroup{
+      display:flex;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+      gap:8px;
+      width:100%;
+      max-width:440px;
+      margin-left:auto;
+    }
+
+    .choiceBtn{
+      appearance:none;
+      border:1px solid rgba(255,255,255,0.10);
+      background:rgba(255,255,255,0.05);
+      color:var(--muted);
+      min-height:44px;
+      padding:0 16px;
+      border-radius:14px;
+      font-size:13px;
+      font-weight:800;
+      cursor:pointer;
+      transition:background 0.15s ease,border-color 0.15s ease,transform 0.15s ease,color 0.15s ease,box-shadow 0.15s ease;
+      white-space:nowrap;
+    }
+
+    .choiceBtn.isSelected{
+      background:linear-gradient(180deg,var(--gold-1) 0%,var(--gold-2) 100%);
+      color:var(--gold-text);
+      border-color:transparent;
+      box-shadow:0 10px 18px rgba(0,0,0,0.18);
+    }
+
+    .footerNote{
+      display:none;
+      padding:16px 18px;
+      border-radius:18px;
+      background:var(--panel-soft);
+      border:1px solid rgba(255,255,255,0.08);
+      color:var(--muted);
+      line-height:1.8;
+      font-size:13px;
+    }
+
+    @media (max-width: 900px){
+      .settingRow{
+        grid-template-columns:1fr;
+      }
+
+      .settingControl{
+        justify-content:flex-start;
+      }
+
+      .switchWrap,
+      .choiceGroup{
+        max-width:none;
+        margin-left:0;
+        justify-content:flex-start;
+      }
+    }
+
+    @media (max-width: 640px){
+      body{
+        padding:14px;
+      }
+
+      .hero,
+      .tabsWrap{
+        padding:16px;
+      }
+
+      h1{
+        font-size:28px;
+      }
+
+      .panelToolbarTitle{
+        font-size:20px;
+      }
+
+      .topTabBtn,
+      .tabActionBtn{
+        width:100%;
+        justify-content:center;
+      }
+
+      .tabResetWrap{
+        width:100%;
+        margin-left:0;
+      }
+
+      .settingRow,
+      .sectionCard{
+        padding:16px;
+      }
+
+      .choiceBtn{
+        flex:1 1 calc(50% - 8px);
+        justify-content:center;
+      }
+    }
+
+    /* ===== 共通ポリッシュ（UI改良） ===== */
+    body{
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      text-rendering:optimizeLegibility;
+    }
+    ::selection{
+      background:rgba(242,213,143,0.38);
+      color:#1e1402;
+    }
+    button:focus-visible,
+    input:focus-visible,
+    a:focus-visible,
+    .switch:focus-visible,
+    .choiceBtn:focus-visible,
+    .topTabBtn:focus-visible,
+    .tabActionBtn:focus-visible{
+      outline:2px solid rgba(242,213,143,0.75);
+      outline-offset:3px;
+    }
+    *{
+      scrollbar-width:thin;
+      scrollbar-color:rgba(255,255,255,0.22) transparent;
+    }
+    *::-webkit-scrollbar{ width:10px; height:10px; }
+    *::-webkit-scrollbar-track{ background:transparent; }
+    *::-webkit-scrollbar-thumb{
+      background:rgba(255,255,255,0.18);
+      border-radius:999px;
+      border:2px solid transparent;
+      background-clip:padding-box;
+    }
+    *::-webkit-scrollbar-thumb:hover{ background:rgba(255,255,255,0.32); background-clip:padding-box; }
+    @media (prefers-reduced-motion: reduce){
+      *,*::before,*::after{
+        transition-duration:0.001ms !important;
+        animation-duration:0.001ms !important;
+      }
+    }
+
+    /* タブヘッダーをスクロール追従にして常に切替できるように */
+    .tabsWrap{
+      position:relative;
+    }
+    .tabsHeaderRow{
+      position:sticky;
+      top:8px;
+      z-index:5;
+      padding:10px 12px;
+      margin:-10px -12px 4px;
+      border-radius:18px;
+      background:linear-gradient(180deg, rgba(8,20,15,0.72), rgba(8,20,15,0.56));
+      backdrop-filter:blur(8px);
+      -webkit-backdrop-filter:blur(8px);
+    }
+
+    /* 選択中タブの存在感を少し強く */
+    .topTabBtn[aria-selected="true"]{
+      box-shadow:0 10px 22px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.22);
+    }
+
+    /* セクションカードを階層的に */
+    .sectionCard{
+      box-shadow:0 8px 20px rgba(0,0,0,0.18);
+    }
+    .settingRow{
+      transition:background 0.15s ease, border-color 0.15s ease;
+    }
+    .settingRow:hover{
+      background:rgba(0,0,0,0.22);
+      border-color:rgba(255,255,255,0.14);
+    }
+
+    /* スイッチのタップ領域をしっかり */
+    .switch{
+      outline-offset:4px;
+    }
+    .switch:active{
+      transform:scale(0.98);
+    }
+
+    /* 選択状態の choiceBtn を少し浮かせる */
+    .choiceBtn.isSelected{
+      transform:translateY(-1px);
+    }
+
+    @media (max-width: 640px){
+      .tabsHeaderRow{
+        top:4px;
+        padding:8px 10px;
+        margin:-8px -10px 4px;
+      }
+    }
+
+    /* ===== プレミアムレイヤ ===== */
+    :root{
+      --mincho:"Hiragino Mincho ProN","Hiragino Mincho Pro","Yu Mincho","YuMincho","Noto Serif JP",Georgia,serif;
+      --gold-line:linear-gradient(90deg,transparent 0%,rgba(242,213,143,0.55) 20%,rgba(242,213,143,0.92) 50%,rgba(242,213,143,0.55) 80%,transparent 100%);
+      --panel-elev:0 1px 0 rgba(255,220,150,0.12) inset, 0 -1px 0 rgba(0,0,0,0.34) inset, 0 2px 3px rgba(0,0,0,0.12), 0 18px 36px rgba(0,0,0,0.28), 0 42px 72px rgba(0,0,0,0.34);
+    }
+
+    html::before{
+      content:"";
+      position:fixed; inset:0; pointer-events:none;
+      opacity:0.10; mix-blend-mode:overlay; z-index:50;
+      background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.92' numOctaves='2' seed='7'/></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='0.88'/></svg>");
+    }
+
+    body{
+      background:
+        radial-gradient(circle at 50% -6%, rgba(241,212,141,0.16), transparent 32%),
+        radial-gradient(circle at 50% 112%, rgba(31,94,67,0.28), transparent 40%),
+        linear-gradient(180deg,var(--bg-top) 0%,var(--bg-bottom) 100%);
+    }
+
+    /* 見出しを明朝に */
+    h1,
+    .eyebrow,
+    .sectionTitle,
+    .panelToolbarTitle{
+      font-family:var(--mincho);
+      letter-spacing:0.05em;
+    }
+    h1{
+      font-weight:700;
+      background:linear-gradient(180deg,#fff5d2 0%,#f3d78e 45%,#d9bb72 100%);
+      -webkit-background-clip:text;
+      background-clip:text;
+      color:transparent;
+      text-shadow:0 10px 28px rgba(0,0,0,0.24);
+      position:relative;
+      padding-bottom:14px;
+    }
+    h1::after{
+      content:"";
+      position:absolute;
+      bottom:0; left:0;
+      width:clamp(120px,20vw,200px);
+      height:1px;
+      background:var(--gold-line);
+    }
+    .eyebrow{
+      letter-spacing:0.18em;
+      font-weight:700;
+    }
+
+    /* パネル立体感 */
+    .hero,
+    .tabsWrap{
+      box-shadow:var(--panel-elev);
+      border-color:rgba(255,220,150,0.14);
+      position:relative;
+    }
+    .hero::after,
+    .tabsWrap::after{
+      content:"";
+      position:absolute;
+      top:0; left:10%; right:10%;
+      height:1px;
+      background:var(--gold-line);
+      opacity:0.55;
+      pointer-events:none;
+    }
+
+    /* タブをより質感のあるピル＋内窪み表現 */
+    .topTabs{
+      padding:6px;
+      background:linear-gradient(180deg, rgba(0,0,0,0.28), rgba(0,0,0,0.14));
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,0.06);
+      box-shadow:inset 0 2px 4px rgba(0,0,0,0.32), inset 0 -1px 0 rgba(255,255,255,0.04);
+      gap:4px;
+    }
+    .topTabBtn{
+      background:transparent;
+      border:1px solid transparent;
+      font-family:var(--mincho);
+      letter-spacing:0.06em;
+      font-weight:700;
+    }
+    .topTabBtn[aria-selected="true"]{
+      background:linear-gradient(180deg,#fbe7b0 0%,#f2d58f 42%,#d9bb72 100%);
+      color:#1e1402;
+      box-shadow:0 1px 0 rgba(255,255,255,0.45) inset, 0 -1px 0 rgba(120,80,20,0.35) inset, 0 10px 22px rgba(0,0,0,0.26);
+    }
+
+    /* プライマリ: ゴールドシャインボタン */
+    .btnPrimary{
+      position:relative;
+      overflow:hidden;
+      isolation:isolate;
+      background:linear-gradient(180deg,#fbe7b0 0%,#f2d58f 42%,#d9bb72 100%);
+      box-shadow:0 1px 0 rgba(255,255,255,0.45) inset, 0 -1px 0 rgba(120,80,20,0.35) inset, 0 10px 22px rgba(0,0,0,0.24);
+      font-family:var(--mincho);
+      letter-spacing:0.06em;
+      font-weight:700;
+    }
+    .btnPrimary::after{
+      content:"";
+      position:absolute;
+      top:0; left:-40%;
+      width:30%; height:100%;
+      background:linear-gradient(110deg, transparent 0%, rgba(255,255,255,0.58) 50%, transparent 100%);
+      transform:skewX(-20deg);
+      transition:left 0.9s ease;
+      pointer-events:none;
+    }
+    .btnPrimary:hover::after{ left:120%; }
+
+    .btnGhost{
+      backdrop-filter:blur(6px);
+      -webkit-backdrop-filter:blur(6px);
+      box-shadow:0 1px 0 rgba(255,255,255,0.06) inset, 0 6px 14px rgba(0,0,0,0.2);
+    }
+
+    /* 選択 choiceBtn のゴールドスイープ */
+    .choiceBtn.isSelected{
+      position:relative;
+      overflow:hidden;
+      background:linear-gradient(180deg,#fbe7b0 0%,#f2d58f 42%,#d9bb72 100%);
+      box-shadow:0 1px 0 rgba(255,255,255,0.45) inset, 0 -1px 0 rgba(120,80,20,0.35) inset, 0 10px 22px rgba(0,0,0,0.22);
+    }
+
+    /* sectionCard に左アクセントバー */
+    .sectionCard{
+      position:relative;
+      padding-left:26px;
+      box-shadow:0 1px 0 rgba(255,255,255,0.04) inset, 0 10px 22px rgba(0,0,0,0.22);
+    }
+    .sectionCard::before{
+      content:"";
+      position:absolute;
+      left:10px;
+      top:20px;
+      bottom:20px;
+      width:2px;
+      background:linear-gradient(180deg, rgba(241,212,141,0.55) 0%, rgba(241,212,141,0.18) 100%);
+      border-radius:2px;
+    }
+
+    /* 入場アニメ */
+    @keyframes premiumFadeInUp{
+      0%  { opacity:0; transform:translateY(12px); filter:blur(3px); }
+      60% { filter:blur(0); }
+      100%{ opacity:1; transform:translateY(0); filter:blur(0); }
+    }
+    .page > *{
+      animation:premiumFadeInUp 0.55s cubic-bezier(.2,.7,.2,1) both;
+    }
+    .page > *:nth-child(1){ animation-delay:.05s; }
+    .page > *:nth-child(2){ animation-delay:.14s; }
+    .page > *:nth-child(3){ animation-delay:.22s; }
+    @media (prefers-reduced-motion: reduce){
+      .page > *{ animation:none; }
+    }
+
+    /* backBtn 左矢印グリフ */
+    .backBtn{ display:inline-flex; align-items:center; gap:8px; }
+    .backBtn::before{
+      content:"";
+      display:inline-block;
+      width:8px; height:8px;
+      border-left:1.6px solid currentColor;
+      border-bottom:1.6px solid currentColor;
+      transform:rotate(45deg);
+      opacity:0.85;
+      transition: transform 0.3s ease;
+      margin-right:2px;
+    }
+    .backBtn:hover::before{
+      transform:rotate(45deg) translate(-2px,2px);
+      opacity:1;
+    }
+
+    /* filterBtn / tabBtn の形状差別化 ─ アクティブ時の内陰影 */
+    .filterBtn,
+    .tabBtn{
+      transition: background 0.22s ease, color 0.22s ease, box-shadow 0.22s ease, transform 0.18s ease;
+    }
+    .filterBtn:hover,
+    .tabBtn:hover{
+      transform:translateY(-1px);
+    }
+    .filterBtn.isActive,
+    .tabBtn.isActive,
+    .tabBtn[aria-selected="true"]{
+      box-shadow: 0 2px 5px rgba(0,0,0,0.32) inset, 0 1px 0 rgba(255,220,150,0.18) inset;
+    }
+
+    @media (prefers-reduced-motion: reduce){
+      .backBtn::before,
+      .filterBtn,
+      .tabBtn{ transition:none; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="hero">
+      <div class="heroTop">
+        <div class="heroTitle">
+          <span class="eyebrow">SANMA LAB — SETTINGS</span>
+          <h1>設定変更</h1>
+          <p class="heroText">
+            操作感と表示を自分の打ち方に合わせて整える。<br />
+            タブで場面を切り替えながら、細部まで調整できます。
+          </p>
+        </div>
+        <div class="heroActions">
+          <a class="btn btnPrimary" href="index_app.html">トップへ戻る</a>
+          <button class="btn btnGhost" id="scrollActiveTabBtn" type="button">現在のタブを先頭へ</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="tabsWrap">
+      <div class="tabsHeaderRow">
+        <div class="topTabs" role="tablist" aria-label="設定変更タブ">
+          <button class="topTabBtn" type="button" role="tab" aria-selected="true" aria-controls="panel-normal" id="tab-normal" data-tab="normal">対局モード</button>
+          <button class="topTabBtn" type="button" role="tab" aria-selected="false" aria-controls="panel-verify" id="tab-verify" data-tab="verify">検証モード</button>
+          <button class="topTabBtn" type="button" role="tab" aria-selected="false" aria-controls="panel-env" id="tab-env" data-tab="env">環境設定</button>
+        </div>
+        <div class="tabResetWrap">
+          <button class="tabActionBtn" id="resetActiveTabBtn" type="button">このタブを初期値に戻す</button>
+        </div>
+      </div>
+
+      <div class="mainPanels">
+        <section class="mainPanel isActive" id="panel-normal" role="tabpanel" aria-labelledby="tab-normal">
+          <div class="panelToolbar">
+            <div class="panelToolbarText">
+              <div class="panelToolbarTitle">対局モード</div>
+              <div class="panelToolbarLead">普段の対局で使う操作感や表示補助をここで切り替えます。</div>
+            </div>
+            <div class="toolbarActions">
+              <button class="tabActionBtn" data-reset-panel="normal" type="button">このタブを初期値に戻す</button>
+            </div>
+          </div>
+
+          <article class="sectionCard">
+            <div class="sectionHead">
+              <div class="sectionTitleBox">
+                <h2 class="sectionTitle">概要</h2>
+                <p class="sectionLead">通常の対局中に触ることが多い項目をまとめています。</p>
+              </div>
+              <span class="pill pillAccent">通常プレイ向け</span>
+            </div>
+
+            <div class="settingList">
+              <div class="settingRow">
+                <div class="settingMeta">
+                  <div class="settingLabel">自分の打牌</div>
+                  <div class="settingDesc">対局モードで、自分の打牌を手動で進めるか自動で進めるかを選びます。</div>
+                </div>
+                <div class="settingControl">
+                  <div class="choiceGroup" role="group" aria-label="対局モードの自分の打牌">
+                    <button class="choiceBtn" type="button" data-setting-type="choice" data-setting-key="normal-player-control" data-choice-value="manual" data-default="manual">手動</button>
+                    <button class="choiceBtn" type="button" data-setting-type="choice" data-setting-key="normal-player-control" data-choice-value="auto">自動</button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="settingRow">
+                <div class="settingMeta">
+                  <div class="settingLabel">結果画面補助</div>
+                  <div class="settingDesc">和了や流局の結果画面を見やすく表示するかを切り替えます。</div>
+                </div>
+                <div class="settingControl">
+                  <div class="switchWrap">
+                    <div class="switchLabel" data-choice-label-for="normal-result-assist">ON</div>
+                    <button class="switch choiceToggleSwitch isOn" type="button" role="switch" aria-checked="true"
+                      data-setting-type="choice-toggle"
+                      data-setting-key="normal-result-assist"
+                      data-choice-on="on"
+                      data-choice-off="off"
+                      data-default="on"
+                      data-label-on="ON"
+                      data-label-off="OFF"></button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="settingRow">
+                <div class="settingMeta">
+                  <div class="settingLabel">待ち・受け入れ表示</div>
+                  <div class="settingDesc">手牌確認用の補助表示を出すかどうかを切り替えます。</div>
+                </div>
+                <div class="settingControl">
+                  <div class="switchWrap">
+                    <div class="switchLabel" data-choice-label-for="normal-ukeire-assist">OFF</div>
+                    <button class="switch choiceToggleSwitch" type="button" role="switch" aria-checked="false"
+                      data-setting-type="choice-toggle"
+                      data-setting-key="normal-ukeire-assist"
+                      data-choice-on="on"
+                      data-choice-off="off"
+                      data-default="off"
+                      data-label-on="ON"
+                      data-label-off="OFF"></button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </article>
+        </section>
+
+        <section class="mainPanel" id="panel-verify" role="tabpanel" aria-labelledby="tab-verify">
+          <div class="panelToolbar">
+            <div class="panelToolbarText">
+              <div class="panelToolbarTitle">検証モード</div>
+              <div class="panelToolbarLead">デバッグで使う項目を、ルール変更ページと同じ操作感で切り替えられるようにしています。</div>
+            </div>
+            <div class="toolbarActions">
+              <button class="tabActionBtn" data-reset-panel="verify" type="button">このタブを初期値に戻す</button>
+            </div>
+          </div>
+
+          <article class="sectionCard">
+            <div class="sectionHead">
+              <div class="sectionTitleBox">
+                <h2 class="sectionTitle">概要</h2>
+                <p class="sectionLead">検証時に触りたい項目を上から順に並べています。</p>
+              </div>
+              <span class="pill pillAccent">確認向け</span>
+            </div>
+
+            <div class="settingList">
+              <div class="settingRow">
+                <div class="settingMeta">
+                  <div class="settingLabel">自分の打牌</div>
+                  <div class="settingDesc">検証中の自分の操作方法を、自動か手動かで切り替えます。</div>
+                </div>
+                <div class="settingControl">
+                  <div class="choiceGroup" role="group" aria-label="検証モードの自分の打牌">
+                    <button class="choiceBtn" type="button" data-setting-type="choice" data-setting-key="verify-player-control" data-choice-value="auto" data-default="auto">自動</button>
+                    <button class="choiceBtn" type="button" data-setting-type="choice" data-setting-key="verify-player-control" data-choice-value="manual">手動</button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="settingRow">
+                <div class="settingMeta">
+                  <div class="settingLabel">高速モード</div>
+                  <div class="settingDesc">検証モードの進行速度を切り替えます。超高速は演出や待機をさらに短くして限界寄りで回します。</div>
+                </div>
+                <div class="settingControl">
+                  <div class="choiceGroup" role="group" aria-label="検証モードの速度">
+                    <button class="choiceBtn" type="button" data-setting-type="choice" data-setting-key="verify-fast-mode" data-choice-value="off">OFF</button>
+                    <button class="choiceBtn" type="button" data-setting-type="choice" data-setting-key="verify-fast-mode" data-choice-value="fast" data-default="fast">高速</button>
+                    <button class="choiceBtn" type="button" data-setting-type="choice" data-setting-key="verify-fast-mode" data-choice-value="ultra">超高速</button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="settingRow">
+                <div class="settingMeta">
+                  <div class="settingLabel">CPU手牌表示</div>
+                  <div class="settingDesc">左右CPUの手牌を開くか閉じるかを切り替えます。</div>
+                </div>
+                <div class="settingControl">
+                  <div class="switchWrap">
+                    <div class="switchLabel" data-choice-label-for="verify-cpu-open">CLOSE</div>
+                    <button class="switch choiceToggleSwitch" type="button" role="switch" aria-checked="false"
+                      data-setting-type="choice-toggle"
+                      data-setting-key="verify-cpu-open"
+                      data-choice-on="open"
+                      data-choice-off="close"
+                      data-default="close"
+                      data-label-on="OPEN"
+                      data-label-off="CLOSE"></button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="settingRow">
+                <div class="settingMeta">
+                  <div class="settingLabel">オーバーレイ自動進行</div>
+                  <div class="settingDesc">結果表示や演出オーバーレイを自動で進めるかを切り替えます。</div>
+                </div>
+                <div class="settingControl">
+                  <div class="switchWrap">
+                    <div class="switchLabel" data-choice-label-for="verify-overlay-auto">ON</div>
+                    <button class="switch choiceToggleSwitch isOn" type="button" role="switch" aria-checked="true"
+                      data-setting-type="choice-toggle"
+                      data-setting-key="verify-overlay-auto"
+                      data-choice-on="on"
+                      data-choice-off="off"
+                      data-default="on"
+                      data-label-on="ON"
+                      data-label-off="OFF"></button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </article>
+        </section>
+
+        <section class="mainPanel" id="panel-env" role="tabpanel" aria-labelledby="tab-env">
+          <div class="panelToolbar">
+            <div class="panelToolbarText">
+              <div class="panelToolbarTitle">環境設定</div>
+              <div class="panelToolbarLead">演出や表示補助など、全体に効く設定をまとめています。</div>
+            </div>
+            <div class="toolbarActions">
+              <button class="tabActionBtn" data-reset-panel="env" type="button">このタブを初期値に戻す</button>
+            </div>
+          </div>
+
+          <article class="sectionCard">
+            <div class="sectionHead">
+              <div class="sectionTitleBox">
+                <h2 class="sectionTitle">全体設定</h2>
+                <p class="sectionLead">画面全体の見やすさや演出系の切替をまとめています。</p>
+              </div>
+              <span class="pill">全体設定</span>
+            </div>
+
+            <div class="settingList">
+              <div class="settingRow">
+                <div class="settingMeta">
+                  <div class="settingLabel">演出表示</div>
+                  <div class="settingDesc">リーチや和了などの演出を表示するかどうかを切り替えます。</div>
+                </div>
+                <div class="settingControl">
+                  <div class="switchWrap">
+                    <div class="switchLabel" data-choice-label-for="env-effect-display">ON</div>
+                    <button class="switch choiceToggleSwitch isOn" type="button" role="switch" aria-checked="true"
+                      data-setting-type="choice-toggle"
+                      data-setting-key="env-effect-display"
+                      data-choice-on="on"
+                      data-choice-off="off"
+                      data-default="on"
+                      data-label-on="ON"
+                      data-label-off="OFF"></button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="settingRow">
+                <div class="settingMeta">
+                  <div class="settingLabel">盤面情報補助</div>
+                  <div class="settingDesc">盤面上の補助情報を見やすく表示するかどうかを切り替えます。</div>
+                </div>
+                <div class="settingControl">
+                  <div class="switchWrap">
+                    <div class="switchLabel" data-choice-label-for="env-board-assist">ON</div>
+                    <button class="switch choiceToggleSwitch isOn" type="button" role="switch" aria-checked="true"
+                      data-setting-type="choice-toggle"
+                      data-setting-key="env-board-assist"
+                      data-choice-on="on"
+                      data-choice-off="off"
+                      data-default="on"
+                      data-label-on="ON"
+                      data-label-off="OFF"></button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="settingRow">
+                <div class="settingMeta">
+                  <div class="settingLabel">効果音</div>
+                  <div class="settingDesc">効果音や通知音を使うかどうかを切り替えます。</div>
+                </div>
+                <div class="settingControl">
+                  <div class="switchWrap">
+                    <div class="switchLabel" data-choice-label-for="env-sound-enabled">OFF</div>
+                    <button class="switch choiceToggleSwitch" type="button" role="switch" aria-checked="false"
+                      data-setting-type="choice-toggle"
+                      data-setting-key="env-sound-enabled"
+                      data-choice-on="on"
+                      data-choice-off="off"
+                      data-default="off"
+                      data-label-on="ON"
+                      data-label-off="OFF"></button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </article>
+        </section>
+      </div>
+
+      <div class="footerNote">
+        現在は入力UIと保存まわりまで接続済みです。検証モードタブの4項目は、検証モード開始時の実際の設定へ反映されます。
+      </div>
+    </section>
+  </main>
+
+  <script>
+    (function () {
+      var storageKey = "mbsanma_settings_ui_v1";
+      var persistStorageKey = "mbsanma_settings_ui_persist_v1";
+      var settingsStorageKey = "mbsanma_settings_values_v1";
+      var state = loadState();
+      var topTabButtons = Array.prototype.slice.call(document.querySelectorAll(".topTabBtn"));
+      var mainPanels = Array.prototype.slice.call(document.querySelectorAll(".mainPanel"));
+      var scrollActiveTabBtn = document.getElementById("scrollActiveTabBtn");
+      var resetActiveTabBtn = document.getElementById("resetActiveTabBtn");
+      var resetButtons = Array.prototype.slice.call(document.querySelectorAll("[data-reset-panel]"));
+      var choiceControls = Array.prototype.slice.call(document.querySelectorAll('[data-setting-type="choice"]'));
+      var choiceToggleControls = Array.prototype.slice.call(document.querySelectorAll('[data-setting-type="choice-toggle"]'));
+
+      function loadState() {
+        try {
+          var persistedRaw = localStorage.getItem(persistStorageKey);
+          if (persistedRaw) {
+            return JSON.parse(persistedRaw) || {};
+          }
+        } catch (e) {}
+
+        try {
+          var raw = sessionStorage.getItem(storageKey);
+          return raw ? JSON.parse(raw) : {};
+        } catch (e) {
+          return {};
+        }
+      }
+
+      function saveState() {
+        try {
+          sessionStorage.setItem(storageKey, JSON.stringify(state));
+        } catch (e) {}
+
+        try {
+          localStorage.setItem(persistStorageKey, JSON.stringify(state));
+        } catch (e) {}
+
+        try {
+          localStorage.setItem(settingsStorageKey, JSON.stringify(state));
+        } catch (e) {}
+      }
+
+      function activateMainTab(tabName) {
+        topTabButtons.forEach(function (button) {
+          var isActive = button.dataset.tab === tabName;
+          button.setAttribute("aria-selected", isActive ? "true" : "false");
+        });
+
+        mainPanels.forEach(function (panel) {
+          panel.classList.toggle("isActive", panel.id === "panel-" + tabName);
+        });
+
+        state.activeMainTab = tabName;
+        saveState();
+      }
+
+      function normalizeStoredChoiceValue(key, value, defaultValue) {
+        var next = String(value == null ? "" : value);
+        if (key === "verify-fast-mode") {
+          if (next === "on") return "fast";
+          if (next === "off") return "off";
+        }
+        return next || String(defaultValue || "");
+      }
+
+      function setChoiceValue(key, value) {
+        var controls = Array.prototype.slice.call(document.querySelectorAll('[data-setting-type="choice"][data-setting-key="' + key + '"]'));
+        controls.forEach(function (control) {
+          var isSelected = control.dataset.choiceValue === value;
+          control.classList.toggle("isSelected", isSelected);
+          control.setAttribute("aria-pressed", isSelected ? "true" : "false");
+        });
+        state[key] = String(value);
+        saveState();
+      }
+
+      function updateChoiceToggleLabel(key, value) {
+        var label = document.querySelector('[data-choice-label-for="' + key + '"]');
+        var control = document.querySelector('[data-setting-type="choice-toggle"][data-setting-key="' + key + '"]');
+        if (!label || !control) return;
+        label.textContent = value === control.dataset.choiceOn ? control.dataset.labelOn : control.dataset.labelOff;
+      }
+
+      function setChoiceToggleValue(control, value) {
+        var isOn = value === control.dataset.choiceOn;
+        control.classList.toggle("isOn", isOn);
+        control.setAttribute("aria-checked", isOn ? "true" : "false");
+        state[control.dataset.settingKey] = String(value);
+        updateChoiceToggleLabel(control.dataset.settingKey, String(value));
+        saveState();
+      }
+
+      function resetPanel(panelKey) {
+        var panel = document.getElementById("panel-" + panelKey);
+        if (!panel) return;
+
+        var choiceGroups = {};
+        Array.prototype.slice.call(panel.querySelectorAll('[data-setting-type="choice"]')).forEach(function (control) {
+          var key = control.dataset.settingKey;
+          if (!choiceGroups[key]) {
+            choiceGroups[key] = control.dataset.default || control.dataset.choiceValue || "";
+          }
+        });
+
+        Object.keys(choiceGroups).forEach(function (key) {
+          setChoiceValue(key, choiceGroups[key]);
+        });
+
+        Array.prototype.slice.call(panel.querySelectorAll('[data-setting-type="choice-toggle"]')).forEach(function (control) {
+          setChoiceToggleValue(control, control.dataset.default || control.dataset.choiceOn || "");
+        });
+      }
+
+      topTabButtons.forEach(function (button) {
+        button.addEventListener("click", function () {
+          activateMainTab(button.dataset.tab);
+        });
+      });
+
+      choiceControls.forEach(function (control) {
+        control.addEventListener("click", function () {
+          setChoiceValue(control.dataset.settingKey, control.dataset.choiceValue);
+        });
+      });
+
+      choiceToggleControls.forEach(function (control) {
+        control.addEventListener("click", function () {
+          var current = state[control.dataset.settingKey];
+          var nextValue = current === control.dataset.choiceOn ? control.dataset.choiceOff : control.dataset.choiceOn;
+          setChoiceToggleValue(control, nextValue);
+        });
+      });
+
+      resetButtons.forEach(function (button) {
+        button.addEventListener("click", function () {
+          resetPanel(button.dataset.resetPanel);
+        });
+      });
+
+      if (resetActiveTabBtn) {
+        resetActiveTabBtn.addEventListener("click", function () {
+          var activeTabButton = document.querySelector('.topTabBtn[aria-selected="true"]');
+          if (!activeTabButton) return;
+          resetPanel(activeTabButton.dataset.tab);
+        });
+      }
+
+      if (scrollActiveTabBtn) {
+        scrollActiveTabBtn.addEventListener("click", function () {
+          var activePanel = document.querySelector(".mainPanel.isActive");
+          if (!activePanel) return;
+          activePanel.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+      }
+
+      (function () {
+        var seen = {};
+        choiceControls.forEach(function (control) {
+          var key = control.dataset.settingKey;
+          if (seen[key]) return;
+          seen[key] = true;
+          var defaultValue = control.dataset.default || control.dataset.choiceValue || "";
+          var storedValue = typeof state[key] === "string" ? state[key] : defaultValue;
+          storedValue = normalizeStoredChoiceValue(key, storedValue, defaultValue);
+          setChoiceValue(key, storedValue);
+        });
+      })();
+
+      choiceToggleControls.forEach(function (control) {
+        var key = control.dataset.settingKey;
+        var defaultValue = control.dataset.default || control.dataset.choiceOn || "";
+        var storedValue = typeof state[key] === "string" ? state[key] : defaultValue;
+        setChoiceToggleValue(control, storedValue);
+      });
+
+      activateMainTab(state.activeMainTab || "normal");
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,14 @@
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+.vscode/
+.idea/
+
+*.tmp
+*.temp
+*.bak
+*.orig
+*.rej
+
+~$*

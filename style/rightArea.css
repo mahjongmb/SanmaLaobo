@@ -1,0 +1,123 @@
+/* ========= rightArea.css ========= */
+
+/* ===== 右エリア（北・副露） ===== */
+.rightArea{
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  display:flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-end;
+  width: 15.5%;
+  min-width: 110px;
+}
+
+.rightBlock{
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  box-shadow: none;
+  box-sizing: border-box;
+}
+
+.rightLabel{
+  display: none;
+}
+
+#peis,
+#melds{
+  display:flex;
+  gap: 2px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  background: transparent;
+}
+
+#peis img{
+  width: clamp(44px, 8cqw, 44px);
+  height: auto;
+  border-radius: 8px;
+}
+
+.meld{
+  display:flex;
+  gap: 2px;
+  align-items:center;
+}
+
+.meld img{
+  width: clamp(44px, 8cqw, 44px);
+  height: auto;
+  border-radius: 8px;
+}
+
+@media (max-width: 700px){
+  .rightArea{
+    position: static;
+    right: auto;
+    bottom: auto;
+    flex-direction: row;
+    gap: 2px;
+    align-items: flex-end;
+    width: auto;
+    min-width: 0;
+  }
+
+  .rightBlock{
+    width: auto;
+  }
+
+  #peis,
+  #melds{
+    gap: 1px;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+  }
+
+  #peis img,
+  .meld img{
+    width: 46px;
+    border-radius: 6px;
+  }
+
+  .meld{
+    gap: 1px;
+  }
+}
+
+@media (orientation: landscape) and (max-height: 520px){
+  .rightArea{
+    position: static;
+    right: auto;
+    bottom: auto;
+    flex-direction: row;
+    gap: 2px;
+    align-items: flex-end;
+    width: auto;
+    min-width: 0;
+  }
+
+  .rightBlock{
+    width: auto;
+  }
+
+  #peis,
+  #melds{
+    gap: 1px;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+  }
+
+  #peis img,
+  .meld img{
+    width: 60px;
+    border-radius: 6px;
+  }
+
+  .meld{
+    gap: 1px;
+  }
+}

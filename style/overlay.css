@@ -1,0 +1,781 @@
+/* MBsanma/style/overlay.css */
+/* ========= overlay.css ========= */
+
+/* =========================================================
+   ===== アガリ系オーバーレイ（ツモ / ロン / 流局 / 結果） =====
+   ========================================================= */
+
+/* ===== 全画面オーバーレイ土台 ===== */
+#tsumoOverlay,
+#ryukyokuOverlay,
+#ronOverlay,
+#resultOverlay{
+  position: fixed;
+  inset: 0;
+  display: none;
+  z-index: 9999;
+  box-sizing: border-box;
+  touch-action: manipulation;
+  overscroll-behavior: contain;
+}
+
+/* =========================================================
+   ===== ツモ / ロン：勝者位置に出す演出型 =====
+   - 背景は少し暗くする
+   - 本体は agariStage を winner クラスで位置変更
+   ========================================================= */
+#tsumoOverlay,
+#ronOverlay{
+  background:
+    radial-gradient(circle at center, rgba(255,190,80,0.08) 0%, rgba(255,190,80,0.00) 34%),
+    rgba(0,0,0,0.28);
+  pointer-events: auto;
+}
+
+/* ===== 位置決めステージ ===== */
+#tsumoOverlay .agariStage,
+#ronOverlay .agariStage{
+  position: absolute;
+  left: 50%;
+  top: 62%;
+  transform: translate(-50%, -50%);
+  width: min(420px, 40%);
+  aspect-ratio: 1 / 1;
+  pointer-events: none;
+}
+
+/* ===== 勝者位置クラス
+   0=自分（中央やや下）
+   1=右CPU（中央右寄り）
+   2=左CPU（中央左寄り）
+   ※ JS側で overlay に付ける想定
+*/
+#tsumoOverlay.winner-self .agariStage,
+#ronOverlay.winner-self .agariStage{
+  left: 50%;
+  top: 66%;
+  transform: translate(-50%, -50%);
+}
+
+#tsumoOverlay.winner-left .agariStage,
+#ronOverlay.winner-left .agariStage{
+  left: 31%;
+  top: 47%;
+  transform: translate(-50%, -50%);
+}
+
+#tsumoOverlay.winner-right .agariStage,
+#ronOverlay.winner-right .agariStage{
+  left: 69%;
+  top: 47%;
+  transform: translate(-50%, -50%);
+}
+
+/* ===== 発光リング / もや / 火花の土台 ===== */
+#tsumoOverlay .agariFx,
+#ronOverlay .agariFx{
+  position: absolute;
+  inset: -8%;
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0;
+  filter: blur(0.2px);
+  animation: agariFxPop 520ms ease-out forwards;
+}
+
+#tsumoOverlay .agariFx::before,
+#ronOverlay .agariFx::before{
+  content: "";
+  position: absolute;
+  inset: 7%;
+  border-radius: 50%;
+  border: 3px solid rgba(255,220,120,0.62);
+  box-shadow:
+    0 0 18px rgba(255,200,70,0.40),
+    0 0 38px rgba(255,140,30,0.22),
+    inset 0 0 18px rgba(255,210,120,0.16);
+}
+
+#tsumoOverlay .agariFx::after,
+#ronOverlay .agariFx::after{
+  content: "";
+  position: absolute;
+  inset: -2%;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(255,210,120,0.22) 0%, rgba(255,210,120,0.10) 22%, rgba(255,210,120,0.00) 58%),
+    radial-gradient(circle at 25% 28%, rgba(255,245,210,0.42) 0%, rgba(255,245,210,0.00) 10%),
+    radial-gradient(circle at 76% 31%, rgba(255,220,150,0.34) 0%, rgba(255,220,150,0.00) 9%),
+    radial-gradient(circle at 68% 73%, rgba(255,170,80,0.24) 0%, rgba(255,170,80,0.00) 12%),
+    radial-gradient(circle at 28% 74%, rgba(255,150,70,0.20) 0%, rgba(255,150,70,0.00) 11%);
+  opacity: 0.92;
+}
+
+/* ツモは少し丸く柔らかく */
+#tsumoOverlay .agariFxTsumo::before{
+  border-color: rgba(255,220,120,0.66);
+}
+
+/* ロンは少し強め */
+#ronOverlay .agariFxRon::before{
+  border-color: rgba(255,205,90,0.72);
+  box-shadow:
+    0 0 18px rgba(255,180,60,0.42),
+    0 0 42px rgba(255,90,30,0.28),
+    inset 0 0 20px rgba(255,210,120,0.16);
+}
+
+/* ===== 画像本体 ===== */
+#tsumoOverlay .agariBadge,
+#ronOverlay .agariBadge{
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  opacity: 0;
+  animation: agariBadgePop 520ms ease-out forwards;
+}
+
+#tsumoOverlay .agariBadge img,
+#ronOverlay .agariBadge img{
+  width: 100%;
+  height: auto;
+  display: block;
+  user-select: none;
+  -webkit-user-drag: none;
+  filter:
+    drop-shadow(0 12px 20px rgba(0,0,0,0.28))
+    drop-shadow(0 0 20px rgba(255,190,70,0.20))
+    drop-shadow(0 0 42px rgba(255,150,40,0.16));
+}
+
+/* ロンは少しだけ鋭く */
+#ronOverlay .agariBadgeRon img{
+  transform: scale(0.98);
+}
+
+/* ===== クリック案内 ===== */
+#tsumoOverlay .hint,
+#ronOverlay .hint{
+  position: absolute;
+  left: 50%;
+  bottom: -26px;
+  transform: translateX(-50%);
+  color: rgba(255,255,255,0.88);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.35);
+  user-select: none;
+  white-space: nowrap;
+  opacity: 0;
+  animation: agariHintFade 420ms ease-out 160ms forwards;
+}
+
+/* =========================================================
+   ===== 流局オーバーレイ（既存寄りを維持） =====
+   ========================================================= */
+#ryukyokuOverlay{
+  background: rgba(0,0,0,0.7);
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+#ryukyokuOverlay .inner{
+  position: relative;
+  max-width: min(900px, 96%);
+  max-height: 96%;
+  width: 100%;
+  height: 100%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+#ryukyokuOverlay img{
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  border-radius: 18px;
+  box-shadow: 0 16px 60px rgba(0,0,0,0.35);
+}
+
+#ryukyokuOverlay .hint{
+  position:absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: rgba(255,255,255,0.85);
+  font-size: 12px;
+  user-select:none;
+}
+
+/* =========================================================
+   ===== 結果確認画面（新規） =====
+   ========================================================= */
+#resultOverlay{
+  background:
+    linear-gradient(180deg, rgba(8,12,20,0.78) 0%, rgba(6,10,16,0.86) 100%);
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  pointer-events: auto;
+}
+
+#resultPanel{
+  width: min(960px, 94%);
+  max-height: 92%;
+  overflow: auto;
+  touch-action: manipulation;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  border-radius: 20px;
+  background:
+    linear-gradient(180deg, rgba(27,37,52,0.96) 0%, rgba(17,24,36,0.98) 100%);
+  border: 1px solid rgba(255,255,255,0.12);
+  box-shadow:
+    0 24px 80px rgba(0,0,0,0.42),
+    inset 0 1px 0 rgba(255,255,255,0.06);
+  color: #f4f7fb;
+  padding: 20px 22px 22px;
+  box-sizing: border-box;
+}
+
+#resultHeader{
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(255,255,255,0.10);
+}
+
+#resultTitle{
+  font-size: 28px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  color: #ffffff;
+}
+
+#resultSubtitle{
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.72);
+  white-space: nowrap;
+}
+
+#resultBody{
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+#resultTopRow{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+#resultWinType,
+#resultWinner{
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  border-radius: 14px;
+  padding: 0 16px;
+  box-sizing: border-box;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.08);
+  font-weight: 800;
+}
+
+#resultWinType{
+  font-size: 22px;
+  color: #ffd36e;
+}
+
+#resultWinner{
+  font-size: 20px;
+  color: #ffffff;
+  justify-content: flex-end;
+}
+
+#resultHandBlock,
+#resultDoraBlock,
+#resultUraDoraBlock,
+#resultYakuBlock,
+#resultScoreBlock{
+  border-radius: 16px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.08);
+  box-sizing: border-box;
+}
+
+#resultHandBlock{
+  padding: 14px 14px 12px;
+}
+
+#resultInfoRow{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+#resultDoraBlock,
+#resultUraDoraBlock{
+  padding: 14px 14px 12px;
+  min-height: 98px;
+}
+
+#resultYakuBlock{
+  padding: 14px;
+}
+
+#resultScoreBlock{
+  padding: 18px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.resultBlockTitle{
+  font-size: 13px;
+  font-weight: 800;
+  color: rgba(255,255,255,0.76);
+  letter-spacing: 0.04em;
+  margin-bottom: 10px;
+}
+
+#resultHandTiles,
+#resultDoraTiles,
+#resultUraDoraTiles{
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+}
+
+#resultHandTiles img,
+#resultDoraTiles img,
+#resultUraDoraTiles img{
+  height: 56px;
+  width: auto;
+  display: block;
+  border-radius: 6px;
+  background: rgba(255,255,255,0.03);
+}
+
+#resultYakuList{
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+  min-height: 50px;
+}
+
+.resultYakuRow{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  min-height: 38px;
+  padding: 0 12px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.04);
+}
+
+.resultYakuName{
+  font-size: 16px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.resultYakuHan{
+  font-size: 15px;
+  font-weight: 900;
+  color: #ffd36e;
+  white-space: nowrap;
+}
+
+#resultHanFu{
+  font-size: 22px;
+  font-weight: 900;
+  color: #ffffff;
+}
+
+#resultPointText{
+  font-size: 34px;
+  font-weight: 1000;
+  color: #ffd36e;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  text-shadow: 0 6px 18px rgba(0,0,0,0.25);
+}
+
+/* =========================================================
+   ===== テキスト演出（カン / リーチ） =====
+   ========================================================= */
+#kanOverlay,
+#ponOverlay,
+#riichiOverlay{
+  position: fixed;
+  inset: 0;
+  display: none;
+  z-index: 9998;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  touch-action: manipulation;
+  overscroll-behavior: contain;
+}
+
+#kanOverlay .inner,
+#ponOverlay .inner,
+#riichiOverlay .inner{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.effectText{
+  font-weight: 1000;
+  font-size: 80px;
+  letter-spacing: .14em;
+  color: #fff;
+  text-shadow: 0 10px 30px rgba(0,0,0,0.45);
+  opacity: 0;
+  animation: effectPop 650ms ease-out 1;
+}
+
+@keyframes effectPop{
+  0%   { opacity: 0; transform: translateY(10px) scale(0.94); }
+  30%  { opacity: 1; transform: translateY(0px)  scale(1.06); }
+  100% { opacity: 0; transform: translateY(-10px) scale(1.00); }
+}
+
+/* =========================================================
+   ===== ツモ文字演出 =====
+   ========================================================= */
+#drawOverlay{
+  position: fixed;
+  inset: 0;
+  display: none;
+  z-index: 9998;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  touch-action: manipulation;
+  overscroll-behavior: contain;
+}
+
+#drawOverlay .inner{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+#drawOverlay .drawText{
+  font-weight: 1000;
+  font-size: 72px;
+  letter-spacing: .12em;
+  color: #fff;
+  text-shadow: 0 10px 30px rgba(0,0,0,0.45);
+  transform: translateY(6px) scale(0.96);
+  opacity: 0;
+  animation: drawPop 220ms ease-out 1;
+}
+
+@keyframes drawPop{
+  0%   { opacity: 0; transform: translateY(10px) scale(0.94); }
+  55%  { opacity: 1; transform: translateY(0px)  scale(1.03); }
+  100% { opacity: 0; transform: translateY(-6px) scale(1.00); }
+}
+
+/* =========================================================
+   ===== 新アガリ演出アニメーション =====
+   ========================================================= */
+@keyframes agariFxPop{
+  0%{
+    opacity: 0;
+    transform: scale(0.82) rotate(-8deg);
+    filter: blur(2px);
+  }
+  55%{
+    opacity: 1;
+    transform: scale(1.04) rotate(1deg);
+    filter: blur(0px);
+  }
+  100%{
+    opacity: 1;
+    transform: scale(1.00) rotate(0deg);
+    filter: blur(0px);
+  }
+}
+
+@keyframes agariBadgePop{
+  0%{
+    opacity: 0;
+    transform: scale(0.78) translateY(18px);
+    filter: blur(6px);
+  }
+  52%{
+    opacity: 1;
+    transform: scale(1.06) translateY(-4px);
+    filter: blur(0px);
+  }
+  100%{
+    opacity: 1;
+    transform: scale(1.00) translateY(0px);
+    filter: blur(0px);
+  }
+}
+
+@keyframes agariHintFade{
+  0%{
+    opacity: 0;
+    transform: translateX(-50%) translateY(6px);
+  }
+  100%{
+    opacity: 1;
+    transform: translateX(-50%) translateY(0px);
+  }
+}
+
+/* =========================================================
+   ===== レスポンシブ =====
+   ========================================================= */
+@media (max-width: 900px){
+  #resultPanel{
+    width: 96%;
+    padding: 16px 16px 18px;
+  }
+
+  #resultTitle{
+    font-size: 24px;
+  }
+
+  #resultInfoRow{
+    grid-template-columns: 1fr;
+  }
+
+  #resultScoreBlock{
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  #resultPointText{
+    font-size: 30px;
+  }
+
+  #resultHandTiles img,
+  #resultDoraTiles img,
+  #resultUraDoraTiles img{
+    height: 48px;
+  }
+}
+
+@media (orientation: landscape) and (max-height: 520px){
+  #tsumoOverlay,
+  #ronOverlay,
+  #ryukyokuOverlay,
+  #resultOverlay{
+    padding: 8px;
+  }
+
+  #tsumoOverlay .agariStage,
+  #ronOverlay .agariStage{
+    width: min(300px, 32%);
+  }
+
+  #ryukyokuOverlay .inner{
+    max-width: 100%;
+    max-height: 100%;
+  }
+
+  #ryukyokuOverlay img{
+    max-width: min(94vw, 760px);
+    max-height: 86vh;
+    border-radius: 14px;
+  }
+
+  #ryukyokuOverlay .hint{
+    bottom: 8px;
+    font-size: 10px;
+  }
+
+  #resultPanel{
+    width: min(98vw, 1320px);
+    max-height: 96vh;
+    padding: 10px 12px 12px;
+    border-radius: 14px;
+  }
+
+  #resultHeader{
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+    gap: 8px;
+  }
+
+  #resultTitle{
+    font-size: 22px;
+  }
+
+  #resultSubtitle{
+    font-size: 11px;
+  }
+
+  #resultBody{
+    display: grid;
+    grid-template-columns: minmax(0, 6.2fr) minmax(0, 3.8fr);
+    grid-template-areas:
+      "top top"
+      "hand info"
+      "yaku score";
+    gap: 10px;
+    align-items: start;
+  }
+
+  #resultTopRow{
+    grid-area: top;
+  }
+
+  #resultHandBlock{
+    grid-area: hand;
+    padding: 10px 10px 8px;
+  }
+
+  #resultInfoRow{
+    grid-area: info;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    align-self: stretch;
+    align-items: stretch;
+  }
+
+  #resultDoraBlock,
+  #resultUraDoraBlock{
+    display: block;
+    padding: 8px 8px 7px;
+    min-height: 0;
+  }
+
+  #resultYakuBlock{
+    grid-area: yaku;
+    padding: 10px;
+  }
+
+  #resultScoreBlock{
+    grid-area: score;
+    padding: 12px 14px;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  #resultWinType,
+  #resultWinner{
+    min-height: 36px;
+    padding: 0 10px;
+    border-radius: 10px;
+  }
+
+  #resultWinner{
+    justify-content: flex-end;
+  }
+
+  #resultWinType{
+    font-size: 18px;
+  }
+
+  #resultWinner{
+    font-size: 16px;
+  }
+
+  .resultBlockTitle{
+    font-size: 11px;
+    margin-bottom: 5px;
+  }
+
+  #resultHandTiles,
+  #resultDoraTiles,
+  #resultUraDoraTiles{
+    gap: 2px;
+    min-height: 30px;
+  }
+
+  #resultHandTiles img,
+  #resultDoraTiles img,
+  #resultUraDoraTiles img{
+    height: 40px;
+    border-radius: 4px;
+  }
+
+  #resultDoraTiles img,
+  #resultUraDoraTiles img{
+    height: 34px;
+  }
+
+  #resultYakuList{
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 5px;
+    min-height: 0;
+  }
+
+  .resultYakuRow{
+    min-height: 0;
+    padding: 8px 10px;
+  }
+
+  .resultYakuName,
+  .resultYakuHan{
+    font-size: 11px;
+  }
+
+  #resultHanFu{
+    font-size: 22px;
+  }
+
+  #resultPointText{
+    font-size: 32px;
+    line-height: 1;
+  }
+
+  .resultYakuRow{
+    min-height: 30px;
+    padding: 0 8px;
+    border-radius: 10px;
+  }
+
+  .resultYakuName{
+    font-size: 13px;
+  }
+
+  .resultYakuHan{
+    font-size: 12px;
+  }
+
+  #resultHanFu{
+    font-size: 18px;
+  }
+
+  #resultPointText{
+    font-size: 30px;
+  }
+
+  .effectText{
+    font-size: 54px;
+  }
+
+  #drawOverlay .drawText{
+    font-size: 50px;
+  }
+}
