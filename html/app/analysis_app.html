@@ -656,11 +656,93 @@
       const benchResultRoot = document.getElementById("analysisBenchResult");
       const root = document.getElementById("analysisAppRoot");
       const badgeEl = document.getElementById("analysisSessionBadge");
+      const topActionsLeft = hintBtn && hintBtn.parentElement ? hintBtn.parentElement : null;
+      const cpuRunBtn = document.createElement("button");
+      cpuRunBtn.id = "analysisCpuRunBtn";
+      cpuRunBtn.type = "button";
+      cpuRunBtn.className = "hintBtn";
+      cpuRunBtn.textContent = "実CPU 100半荘";
+      const cpuStopBtn = document.createElement("button");
+      cpuStopBtn.id = "analysisCpuStopBtn";
+      cpuStopBtn.type = "button";
+      cpuStopBtn.className = "hintBtn";
+      cpuStopBtn.textContent = "実CPU 停止";
+      cpuStopBtn.disabled = true;
+      if (topActionsLeft && benchBtn){
+        topActionsLeft.insertBefore(cpuStopBtn, benchBtn);
+        topActionsLeft.insertBefore(cpuRunBtn, cpuStopBtn);
+      }
+      const cpuRunResultRoot = document.createElement("div");
+      cpuRunResultRoot.id = "analysisCpuRunResult";
+      if (benchResultRoot && benchResultRoot.parentNode){
+        benchResultRoot.parentNode.insertBefore(cpuRunResultRoot, benchResultRoot);
+      }
+      const cpuRunPreviewRoot = document.createElement("div");
+      cpuRunPreviewRoot.id = "analysisCpuRunPreview";
+      cpuRunPreviewRoot.style.display = "none";
+      cpuRunPreviewRoot.style.marginTop = "12px";
+      cpuRunPreviewRoot.style.borderRadius = "18px";
+      cpuRunPreviewRoot.style.border = "1px solid rgba(255,255,255,0.12)";
+      cpuRunPreviewRoot.style.background = "rgba(255,255,255,0.04)";
+      cpuRunPreviewRoot.style.padding = "12px";
+      if (benchResultRoot && benchResultRoot.parentNode){
+        benchResultRoot.parentNode.insertBefore(cpuRunPreviewRoot, benchResultRoot);
+      }
 
       const state = {
         filters: loadFilters(),
         activeTab: "overview"
       };
+      const CPU_RUN_TARGET_MATCHES = 100;
+      const APP_LAUNCH_MODE_STORAGE_KEY = "mbsanma_app_launch_mode_v1";
+      const APP_PLAYER_MODE_STORAGE_KEY = "mbsanma_app_player_mode_v1";
+      const SETTINGS_UI_STORAGE_KEY = "mbsanma_settings_values_v1";
+      const RULE_SETTINGS_BASE_STORAGE_KEY = "mbsanma_rules_settings_v1";
+      const CPU_RUN_POLL_MS = 1200;
+      const CPU_RUN_SPEED_OVERRIDES = Object.freeze({
+        cpuTurnDelayMs: 1,
+        playerTurnDrawDelayMs: 1,
+        playerAutoDiscardDelayMs: 1,
+        playerSpecialActionDelayMs: 1,
+        postAgariDelayMs: 1,
+        kanEffectDurationMs: 1,
+        riichiEffectDurationMs: 1,
+        drawEffectDurationMs: 1,
+        tsumoEffectLeadMs: 1,
+        verifyNextHanchanDelayMs: 1
+      });
+      const runnerState = {
+        active: false,
+        startedAt: 0,
+        startBatchCount: 0,
+        targetBatchCount: 0,
+        iframe: null,
+        pollTimer: 0,
+        iframeLoaded: false,
+        previousLaunchMode: "",
+        previousPlayerMode: "",
+        previousSettingsRaw: "",
+        settingsHadValue: false,
+        previousRulesRaw: "",
+        rulesHadValue: false
+      };
+      const REFERENCE_BASELINE = Object.freeze({
+        // other/参考データ.xlsx の「三麻・全体」転記値
+        riichiRate: 0.244,
+        openRate: 0.249,
+        agariRate: 0.283,
+        agariTsumoRate: 0.494,
+        agariDealerRate: 0.374,
+        agariRiichiRate: 0.454,
+        agariOpenRate: 0.341,
+        agariAveragePoint: 8021,
+        agariAveragePointTsumo: 7612,
+        agariAveragePointRon: 8420,
+        agariManganOrMoreRate: 0.561,
+        riichiAverageJunme: 8.9,
+        riichiAgariRate: 0.528,
+        riichiAveragePoint: 8998
+      });
 
       function normalizeAccountId(value){
         return String(value || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
@@ -773,6 +855,14 @@
         return writeActiveSessionSnapshot("local", "");
       }
 
+      function getScopedRuleSettingsStorageKey(){
+        const session = readActiveSession();
+        if (session.mode === "account" && session.accountId){
+          return `mbsanma_app_account_${session.accountId}_${RULE_SETTINGS_BASE_STORAGE_KEY.replace(/^mbsanma_/, "")}`;
+        }
+        return RULE_SETTINGS_BASE_STORAGE_KEY;
+      }
+
       function syncTopStatus(summary){
         const session = readActiveSession();
         if (badgeEl){
@@ -831,6 +921,15 @@
           lines.push(`リーチ時和了率: ${formatRate(snapshot.riichiAgariRate)}`);
           lines.push(`副露時和了率: ${formatRate(snapshot.openAgariRate)}`);
         }
+        if (snapshot){
+          lines.push("");
+          lines.push("蜿門ｾ励ョ繝ｼ繧ｿ縺ｨ縺ｮ蟾ｮ:");
+          lines.push(`繝ｪ繝ｼ繝∫紫蟾ｮ: ${formatSignedPercentPointDelta(snapshot.riichiRate - REFERENCE_BASELINE.riichiRate)}`);
+          lines.push(`蜑ｯ髴ｲ邇・蟾ｮ: ${formatSignedPercentPointDelta(snapshot.openRate - REFERENCE_BASELINE.openRate)}`);
+          lines.push(`蜥御ｺ・紫蟾ｮ: ${formatSignedPercentPointDelta(snapshot.agariRate - REFERENCE_BASELINE.agariRate)}`);
+          lines.push(`蟷ｳ蝮・遠轤ｹ蟾ｮ: ${formatSignedPointDelta(snapshot.averagePoint - REFERENCE_BASELINE.agariAveragePoint)}`);
+          lines.push(`繝ｪ繝ｼ繝∝ｷ｡逶ｮ蟾ｮ: ${formatSignedJunmeDelta(snapshot.riichiAverageJunme - REFERENCE_BASELINE.riichiAverageJunme)}`);
+        }
         return lines.join("\n");
       }
 
@@ -852,6 +951,373 @@
         card.appendChild(titleEl);
         card.appendChild(bodyEl);
         benchResultRoot.appendChild(card);
+      }
+
+      function renderCpuRunResult(kind, title, body){
+        if (!cpuRunResultRoot) return;
+        cpuRunResultRoot.innerHTML = "";
+        if (!title && !body) return;
+        const card = document.createElement("section");
+        card.className = "messageCard";
+        if (kind === "ok") card.classList.add("isOk");
+        if (kind === "warn") card.classList.add("isWarn");
+        if (kind === "error") card.classList.add("isError");
+
+        const titleEl = document.createElement("div");
+        titleEl.className = "messageTitle";
+        titleEl.textContent = title || "";
+        const bodyEl = document.createElement("div");
+        bodyEl.className = "messageBody";
+        bodyEl.innerHTML = String(body || "").replace(/\n/g, "<br>");
+        card.appendChild(titleEl);
+        card.appendChild(bodyEl);
+        cpuRunResultRoot.appendChild(card);
+      }
+
+      function getBatchLogCount(logs){
+        return (Array.isArray(logs) ? logs : []).filter((item)=> {
+          const mode = String(item && item.meta && item.meta.matchMode || "").toLowerCase();
+          return mode === "batch" || mode === "cpu_batch";
+        }).length;
+      }
+
+      function setCpuRunButtonState(active){
+        cpuRunBtn.disabled = !!active;
+        cpuStopBtn.disabled = !active;
+      }
+
+      function clearCpuRunnerIframe(){
+        if (runnerState.iframe && runnerState.iframe.parentNode){
+          runnerState.iframe.parentNode.removeChild(runnerState.iframe);
+        }
+        runnerState.iframe = null;
+        runnerState.iframeLoaded = false;
+        if (cpuRunPreviewRoot){
+          cpuRunPreviewRoot.innerHTML = "";
+          cpuRunPreviewRoot.style.display = "none";
+        }
+      }
+
+      function clearCpuRunnerTimer(){
+        if (runnerState.pollTimer){
+          clearTimeout(runnerState.pollTimer);
+          runnerState.pollTimer = 0;
+        }
+      }
+
+      function restoreCpuRunnerStorage(){
+        try{
+          if (runnerState.previousLaunchMode){
+            sessionStorage.setItem(APP_LAUNCH_MODE_STORAGE_KEY, runnerState.previousLaunchMode);
+          } else {
+            sessionStorage.removeItem(APP_LAUNCH_MODE_STORAGE_KEY);
+          }
+        }catch(e){}
+        try{
+          if (runnerState.previousPlayerMode){
+            sessionStorage.setItem(APP_PLAYER_MODE_STORAGE_KEY, runnerState.previousPlayerMode);
+          } else {
+            sessionStorage.removeItem(APP_PLAYER_MODE_STORAGE_KEY);
+          }
+        }catch(e){}
+        try{
+          if (runnerState.settingsHadValue){
+            localStorage.setItem(SETTINGS_UI_STORAGE_KEY, runnerState.previousSettingsRaw);
+          } else {
+            localStorage.removeItem(SETTINGS_UI_STORAGE_KEY);
+          }
+        }catch(e){}
+        try{
+          const ruleKey = getScopedRuleSettingsStorageKey();
+          if (runnerState.rulesHadValue){
+            localStorage.setItem(ruleKey, runnerState.previousRulesRaw);
+          } else {
+            localStorage.removeItem(ruleKey);
+          }
+        }catch(e){}
+      }
+
+      function stopCpuRunner(kind, title, body, shouldRefresh){
+        clearCpuRunnerTimer();
+        clearCpuRunnerIframe();
+        restoreCpuRunnerStorage();
+        runnerState.active = false;
+        setCpuRunButtonState(false);
+        renderCpuRunResult(kind, title, body);
+        if (shouldRefresh){
+          render().catch(()=>{});
+        }
+      }
+
+      function nudgeCpuRunnerWindow(win){
+        if (!win) return null;
+        const details = {
+          turnSeat: null,
+          turnPhase: "",
+          isEnded: false,
+          kyokuCount: 0,
+          eventCount: 0,
+          playerMode: "",
+          overlayVisible: false,
+          resultOverlayVisible: false,
+          postAgariAdvance: "",
+          discardedAiKick: false,
+          cpuKick: false
+        };
+        try{
+          details.turnSeat = Number.isFinite(Number(win.currentTurnSeatIndex)) ? Number(win.currentTurnSeatIndex) : null;
+        }catch(e){}
+        try{
+          details.turnPhase = String(win.turnPhase || "");
+        }catch(e){}
+        try{
+          details.isEnded = !!win.isEnded;
+        }catch(e){}
+        try{
+          details.playerMode = typeof win.getPlayerUnifiedControlMode === "function" ? String(win.getPlayerUnifiedControlMode() || "") : "";
+        }catch(e){}
+        try{
+          details.overlayVisible = typeof win.isAnyOverlayVisible === "function" ? !!win.isAnyOverlayVisible() : false;
+        }catch(e){}
+        try{
+          details.resultOverlayVisible = typeof win.isResultOverlayVisible === "function" ? !!win.isResultOverlayVisible() : false;
+        }catch(e){}
+        try{
+          if (win.MBSanmaMatchLog && typeof win.MBSanmaMatchLog.getCurrentLog === "function"){
+            const currentLog = win.MBSanmaMatchLog.getCurrentLog();
+            if (currentLog && Array.isArray(currentLog.kyokus)){
+              details.kyokuCount = currentLog.kyokus.length;
+              const lastKyoku = currentLog.kyokus[currentLog.kyokus.length - 1];
+              details.eventCount = lastKyoku && Array.isArray(lastKyoku.events) ? lastKyoku.events.length : 0;
+            }
+          }
+        }catch(e){}
+        try{
+          if (details.isEnded){
+            if (details.resultOverlayVisible && typeof win.movePostAgariFlowFromResultToNext === "function"){
+              win.movePostAgariFlowFromResultToNext();
+              details.postAgariAdvance = "result";
+            } else if (details.overlayVisible && typeof win.movePostAgariFlowFromOverlayToTable === "function"){
+              win.movePostAgariFlowFromOverlayToTable(()=>{
+                try{
+                  if (typeof win.closeCurrentAgariOverlayForAutoAdvance === "function"){
+                    win.closeCurrentAgariOverlayForAutoAdvance();
+                  }
+                }catch(e){}
+              });
+              details.postAgariAdvance = "overlay";
+            } else if (typeof win.startNextKyoku === "function"){
+              win.startNextKyoku();
+              details.postAgariAdvance = "next";
+            }
+          }
+        }catch(e){}
+        try{
+          if (typeof win.schedulePlayerAutoDiscardIfNeeded === "function"){
+            win.schedulePlayerAutoDiscardIfNeeded(true);
+            details.discardedAiKick = true;
+          }
+        }catch(e){}
+        try{
+          if (typeof win.maybeSchedulePlayerSpecialAiAction === "function"){
+            win.maybeSchedulePlayerSpecialAiAction(true);
+          }
+        }catch(e){}
+        try{
+          if (typeof win.maybeSchedulePlayerOpenAiChoice === "function"){
+            win.maybeSchedulePlayerOpenAiChoice(true);
+          }
+        }catch(e){}
+        try{
+          if (typeof win.kickCpuTurnsIfNeeded === "function"){
+            win.kickCpuTurnsIfNeeded(true);
+            details.cpuKick = true;
+          }
+        }catch(e){}
+        return details;
+      }
+
+      async function pollCpuRunnerProgress(){
+        if (!runnerState.active) return;
+        const logs = await getStoredLogsAsync();
+        const currentBatchCount = getBatchLogCount(logs);
+        const completed = Math.max(0, currentBatchCount - runnerState.startBatchCount);
+        const remain = Math.max(0, runnerState.targetBatchCount - currentBatchCount);
+        const elapsedSec = Math.max(0, Math.round((Date.now() - runnerState.startedAt) / 1000));
+        let detailLine = "";
+        try{
+          const win = runnerState.iframe && runnerState.iframe.contentWindow ? runnerState.iframe.contentWindow : null;
+          if (win && win.document){
+            const title = String(win.document.title || "");
+            if (title) detailLine = `iframe ${title}`;
+            const nudgeDetails = nudgeCpuRunnerWindow(win);
+            if (nudgeDetails){
+              detailLine += `${detailLine ? " / " : ""}進行中 ${nudgeDetails.kyokuCount} 局`;
+              if (nudgeDetails.turnSeat != null){
+                detailLine += ` / seat ${nudgeDetails.turnSeat}`;
+              }
+              if (nudgeDetails.turnPhase){
+                detailLine += ` / ${nudgeDetails.turnPhase}`;
+              }
+              if (nudgeDetails.eventCount > 0){
+                detailLine += ` / events ${nudgeDetails.eventCount}`;
+              }
+              if (nudgeDetails.playerMode){
+                detailLine += ` / player ${nudgeDetails.playerMode}`;
+              }
+              if (nudgeDetails.isEnded){
+                detailLine += " / ended";
+              }
+              if (nudgeDetails.postAgariAdvance){
+                detailLine += ` / fast ${nudgeDetails.postAgariAdvance}`;
+              }
+            }
+          }
+        }catch(e){}
+        renderCpuRunResult(
+          "warn",
+          "実CPU自己対戦を回しています",
+          `保存済み ${completed} / ${CPU_RUN_TARGET_MATCHES} 半荘\n残り目安 ${remain} 半荘\n経過 ${elapsedSec} 秒${detailLine ? `\n${detailLine}` : ""}`
+        );
+        if (currentBatchCount >= runnerState.targetBatchCount){
+          stopCpuRunner(
+            "ok",
+            "実CPU自己対戦が完了しました",
+            `新しく ${completed} 半荘ぶんの batch ログを保存しました。分析結果を更新しています。`,
+            true
+          );
+          return;
+        }
+        runnerState.pollTimer = setTimeout(()=> {
+          pollCpuRunnerProgress().catch((error)=> {
+            stopCpuRunner("error", "実CPU自己対戦の監視で失敗しました", error && error.message ? error.message : String(error || ""), false);
+          });
+        }, CPU_RUN_POLL_MS);
+      }
+
+      async function startCpuRunner(){
+        if (runnerState.active) return;
+        const logs = await getStoredLogsAsync();
+        runnerState.startBatchCount = getBatchLogCount(logs);
+        runnerState.targetBatchCount = runnerState.startBatchCount + CPU_RUN_TARGET_MATCHES;
+        runnerState.startedAt = Date.now();
+        try{
+          runnerState.previousLaunchMode = sessionStorage.getItem(APP_LAUNCH_MODE_STORAGE_KEY) || "";
+        }catch(e){
+          runnerState.previousLaunchMode = "";
+        }
+        try{
+          runnerState.previousPlayerMode = sessionStorage.getItem(APP_PLAYER_MODE_STORAGE_KEY) || "";
+        }catch(e){
+          runnerState.previousPlayerMode = "";
+        }
+        try{
+          const prev = localStorage.getItem(SETTINGS_UI_STORAGE_KEY);
+          runnerState.settingsHadValue = prev != null;
+          runnerState.previousSettingsRaw = prev || "";
+        }catch(e){
+          runnerState.settingsHadValue = false;
+          runnerState.previousSettingsRaw = "";
+        }
+        try{
+          const ruleKey = getScopedRuleSettingsStorageKey();
+          const prevRules = localStorage.getItem(ruleKey);
+          runnerState.rulesHadValue = prevRules != null;
+          runnerState.previousRulesRaw = prevRules || "";
+        }catch(e){
+          runnerState.rulesHadValue = false;
+          runnerState.previousRulesRaw = "";
+        }
+
+        try{
+          sessionStorage.setItem(APP_LAUNCH_MODE_STORAGE_KEY, "verify");
+          sessionStorage.setItem(APP_PLAYER_MODE_STORAGE_KEY, "auto");
+        }catch(e){}
+
+        try{
+          const raw = localStorage.getItem(SETTINGS_UI_STORAGE_KEY);
+          const parsed = raw ? JSON.parse(raw) : {};
+          parsed["verify-player-control"] = "auto";
+          parsed["verify-fast-mode"] = "ultra";
+          parsed["verify-overlay-auto"] = "on";
+          localStorage.setItem(SETTINGS_UI_STORAGE_KEY, JSON.stringify(parsed));
+        }catch(e){}
+        try{
+          const ruleKey = getScopedRuleSettingsStorageKey();
+          const rawRules = localStorage.getItem(ruleKey);
+          const parsedRules = rawRules ? JSON.parse(rawRules) : {};
+          parsedRules["overview-game-type"] = "tonpuu";
+          parsedRules["overview-renchan-type"] = "agari";
+          parsedRules["score-tobi-end"] = "on";
+          localStorage.setItem(ruleKey, JSON.stringify(parsedRules));
+        }catch(e){}
+
+        const frame = document.createElement("iframe");
+        frame.src = "play_app.html";
+        frame.setAttribute("aria-hidden", "true");
+        frame.tabIndex = -1;
+        frame.style.display = "block";
+        frame.style.width = "100%";
+        frame.style.minHeight = "420px";
+        frame.style.height = "420px";
+        frame.style.border = "0";
+        frame.style.borderRadius = "12px";
+        frame.style.background = "#08120e";
+        frame.addEventListener("load", ()=> {
+          runnerState.iframeLoaded = true;
+          try{
+            const win = frame.contentWindow;
+            if (!win) return;
+            if (typeof win.render === "function"){
+              const originalRender = win.render.bind(win);
+              win.__mbsanmaRunnerOriginalRender = originalRender;
+              win.render = ()=>{};
+            }
+            const originalGetGameSpeedMs = typeof win.getGameSpeedMs === "function" ? win.getGameSpeedMs.bind(win) : null;
+            win.getGameSpeedMs = (key, fallback)=> {
+              if (Object.prototype.hasOwnProperty.call(CPU_RUN_SPEED_OVERRIDES, key)){
+                return CPU_RUN_SPEED_OVERRIDES[key];
+              }
+              return originalGetGameSpeedMs ? originalGetGameSpeedMs(key, fallback) : (Number.isFinite(fallback) ? fallback : 1);
+            };
+            win.openPonEffect = ()=>{};
+            win.openKanEffect = ()=>{};
+            win.openRiichiEffect = ()=>{};
+            win.openDrawEffect = ()=>{};
+            win.openResultOverlay = ()=>{};
+            win.closeResultOverlay = ()=>{};
+            if (typeof win.openTsumo === "function"){
+              win.openTsumoWithEffect = ()=> win.openTsumo();
+            }
+            if (typeof win.setVerifyFastModeLevel === "function") win.setVerifyFastModeLevel("ultra");
+            if (typeof win.setPlayerUnifiedControlMode === "function") win.setPlayerUnifiedControlMode("internal");
+            if (typeof win.startNewHanchan === "function") win.startNewHanchan();
+          }catch(e){}
+        });
+        if (cpuRunPreviewRoot){
+          cpuRunPreviewRoot.style.display = "block";
+          const label = document.createElement("div");
+          label.className = "messageTitle";
+          label.textContent = "実CPU自己対戦プレビュー";
+          const note = document.createElement("div");
+          note.className = "messageText";
+          note.style.marginBottom = "10px";
+          note.textContent = "このプレビューを表示したまま、verify 対局を連続で進めます。";
+          cpuRunPreviewRoot.innerHTML = "";
+          cpuRunPreviewRoot.appendChild(label);
+          cpuRunPreviewRoot.appendChild(note);
+          cpuRunPreviewRoot.appendChild(frame);
+        } else {
+          document.body.appendChild(frame);
+        }
+
+        runnerState.iframe = frame;
+        runnerState.active = true;
+        setCpuRunButtonState(true);
+        renderCpuRunResult("warn", "実CPU自己対戦を開始しました", `まずは ${CPU_RUN_TARGET_MATCHES} 半荘を目標に verify ログを積みます。`);
+        pollCpuRunnerProgress().catch((error)=> {
+          stopCpuRunner("error", "実CPU自己対戦の開始に失敗しました", error && error.message ? error.message : String(error || ""), false);
+        });
       }
 
       async function getStoredLogsAsync(){
@@ -897,6 +1363,23 @@
 
       function formatAvgCount(value, suffix = ""){
         return Number.isFinite(value) ? `${value.toFixed(2)}${suffix}` : "—";
+      }
+
+      function formatSignedPercentPointDelta(value){
+        if (!Number.isFinite(value)) return "—";
+        const point = value * 100;
+        return `${point >= 0 ? "+" : ""}${point.toFixed(1)}pt`;
+      }
+
+      function formatSignedPointDelta(value){
+        if (!Number.isFinite(value)) return "—";
+        const rounded = Math.round(value);
+        return `${rounded >= 0 ? "+" : ""}${rounded.toLocaleString("ja-JP")}轤ｹ`;
+      }
+
+      function formatSignedJunmeDelta(value){
+        if (!Number.isFinite(value)) return "—";
+        return `${value >= 0 ? "+" : ""}${value.toFixed(2)}蟾｡`;
       }
 
       function formatCount(value){
@@ -958,6 +1441,53 @@
           createMetricCard("対象ツモ和了件数", formatCount(summary.agari.tsumoCount), "ツモ和了のみ")
         ].forEach((card)=> grid.appendChild(card));
         section.appendChild(grid);
+        return section;
+      }
+
+      function createReferenceCard(label, actual, target, formatter, deltaFormatter){
+        return createMetricCard(label, formatter(actual), `目標 ${formatter(target)} / 差 ${deltaFormatter(actual - target)}`);
+      }
+
+      function createReferenceSection(summary){
+        const section = document.createElement("section");
+        section.className = "tabCard";
+
+        const title = document.createElement("div");
+        title.className = "tabTitle";
+        title.textContent = "基準データとの差";
+        section.appendChild(title);
+
+        const sub = document.createElement("div");
+        sub.className = "tabSub";
+        sub.textContent = "other/参考データ.xlsx の三麻・全体値と、現在の分析結果を並べています。大きくずれている項目からCPU調整を進める前提です。";
+        section.appendChild(sub);
+
+        const grid = document.createElement("div");
+        grid.className = "metricGrid";
+        [
+          createReferenceCard("リーチ率", summary.riichi.rate, REFERENCE_BASELINE.riichiRate, formatRate, formatSignedPercentPointDelta),
+          createReferenceCard("副露率", summary.open.rate, REFERENCE_BASELINE.openRate, formatRate, formatSignedPercentPointDelta),
+          createReferenceCard("和了率", summary.agari.rate, REFERENCE_BASELINE.agariRate, formatRate, formatSignedPercentPointDelta),
+          createReferenceCard("和了時ツモ割合", summary.agari.tsumoRate, REFERENCE_BASELINE.agariTsumoRate, formatRate, formatSignedPercentPointDelta),
+          createReferenceCard("和了時親割合", summary.agari.dealerRate, REFERENCE_BASELINE.agariDealerRate, formatRate, formatSignedPercentPointDelta),
+          createReferenceCard("和了時リーチ割合", summary.agari.riichiRate, REFERENCE_BASELINE.agariRiichiRate, formatRate, formatSignedPercentPointDelta),
+          createReferenceCard("和了時副露割合", summary.agari.openRate, REFERENCE_BASELINE.agariOpenRate, formatRate, formatSignedPercentPointDelta),
+          createReferenceCard("平均打点", summary.agari.averagePoint, REFERENCE_BASELINE.agariAveragePoint, formatAvgPoint, formatSignedPointDelta),
+          createReferenceCard("ツモ平均打点", summary.agari.averagePointTsumo, REFERENCE_BASELINE.agariAveragePointTsumo, formatAvgPoint, formatSignedPointDelta),
+          createReferenceCard("ロン平均打点", summary.agari.averagePointRon, REFERENCE_BASELINE.agariAveragePointRon, formatAvgPoint, formatSignedPointDelta),
+          createReferenceCard("満貫以上割合", summary.agari.manganOrMoreRate, REFERENCE_BASELINE.agariManganOrMoreRate, formatRate, formatSignedPercentPointDelta),
+          createReferenceCard("リーチ平均巡目", summary.riichi.averageJunme, REFERENCE_BASELINE.riichiAverageJunme, formatAvgJunme, formatSignedJunmeDelta),
+          createReferenceCard("リーチ時和了率", summary.agari.riichiAgariRate, REFERENCE_BASELINE.riichiAgariRate, formatRate, formatSignedPercentPointDelta),
+          createReferenceCard("リーチ時平均打点", summary.riichi.averagePoint, REFERENCE_BASELINE.riichiAveragePoint, formatAvgPoint, formatSignedPointDelta)
+        ].forEach((card)=> grid.appendChild(card));
+        section.appendChild(grid);
+
+        const note = document.createElement("div");
+        note.className = "messageText";
+        note.style.marginTop = "12px";
+        note.textContent = "本データ側にあって今の分析に直接ない項目は、CPU自己対戦ログの軽量収集と集計追加で順次埋めていきます。";
+        section.appendChild(note);
+
         return section;
       }
 
@@ -1217,6 +1747,7 @@
         }
 
         root.appendChild(createSummarySection(summary));
+        root.appendChild(createReferenceSection(summary));
         root.appendChild(createTabRow());
         buildTabPanels(summary).forEach((panel)=> root.appendChild(panel));
 
@@ -1270,6 +1801,19 @@
         });
       }
 
+      cpuRunBtn.addEventListener("click", ()=> {
+        startCpuRunner().catch((error)=> {
+          stopCpuRunner("error", "実CPU自己対戦の開始に失敗しました", error && error.message ? error.message : String(error || ""), false);
+        });
+      });
+
+      cpuStopBtn.addEventListener("click", async ()=> {
+        if (!runnerState.active) return;
+        const logs = await getStoredLogsAsync();
+        const completed = Math.max(0, getBatchLogCount(logs) - runnerState.startBatchCount);
+        stopCpuRunner("warn", "実CPU自己対戦を停止しました", `停止時点で ${completed} 半荘ぶんの batch ログが増えています。`, true);
+      });
+
       if (benchBtn){
         benchBtn.addEventListener("click", async ()=> {
           if (!window.MBSanmaMatchLog || typeof window.MBSanmaMatchLog.runBatchBenchmarkAsync !== "function"){
@@ -1316,6 +1860,14 @@
         });
       }
 
+      window.addEventListener("beforeunload", ()=> {
+        if (!runnerState.active) return;
+        clearCpuRunnerTimer();
+        clearCpuRunnerIframe();
+        restoreCpuRunnerStorage();
+      });
+
+      setCpuRunButtonState(false);
       render().catch(()=>{});
     })();
   </script>
