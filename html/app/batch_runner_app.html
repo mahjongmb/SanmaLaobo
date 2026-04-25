@@ -220,6 +220,8 @@
   <script src="../../js/match_log.js"></script>
   <script src="../../js/log_normalizer.js"></script>
   <script src="../../js/log_metrics.js"></script>
+  <script src="../../js/reference_metrics.js"></script>
+  <script src="../../js/metric_compare.js"></script>
   <script>
     (function(){
       "use strict";
@@ -364,13 +366,24 @@
         const hoju = summary.hoju || {};
         const hitByTsumo = summary.hitByTsumo || {};
         const ryukyoku = summary.ryukyoku || {};
-        els.summary.textContent = [
+        const lines = [
           `対象: ${summary.scope.includedMatchCount} 半荘 / ${overall.kyokuCount} 局`,
           `リーチ率: ${formatRate(riichi.rate)} / 副露率: ${formatRate(open.rate)}`,
           `和了率: ${formatRate(agari.rate)} / 放銃率: ${formatRate(hoju.rate)} / 被ツモ率: ${formatRate(hitByTsumo.rate)} / 流局率: ${formatRate(ryukyoku.rate)}`,
           `平均打点: ${formatPoint(agari.averagePoint)} / リーチ時平均打点: ${formatPoint(agari.averagePointRiichi)} / 副露時平均打点: ${formatPoint(agari.averagePointOpen)}`,
           `平均リーチ巡目: ${Number.isFinite(Number(riichi.averageJunme)) ? Number(riichi.averageJunme).toFixed(1) : "-"}`
-        ].join("\n");
+        ];
+        if (window.MBSanmaMetricCompare && window.MBSanmaReferenceMetrics){
+          const rows = window.MBSanmaMetricCompare.buildSummaryComparison(summary, window.MBSanmaReferenceMetrics);
+          if (rows.length){
+            lines.push("");
+            lines.push("参考データとの差 大きい順:");
+            rows.slice(0, 8).forEach((row)=> {
+              lines.push(`${row.label}: 実測 ${row.actualText} / 基準 ${row.targetText} / 差 ${row.deltaText}`);
+            });
+          }
+        }
+        els.summary.textContent = lines.join("\n");
       }
 
       function clearTimer(){
