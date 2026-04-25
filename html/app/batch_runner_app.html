@@ -176,7 +176,7 @@
           ルール
           <select id="rulePresetSelect">
             <option value="current">現在の設定</option>
-            <option value="tonpuu">東風・和了連荘・トビあり</option>
+            <option value="tonpuu" selected>東風・和了連荘・トビあり</option>
           </select>
         </label>
         <button id="startBtn" type="button" class="primary">開始</button>
@@ -231,6 +231,7 @@
       const APP_LAUNCH_MODE_STORAGE_KEY = "mbsanma_app_launch_mode_v1";
       const APP_PLAYER_MODE_STORAGE_KEY = "mbsanma_app_player_mode_v1";
       const SETTINGS_UI_STORAGE_KEY = "mbsanma_settings_values_v1";
+      const GAME_SETTINGS_STORAGE_KEY = "mbsanma_game_settings_v1";
       const RULE_SETTINGS_BASE_STORAGE_KEY = "mbsanma_rules_settings_v1";
       const POLL_MS = 900;
       const SPEED_OVERRIDES = Object.freeze({
@@ -266,12 +267,20 @@
         startedAt: 0,
         startBatchCount: 0,
         targetBatchCount: 0,
+        runId: "",
+        runProfileKey: "balanced",
+        lastBatchCount: 0,
+        lastProgressAt: 0,
+        lastRunnerDetail: "",
+        lastRunnerError: "",
         iframe: null,
         pollTimer: 0,
         previousLaunchMode: "",
         previousPlayerMode: "",
         previousSettingsRaw: "",
         settingsHadValue: false,
+        previousGameSettingsRaw: "",
+        gameSettingsHadValue: false,
         previousRulesRaw: "",
         rulesHadValue: false
       };
@@ -327,6 +336,32 @@
         if (!els.status) return;
         const cls = kind === "ok" ? "ok" : kind === "error" ? "error" : kind === "warn" ? "warn" : "";
         els.status.innerHTML = cls ? `<span class="${cls}">${text}</span>` : text;
+      }
+
+      function readUrlParams(){
+        try{
+          return new URLSearchParams(window.location.search || "");
+        }catch(e){
+          return new URLSearchParams("");
+        }
+      }
+
+      function applyUrlParams(){
+        const params = readUrlParams();
+        const target = parseInt(params.get("target") || params.get("count") || "", 10);
+        if (Number.isFinite(target) && target > 0 && els.targetCount){
+          els.targetCount.value = String(Math.max(1, Math.min(10000, target)));
+        }
+        const preset = String(params.get("preset") || params.get("rule") || "");
+        if (preset && els.rulePreset){
+          const found = Array.from(els.rulePreset.options).some((option)=> option.value === preset);
+          if (found) els.rulePreset.value = preset;
+        }
+      }
+
+      function shouldAutoStart(){
+        const params = readUrlParams();
+        return params.get("autostart") === "1" || params.get("run") === "1";
       }
 
       function formatRate(value){
@@ -414,6 +449,10 @@
           else localStorage.removeItem(SETTINGS_UI_STORAGE_KEY);
         }catch(e){}
         try{
+          if (state.gameSettingsHadValue) localStorage.setItem(GAME_SETTINGS_STORAGE_KEY, state.previousGameSettingsRaw);
+          else localStorage.removeItem(GAME_SETTINGS_STORAGE_KEY);
+        }catch(e){}
+        try{
           const ruleKey = getScopedRuleSettingsStorageKey();
           if (state.rulesHadValue) localStorage.setItem(ruleKey, state.previousRulesRaw);
           else localStorage.removeItem(ruleKey);
@@ -429,6 +468,41 @@
         if (els.stop) els.stop.disabled = true;
         setMessage(kind || "warn", text || "停止しました。");
         if (shouldRefresh) refreshSummary().catch(()=>{});
+      }
+
+      function installRunnerDiagnostics(win){
+        if (!win || win.__mbsanmaBatchRunnerDiagnosticsInstalled) return;
+        win.__mbsanmaBatchRunnerDiagnosticsInstalled = true;
+        try{
+          win.addEventListener("error", (event)=> {
+            state.lastRunnerError = event && event.message ? String(event.message) : "runner error";
+          });
+          win.addEventListener("unhandledrejection", (event)=> {
+            const reason = event && event.reason;
+            state.lastRunnerError = reason && reason.message ? String(reason.message) : String(reason || "runner promise rejection");
+          });
+        }catch(e){}
+      }
+
+      function installRunnerLogMeta(win){
+        if (!win || !win.MBSanmaMatchLog || win.__mbsanmaBatchRunnerLogMetaInstalled) return;
+        const api = win.MBSanmaMatchLog;
+        if (typeof api.startMatch !== "function") return;
+        const originalStartMatch = api.startMatch.bind(api);
+        api.startMatch = (meta)=> {
+          const src = meta && typeof meta === "object" ? meta : {};
+          const previousBatchRun = src.batchRun && typeof src.batchRun === "object" ? src.batchRun : {};
+          return originalStartMatch({
+            ...src,
+            batchRun: {
+              ...previousBatchRun,
+              id: state.runId,
+              profileKey: state.runProfileKey,
+              totalCount: Math.max(0, state.targetBatchCount - state.startBatchCount)
+            }
+          });
+        };
+        win.__mbsanmaBatchRunnerLogMetaInstalled = true;
       }
 
       function nudgeRunnerWindow(win){
@@ -457,7 +531,18 @@
           if (win.turnPhase) parts.push(String(win.turnPhase));
           if (win.isEnded) parts.push("ended");
         }catch(e){}
-        return parts.join(" / ");
+        try{
+          if (win.MBSanmaMatchLog && typeof win.MBSanmaMatchLog.getCurrentLog === "function"){
+            const currentLog = win.MBSanmaMatchLog.getCurrentLog();
+            const kyokus = currentLog && Array.isArray(currentLog.kyokus) ? currentLog.kyokus : [];
+            const lastKyoku = kyokus[kyokus.length - 1] || null;
+            const eventCount = lastKyoku && Array.isArray(lastKyoku.events) ? lastKyoku.events.length : 0;
+            parts.push(`${kyokus.length}局目`);
+            if (eventCount) parts.push(`events ${eventCount}`);
+          }
+        }catch(e){}
+        state.lastRunnerDetail = parts.join(" / ");
+        return state.lastRunnerDetail;
       }
 
       async function pollProgress(){
@@ -465,10 +550,20 @@
         const logs = await getStoredLogsAsync();
         const batchTotal = getBatchLogCount(logs);
         const completed = Math.max(0, batchTotal - state.startBatchCount);
+        if (batchTotal !== state.lastBatchCount){
+          state.lastBatchCount = batchTotal;
+          state.lastProgressAt = Date.now();
+        }
         updateMetricEls(completed, batchTotal);
         const win = state.iframe && state.iframe.contentWindow ? state.iframe.contentWindow : null;
         const detail = nudgeRunnerWindow(win);
-        setMessage("warn", `実CPU対局を実行中です。${completed} / ${Math.max(0, state.targetBatchCount - state.startBatchCount)} 半荘${detail ? `\n${detail}` : ""}`);
+        const noProgressSec = state.lastProgressAt ? Math.round((Date.now() - state.lastProgressAt) / 1000) : 0;
+        setMessage("warn", [
+          `実CPU対局を実行中です。${completed} / ${Math.max(0, state.targetBatchCount - state.startBatchCount)} 半荘`,
+          detail ? detail : "",
+          state.lastRunnerError ? `runner error: ${state.lastRunnerError}` : "",
+          noProgressSec >= 20 ? `半荘保存待ち ${noProgressSec} 秒` : ""
+        ].filter(Boolean).join("\n"));
         if (batchTotal >= state.targetBatchCount){
           stopRunner("ok", `完了しました。今回 ${completed} 半荘の batch ログを保存しました。`, true);
           return;
@@ -508,6 +603,26 @@
             localStorage.setItem(ruleKey, JSON.stringify(parsedRules));
           }
         }catch(e){}
+        try{
+          const rawGameSettings = localStorage.getItem(GAME_SETTINGS_STORAGE_KEY);
+          state.gameSettingsHadValue = rawGameSettings != null;
+          state.previousGameSettingsRaw = rawGameSettings || "";
+          const parsedGameSettings = rawGameSettings ? JSON.parse(rawGameSettings) : {};
+          const seats = parsedGameSettings.seats && typeof parsedGameSettings.seats === "object" ? parsedGameSettings.seats : {};
+          [1, 2].forEach((seatIndex)=> {
+            const seat = seats[String(seatIndex)] && typeof seats[String(seatIndex)] === "object" ? seats[String(seatIndex)] : {};
+            seats[String(seatIndex)] = {
+              ...seat,
+              openEngineMode: "internal",
+              openProfileKey: "balanced",
+              discardEngineMode: "internal",
+              discardStyleKey: seat.discardStyleKey || "balanced"
+            };
+          });
+          parsedGameSettings.seats = seats;
+          parsedGameSettings.cpuStrengthPresetKey = "custom";
+          localStorage.setItem(GAME_SETTINGS_STORAGE_KEY, JSON.stringify(parsedGameSettings));
+        }catch(e){}
       }
 
       async function startRunner(){
@@ -517,6 +632,12 @@
         const logs = await getStoredLogsAsync();
         state.startBatchCount = getBatchLogCount(logs);
         state.targetBatchCount = state.startBatchCount + target;
+        state.runId = `runner_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+        state.runProfileKey = "balanced";
+        state.lastBatchCount = state.startBatchCount;
+        state.lastProgressAt = Date.now();
+        state.lastRunnerDetail = "";
+        state.lastRunnerError = "";
         state.startedAt = Date.now();
         applyRunnerStorage();
         clearIframe();
@@ -527,6 +648,8 @@
           try{
             const win = frame.contentWindow;
             if (!win) return;
+            installRunnerDiagnostics(win);
+            installRunnerLogMeta(win);
             if (typeof win.render === "function") win.render = ()=>{};
             const originalGetGameSpeedMs = typeof win.getGameSpeedMs === "function" ? win.getGameSpeedMs.bind(win) : null;
             win.getGameSpeedMs = (key, fallback)=> {
@@ -570,7 +693,13 @@
         clearIframe();
         restoreStorage();
       });
+      applyUrlParams();
       refreshSummary().catch(()=>{});
+      if (shouldAutoStart()){
+        window.setTimeout(()=> {
+          startRunner().catch((error)=> stopRunner("error", `自動開始に失敗しました。\n${error && error.message ? error.message : String(error || "")}`, false));
+        }, 250);
+      }
     })();
   </script>
 </body>

@@ -386,6 +386,8 @@
 
     if (src.batchRun && typeof src.batchRun === "object"){
       out.batchRun = {
+        id: typeof src.batchRun.id === "string" ? src.batchRun.id : "",
+        profileKey: typeof src.batchRun.profileKey === "string" ? src.batchRun.profileKey : "",
         currentIndex: Number(src.batchRun.currentIndex) || 0,
         totalCount: Number(src.batchRun.totalCount) || 0
       };

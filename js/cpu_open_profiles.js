@@ -110,24 +110,20 @@ const CPU_OPEN_PROFILE_LIBRARY = {
   balanced: {
     key: "balanced",
     label: "Balanced",
-    // 副露率微増調整（ユーザー要望：もうちょっとだけ高くてもいい）:
-    //  - passBase 1.05→0.85, ponBase -0.95→-0.65（pass-pon 差 2.0→1.5）
-    //  - noValuePassBonus 3.0→2.6（無価値鳴きの抑止は残しつつ少し緩和）
-    //  - ponYakuhaiBonus 2.8→3.1（役牌ポンは積極化）
-    //  - ponShantenAdvanceBonus 1.35→1.55, ponImproveCountFactor 0.04→0.05
-    passBase: 0.85,
-    ponBase: -0.65,
+    // 実測調整: リーチ過多・副露不足を補正するため、役牌/向聴前進ポンを少し開く
+    passBase: 0.45,
+    ponBase: -0.25,
     minkanBase: -3.0,
 
     riichiDangerPassBonus: 6.2,
-    noValuePassBonus: 2.6,
+    noValuePassBonus: 2.2,
     farShantenPassBonus: 2.0,
     topScorePassBonus: 1.2,
 
-    ponYakuhaiBonus: 3.1,
-    ponTenpaiKeepBonus: 2.1,
-    ponShantenAdvanceBonus: 1.55,
-    ponImproveCountFactor: 0.05,
+    ponYakuhaiBonus: 3.5,
+    ponTenpaiKeepBonus: 2.5,
+    ponShantenAdvanceBonus: 2.0,
+    ponImproveCountFactor: 0.065,
     ponWaitTypeFactor: 0.12,
     // 鳴きホンイツ強化（ユーザー要望：鳴きのホンイツをもう少し強く見てもいい）:
     //  - ponHonitsuBonus 1.3→1.7（eval側で×1.35されるので実効 1.76→2.30）
@@ -135,11 +131,11 @@ const CPU_OPEN_PROFILE_LIBRARY = {
     ponHonitsuBonus: 1.7,
     ponToitoiBonus: 1.3,
     ponTanyaoBonus: 0.45,
-    ponAlreadyOpenBonus: 0.25,
-    ponDealerBonus: 0.25,
+    ponAlreadyOpenBonus: 0.55,
+    ponDealerBonus: 0.4,
     ponRiichiDangerPenalty: 6.2,
     ponNoValuePenalty: 4.1,
-    ponSpeedOnlyPenalty: 1.95,
+    ponSpeedOnlyPenalty: 1.55,
     ponWorsenPenalty: 4.9,
     ponFarShantenPenalty: 2.0,
     ponTopScorePenalty: 1.0,
