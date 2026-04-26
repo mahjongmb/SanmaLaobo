@@ -21,7 +21,7 @@ const CPU_DISCARD_PROFILE_LIBRARY = {
     riichiOneChanceBonus: 10,
     riichiDangerPenalty: 24,
     openYakuhaiDangerPenalty: 12,
-    riichiReadyBonus: 14,
+    riichiReadyBonus: 20,
     doraKeepBonus: 10,
     redKeepBonus: 12,
     redDiscardPenalty: 8,
