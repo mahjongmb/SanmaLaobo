@@ -173,6 +173,10 @@
           <input id="targetCountInput" type="number" min="1" max="10000" step="1" value="1000" />
         </label>
         <label>
+          同時卓数
+          <input id="parallelCountInput" type="number" min="1" max="6" step="1" value="3" />
+        </label>
+        <label>
           ルール
           <select id="rulePresetSelect">
             <option value="current">現在の設定</option>
@@ -249,6 +253,7 @@
 
       const els = {
         targetCount: document.getElementById("targetCountInput"),
+        parallelCount: document.getElementById("parallelCountInput"),
         rulePreset: document.getElementById("rulePresetSelect"),
         start: document.getElementById("startBtn"),
         stop: document.getElementById("stopBtn"),
@@ -273,7 +278,8 @@
         lastProgressAt: 0,
         lastRunnerDetail: "",
         lastRunnerError: "",
-        iframe: null,
+        iframes: [],
+        parallelCount: 1,
         pollTimer: 0,
         previousLaunchMode: "",
         previousPlayerMode: "",
@@ -332,6 +338,15 @@
         }).length;
       }
 
+      function getRunLogs(logs){
+        if (!state.runId) return [];
+        return (Array.isArray(logs) ? logs : []).filter((item)=> {
+          const mode = String(item && item.meta && item.meta.matchMode || "").toLowerCase();
+          const runId = String(item && item.meta && item.meta.batchRun && item.meta.batchRun.id || "");
+          return (mode === "batch" || mode === "cpu_batch") && runId === state.runId;
+        });
+      }
+
       function setMessage(kind, text){
         if (!els.status) return;
         const cls = kind === "ok" ? "ok" : kind === "error" ? "error" : kind === "warn" ? "warn" : "";
@@ -351,6 +366,10 @@
         const target = parseInt(params.get("target") || params.get("count") || "", 10);
         if (Number.isFinite(target) && target > 0 && els.targetCount){
           els.targetCount.value = String(Math.max(1, Math.min(10000, target)));
+        }
+        const parallel = parseInt(params.get("parallel") || params.get("workers") || "", 10);
+        if (Number.isFinite(parallel) && parallel > 0 && els.parallelCount){
+          els.parallelCount.value = String(Math.max(1, Math.min(6, parallel)));
         }
         const preset = String(params.get("preset") || params.get("rule") || "");
         if (preset && els.rulePreset){
@@ -402,12 +421,13 @@
         const hitByTsumo = summary.hitByTsumo || {};
         const ryukyoku = summary.ryukyoku || {};
         const lines = [
+          state.runId ? `Run: ${state.runId}` : "",
           `対象: ${summary.scope.includedMatchCount} 半荘 / ${overall.kyokuCount} 局`,
           `リーチ率: ${formatRate(riichi.rate)} / 副露率: ${formatRate(open.rate)}`,
           `和了率: ${formatRate(agari.rate)} / 放銃率: ${formatRate(hoju.rate)} / 被ツモ率: ${formatRate(hitByTsumo.rate)} / 流局率: ${formatRate(ryukyoku.rate)}`,
           `平均打点: ${formatPoint(agari.averagePoint)} / リーチ時平均打点: ${formatPoint(agari.averagePointRiichi)} / 副露時平均打点: ${formatPoint(agari.averagePointOpen)}`,
           `平均リーチ巡目: ${Number.isFinite(Number(riichi.averageJunme)) ? Number(riichi.averageJunme).toFixed(1) : "-"}`
-        ];
+        ].filter(Boolean);
         if (window.MBSanmaMetricCompare && window.MBSanmaReferenceMetrics){
           const rows = window.MBSanmaMetricCompare.buildSummaryComparison(summary, window.MBSanmaReferenceMetrics);
           if (rows.length){
@@ -429,10 +449,12 @@
       }
 
       function clearIframe(){
-        if (state.iframe && state.iframe.parentNode){
-          state.iframe.parentNode.removeChild(state.iframe);
-        }
-        state.iframe = null;
+        state.iframes.forEach((frame)=> {
+          if (frame && frame.parentNode){
+            frame.parentNode.removeChild(frame);
+          }
+        });
+        state.iframes = [];
       }
 
       function restoreStorage(){
@@ -484,7 +506,7 @@
         }catch(e){}
       }
 
-      function installRunnerLogMeta(win){
+      function installRunnerLogMeta(win, workerIndex){
         if (!win || !win.MBSanmaMatchLog || win.__mbsanmaBatchRunnerLogMetaInstalled) return;
         const api = win.MBSanmaMatchLog;
         if (typeof api.startMatch !== "function") return;
@@ -498,6 +520,7 @@
               ...previousBatchRun,
               id: state.runId,
               profileKey: state.runProfileKey,
+              workerIndex: Number(workerIndex) || 0,
               totalCount: Math.max(0, state.targetBatchCount - state.startBatchCount)
             }
           });
@@ -505,7 +528,7 @@
         win.__mbsanmaBatchRunnerLogMetaInstalled = true;
       }
 
-      function nudgeRunnerWindow(win){
+      function nudgeRunnerWindow(win, workerIndex){
         if (!win) return "";
         const parts = [];
         try{
@@ -527,6 +550,7 @@
           if (typeof win.kickCpuTurnsIfNeeded === "function") win.kickCpuTurnsIfNeeded(true);
         }catch(e){}
         try{
+          parts.push(`卓${(Number(workerIndex) || 0) + 1}`);
           if (Number.isFinite(Number(win.currentTurnSeatIndex))) parts.push(`seat ${Number(win.currentTurnSeatIndex)}`);
           if (win.turnPhase) parts.push(String(win.turnPhase));
           if (win.isEnded) parts.push("ended");
@@ -549,22 +573,25 @@
         if (!state.active) return;
         const logs = await getStoredLogsAsync();
         const batchTotal = getBatchLogCount(logs);
-        const completed = Math.max(0, batchTotal - state.startBatchCount);
-        if (batchTotal !== state.lastBatchCount){
-          state.lastBatchCount = batchTotal;
+        const runLogs = getRunLogs(logs);
+        const completed = state.runId ? runLogs.length : Math.max(0, batchTotal - state.startBatchCount);
+        if (completed !== state.lastBatchCount){
+          state.lastBatchCount = completed;
           state.lastProgressAt = Date.now();
         }
         updateMetricEls(completed, batchTotal);
-        const win = state.iframe && state.iframe.contentWindow ? state.iframe.contentWindow : null;
-        const detail = nudgeRunnerWindow(win);
+        const details = state.iframes.map((frame, index)=> {
+          const win = frame && frame.contentWindow ? frame.contentWindow : null;
+          return nudgeRunnerWindow(win, index);
+        }).filter(Boolean);
         const noProgressSec = state.lastProgressAt ? Math.round((Date.now() - state.lastProgressAt) / 1000) : 0;
         setMessage("warn", [
-          `実CPU対局を実行中です。${completed} / ${Math.max(0, state.targetBatchCount - state.startBatchCount)} 半荘`,
-          detail ? detail : "",
+          `実CPU対局を実行中です。${completed} / ${Math.max(0, state.targetBatchCount - state.startBatchCount)} 半荘（${state.parallelCount}卓並列）`,
+          details.slice(0, 6).join("\n"),
           state.lastRunnerError ? `runner error: ${state.lastRunnerError}` : "",
           noProgressSec >= 20 ? `半荘保存待ち ${noProgressSec} 秒` : ""
         ].filter(Boolean).join("\n"));
-        if (batchTotal >= state.targetBatchCount){
+        if (completed >= Math.max(0, state.targetBatchCount - state.startBatchCount)){
           stopRunner("ok", `完了しました。今回 ${completed} 半荘の batch ログを保存しました。`, true);
           return;
         }
@@ -625,31 +652,15 @@
         }catch(e){}
       }
 
-      async function startRunner(){
-        if (state.active) return;
-        const target = Math.max(1, Math.min(10000, parseInt(els.targetCount && els.targetCount.value, 10) || 1000));
-        if (els.targetCount) els.targetCount.value = String(target);
-        const logs = await getStoredLogsAsync();
-        state.startBatchCount = getBatchLogCount(logs);
-        state.targetBatchCount = state.startBatchCount + target;
-        state.runId = `runner_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
-        state.runProfileKey = "balanced";
-        state.lastBatchCount = state.startBatchCount;
-        state.lastProgressAt = Date.now();
-        state.lastRunnerDetail = "";
-        state.lastRunnerError = "";
-        state.startedAt = Date.now();
-        applyRunnerStorage();
-        clearIframe();
-
+      function createRunnerFrame(workerIndex){
         const frame = document.createElement("iframe");
-        frame.src = "play_app.html";
+        frame.src = `play_app.html?runner=${encodeURIComponent(state.runId)}&worker=${workerIndex}`;
         frame.addEventListener("load", ()=> {
           try{
             const win = frame.contentWindow;
             if (!win) return;
             installRunnerDiagnostics(win);
-            installRunnerLogMeta(win);
+            installRunnerLogMeta(win, workerIndex);
             if (typeof win.render === "function") win.render = ()=>{};
             const originalGetGameSpeedMs = typeof win.getGameSpeedMs === "function" ? win.getGameSpeedMs.bind(win) : null;
             win.getGameSpeedMs = (key, fallback)=> {
@@ -669,19 +680,45 @@
           }catch(e){}
         });
         if (els.frameHost) els.frameHost.appendChild(frame);
-        state.iframe = frame;
+        return frame;
+      }
+
+      async function startRunner(){
+        if (state.active) return;
+        const target = Math.max(1, Math.min(10000, parseInt(els.targetCount && els.targetCount.value, 10) || 1000));
+        const parallel = Math.max(1, Math.min(6, parseInt(els.parallelCount && els.parallelCount.value, 10) || 1));
+        if (els.targetCount) els.targetCount.value = String(target);
+        if (els.parallelCount) els.parallelCount.value = String(parallel);
+        const logs = await getStoredLogsAsync();
+        state.startBatchCount = getBatchLogCount(logs);
+        state.targetBatchCount = state.startBatchCount + target;
+        state.runId = `runner_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+        state.runProfileKey = "balanced";
+        state.parallelCount = parallel;
+        state.lastBatchCount = 0;
+        state.lastProgressAt = Date.now();
+        state.lastRunnerDetail = "";
+        state.lastRunnerError = "";
+        state.startedAt = Date.now();
+        applyRunnerStorage();
+        clearIframe();
+
+        state.iframes = Array.from({ length: parallel }, (_, index)=> createRunnerFrame(index));
         state.active = true;
         if (els.start) els.start.disabled = true;
         if (els.stop) els.stop.disabled = false;
         updateMetricEls(0, state.startBatchCount);
-        setMessage("warn", `${target} 半荘の高速検証を開始しました。`);
+        setMessage("warn", `${target} 半荘の高速検証を ${parallel} 卓並列で開始しました。`);
         pollProgress().catch((error)=> stopRunner("error", `開始に失敗しました。\n${error && error.message ? error.message : String(error || "")}`, false));
       }
 
       async function refreshSummary(){
         const logs = await getStoredLogsAsync();
-        updateMetricEls(Math.max(0, getBatchLogCount(logs) - state.startBatchCount), getBatchLogCount(logs));
-        renderSummary(logs);
+        const batchTotal = getBatchLogCount(logs);
+        const runLogs = getRunLogs(logs);
+        const completed = state.runId ? runLogs.length : Math.max(0, batchTotal - state.startBatchCount);
+        updateMetricEls(completed, batchTotal);
+        renderSummary(state.runId ? runLogs : logs);
       }
 
       if (els.start) els.start.addEventListener("click", ()=> startRunner().catch((error)=> stopRunner("error", `開始に失敗しました。\n${error && error.message ? error.message : String(error || "")}`, false)));

@@ -388,6 +388,7 @@
       out.batchRun = {
         id: typeof src.batchRun.id === "string" ? src.batchRun.id : "",
         profileKey: typeof src.batchRun.profileKey === "string" ? src.batchRun.profileKey : "",
+        workerIndex: Number(src.batchRun.workerIndex) || 0,
         currentIndex: Number(src.batchRun.currentIndex) || 0,
         totalCount: Number(src.batchRun.totalCount) || 0
       };
