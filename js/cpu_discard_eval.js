@@ -918,10 +918,11 @@ function shouldCpuDiscardCandidateRiichi(snapshot, candidate, profile){
   const isNoYakuRoute = !hasYakuOrValueRoute;
   const hasChangeRoute = damaValue.flags.includes("shape_change") || Number(candidate.improveCount) >= 10;
   const isHighValueRoute = damaValue.score >= 3.2;
+  const isDamaValueRoute = damaValue.score >= 1.35 || damaValue.flags.includes("yakuhai");
   const isMediocreWaitRoute = !isGoodWaitRoute || tenpai.isUglyWait || tenpai.isMiddleKanchanWait || tenpai.isMiddleShaboWait || tenpai.isMiddleTankiWait || tenpai.isPenchanOnlyWait;
 
-  // Policy: good shape riichis regardless of yaku; yaku only keeps mediocre waits as dama.
-  // No-yaku mediocre waits should prefer shape/value change or defense instead of lock-riichi.
+  // Policy: excellent waits riichi; yaku/value mediocre waits stay dama; no-yaku
+  // mediocre waits should prefer shape/value change or defense instead of lock-riichi.
   if (isProspectiveFuriten && !context.isLast && !isExcellentWaitRoute) return false;
   if (context.threatCount > 0 && context.isTop && !isExcellentWaitRoute) return false;
   if (context.phase === "end" && isMediocreWaitRoute && !context.isLast) return false;
@@ -930,6 +931,12 @@ function shouldCpuDiscardCandidateRiichi(snapshot, candidate, profile){
     if (!isGoodWaitRoute && !context.isLast) return false;
     if (tenpai.isVeryBadWait) return false;
     if (hasChangeRoute && tenpai.waitTileCount <= 3 && !context.isLast) return false;
+  }
+
+  if (hasYakuOrValueRoute && !context.isLast && context.threatCount <= 0){
+    if (isMediocreWaitRoute) return false;
+    if (!isExcellentWaitRoute && isDamaValueRoute && !context.isDealer) return false;
+    if (!isExcellentWaitRoute && damaValue.score >= 1.7) return false;
   }
 
   if (isGoodWaitRoute){
@@ -1281,7 +1288,7 @@ function evaluateCpuDiscardCandidate(snapshot, candidate, profile){
     pushCpuDiscardEvalPart(
       parts,
       "dama_value_bonus",
-      clampCpuDiscardEval(damaValue.score * 4.6, 0, 26),
+      clampCpuDiscardEval(damaValue.score * 6.2, 0, 34),
       damaValue.flags.join("/")
     );
   }
@@ -1289,7 +1296,7 @@ function evaluateCpuDiscardCandidate(snapshot, candidate, profile){
     pushCpuDiscardEvalPart(
       parts,
       "good_wait_dama_bonus",
-      clampCpuDiscardEval((damaValue.score * 2.1) + (tenpai.waitTileCount * 0.28), 0, 12),
+      clampCpuDiscardEval((damaValue.score * 3.0) + (tenpai.waitTileCount * 0.42), 0, 18),
       `${tenpai.waitTileCount}wait`
     );
   }
@@ -1297,7 +1304,7 @@ function evaluateCpuDiscardCandidate(snapshot, candidate, profile){
     pushCpuDiscardEvalPart(
       parts,
       "shape_change_dama_bonus",
-      clampCpuDiscardEval((Number(candidate.improveCount) * 0.38) + (tenpai.waitTypeCount * 1.2), 0, 12),
+      clampCpuDiscardEval((Number(candidate.improveCount) * 0.5) + (tenpai.waitTypeCount * 1.5), 0, 16),
       `${Number(candidate.improveCount) || 0}improve`
     );
   }
