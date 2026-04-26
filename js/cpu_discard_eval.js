@@ -910,10 +910,10 @@ function shouldCpuDiscardCandidateRiichi(snapshot, candidate, profile){
   const damaValue = estimateCpuDiscardDamaValue(snapshot, candidate);
   const isProspectiveFuriten = isCpuDiscardProspectiveRiverFuriten(snapshot, candidate);
   const isRyanmenGoodRoute = tenpai.isRyanmenWait && tenpai.waitTileCount >= 4;
-  const isWideRyanmenRoute = tenpai.isRyanmenWait && tenpai.waitTileCount >= 6;
+  const isWideRyanmenRoute = tenpai.isRyanmenWait && tenpai.waitTileCount >= 5;
   const isMultiGoodRoute = tenpai.waitTypeCount >= 2 && tenpai.waitTileCount >= 4;
-  const isGoodWaitRoute = isRyanmenGoodRoute || isWideRyanmenRoute || isMultiGoodRoute || tenpai.waitTileCount >= 5;
-  const isExcellentWaitRoute = tenpai.isExcellentWait || isWideRyanmenRoute || (tenpai.waitTypeCount >= 3 && tenpai.waitTileCount >= 6);
+  const isGoodWaitRoute = isRyanmenGoodRoute || isWideRyanmenRoute || isMultiGoodRoute || tenpai.waitTileCount >= 4;
+  const isExcellentWaitRoute = tenpai.isExcellentWait || isWideRyanmenRoute || (tenpai.waitTypeCount >= 3 && tenpai.waitTileCount >= 5);
   const hasYakuOrValueRoute = damaValue.score >= 1.0 || damaValue.flags.includes("yakuhai") || damaValue.flags.includes("honitsu_like") || damaValue.flags.includes("toitoi_like");
   const isNoYakuRoute = !hasYakuOrValueRoute;
   const hasChangeRoute = damaValue.flags.includes("shape_change") || Number(candidate.improveCount) >= 10;
@@ -929,7 +929,7 @@ function shouldCpuDiscardCandidateRiichi(snapshot, candidate, profile){
   if (isNoYakuRoute){
     if (!isGoodWaitRoute && !context.isLast) return false;
     if (tenpai.isVeryBadWait) return false;
-    if (hasChangeRoute && !isGoodWaitRoute && !context.isLast) return false;
+    if (hasChangeRoute && tenpai.waitTileCount <= 3 && !context.isLast) return false;
   }
 
   if (isGoodWaitRoute){
