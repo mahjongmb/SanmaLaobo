@@ -924,7 +924,7 @@ function shouldCpuDiscardCandidateRiichi(snapshot, candidate, profile){
   if (isNoYakuHand && tenpai.isBadWait && !(context.isLast && tenpai.waitTileCount >= 3)) return false;
   // 役なし × 醜形（待ち4枚以下の単種）は、オーラスでのみ例外（親でもダマ優先）
   if (isNoYakuHand && tenpai.isUglyWait && !context.isLast) return false;
-  if (isNoYakuHand && !isWideRyanmen && !(context.isLast && tenpai.waitTileCount >= 3)) return false;
+  if (isNoYakuHand && tenpai.isBadWait && !isWideRyanmen && !(context.isLast && tenpai.waitTileCount >= 3)) return false;
 
   // --- 既存の否定条件（基本維持）---
   if (isProspectiveFuriten && !context.isLast && !isWideRyanmen) return false;
@@ -961,18 +961,18 @@ function shouldCpuDiscardCandidateRiichi(snapshot, candidate, profile){
   if (hasDamaReason && damaValue.score >= 1.2 && tenpai.waitTileCount >= 4 && context.threatCount <= 0 && !context.isLast){
     return false;
   }
-  if (hasDamaReason && context.threatCount <= 1 && !context.isLast && !isHighValueDama){
+  if (hasDamaReason && context.threatCount <= 0 && !context.isLast && !isHighValueDama && tenpai.waitTileCount <= 5){
     return false;
   }
 
   // --- 肯定条件（オーラス救済を縮小・高打点愚形を解禁）---
-  if (tenpai.isExcellentWait && tenpai.waitTileCount >= 7 && (!hasDamaReason || damaValue.score < 1.0 || context.isLast)) return true;
+  if (tenpai.isExcellentWait && (!hasDamaReason || damaValue.score < 1.25 || context.isLast)) return true;
   // 縮小: オーラス救済は待ち3枚以上かつ(役あり or 醜形でない)に限定（旧: 2枚でも通っていた）
   if (context.isLast && tenpai.waitTileCount >= 3 && (!tenpai.isUglyWait || hasDamaReason)) return true;
-  if (context.isDealer && isWideRyanmen && damaValue.score < 1.0) return true;
+  if (context.isDealer && isStrongRyanmen && damaValue.score < 1.2) return true;
   if (isWideRyanmen && context.threatCount <= 1 && damaValue.score < 1.5) return true;
-  if (isStrongRyanmen && context.threatCount <= 0 && context.phase !== "end" && damaValue.score < 0.8 && tenpai.waitTileCount >= 5) return true;
-  if (tenpai.waitTileCount >= 7 && damaValue.score < 1.0) return true;
+  if (isStrongRyanmen && context.threatCount <= 0 && context.phase !== "end" && damaValue.score < 1.1) return true;
+  if (tenpai.waitTileCount >= 7 && damaValue.score < 1.3) return true;
   // 新: 愚形でも高打点（ダマで跳満級）なら打点を活かしてリーチ（ユーザー「悪いなら高打点の時」）
   if (isHighValueDama && tenpai.waitTileCount >= 3 && context.threatCount <= 1 && context.isLast) return true;
 
