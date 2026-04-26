@@ -909,6 +909,41 @@ function shouldCpuDiscardCandidateRiichi(snapshot, candidate, profile){
   const tenpai = buildCpuDiscardTenpaiContext(snapshot, candidate);
   const damaValue = estimateCpuDiscardDamaValue(snapshot, candidate);
   const isProspectiveFuriten = isCpuDiscardProspectiveRiverFuriten(snapshot, candidate);
+  const isRyanmenGoodRoute = tenpai.isRyanmenWait && tenpai.waitTileCount >= 4;
+  const isWideRyanmenRoute = tenpai.isRyanmenWait && tenpai.waitTileCount >= 6;
+  const isMultiGoodRoute = tenpai.waitTypeCount >= 2 && tenpai.waitTileCount >= 5;
+  const isGoodWaitRoute = isRyanmenGoodRoute || isWideRyanmenRoute || isMultiGoodRoute;
+  const isExcellentWaitRoute = tenpai.isExcellentWait || isWideRyanmenRoute || (tenpai.waitTypeCount >= 3 && tenpai.waitTileCount >= 6);
+  const hasYakuOrValueRoute = damaValue.score >= 1.0 || damaValue.flags.includes("yakuhai") || damaValue.flags.includes("honitsu_like") || damaValue.flags.includes("toitoi_like");
+  const isNoYakuRoute = !hasYakuOrValueRoute;
+  const hasChangeRoute = damaValue.flags.includes("shape_change") || Number(candidate.improveCount) >= 10;
+  const isHighValueRoute = damaValue.score >= 3.2;
+  const isMediocreWaitRoute = !isGoodWaitRoute || tenpai.isUglyWait || tenpai.isMiddleKanchanWait || tenpai.isMiddleShaboWait || tenpai.isMiddleTankiWait || tenpai.isPenchanOnlyWait;
+
+  // Policy: good shape riichis regardless of yaku; yaku only keeps mediocre waits as dama.
+  // No-yaku mediocre waits should prefer shape/value change or defense instead of lock-riichi.
+  if (isProspectiveFuriten && !context.isLast && !isExcellentWaitRoute) return false;
+  if (context.threatCount > 0 && context.isTop && !isExcellentWaitRoute) return false;
+  if (context.phase === "end" && isMediocreWaitRoute && !context.isLast) return false;
+
+  if (isNoYakuRoute){
+    if (!isGoodWaitRoute && !context.isLast) return false;
+    if (tenpai.isVeryBadWait) return false;
+    if (hasChangeRoute && !isExcellentWaitRoute && !context.isLast) return false;
+  }
+
+  if (isGoodWaitRoute){
+    if (context.threatCount >= 2 && !isExcellentWaitRoute && !context.isDealer) return false;
+    return true;
+  }
+
+  if (hasYakuOrValueRoute){
+    if (isHighValueRoute && context.isLast && tenpai.waitTileCount >= 3) return true;
+    return false;
+  }
+
+  if (context.isLast && tenpai.waitTileCount >= 3 && !tenpai.isVeryBadWait) return true;
+  return false;
   const valueScale = clampCpuDiscardEval(1 + (context.winValueBias * 0.12), 0.65, 1.7);
   const isStrongRyanmen = tenpai.isRyanmenWait && tenpai.waitTileCount >= 4;
   const isWideRyanmen = tenpai.isRyanmenWait && tenpai.waitTileCount >= 6;
@@ -990,7 +1025,7 @@ function getCpuDiscardTenpaiBreakPenalty(snapshot, candidate, profile){
 
   if (candidate.shantenAfter === 0){
     if (shouldCpuDiscardCandidateRiichi(snapshot, candidate, profile)) return 0;
-    const hasDamaReason = damaValue.score >= 1.3 || damaValue.flags.includes("yakuhai") || damaValue.flags.includes("honitsu_like") || damaValue.flags.includes("toitoi_like") || damaValue.flags.includes("shape_change");
+    const hasDamaReason = damaValue.score >= 1.0 || damaValue.flags.includes("yakuhai") || damaValue.flags.includes("honitsu_like") || damaValue.flags.includes("toitoi_like");
     const isNoYakuHand = !hasDamaReason;
 
     // --- 新: 聴牌外し誘導（役なし超悪形 / 役なし悪形で改善乏しい）---
@@ -1013,16 +1048,16 @@ function getCpuDiscardTenpaiBreakPenalty(snapshot, candidate, profile){
       return clampCpuDiscardEval(base * 1.05, 0, 36);
     }
     if (tenpai.isMiddleKanchanWait){
-      return clampCpuDiscardEval(base * (hasDamaReason ? 1.18 : 1.02), 0, 38);
+      return clampCpuDiscardEval(base * (hasDamaReason ? 0.32 : 1.02), 0, 38);
     }
     if (tenpai.isMiddleShaboWait){
-      return clampCpuDiscardEval(base * (hasDamaReason ? 1.08 : 0.94), 0, 34);
+      return clampCpuDiscardEval(base * (hasDamaReason ? 0.28 : 0.94), 0, 34);
     }
     if (tenpai.isMiddleTankiWait){
-      return clampCpuDiscardEval(base * (hasDamaReason ? 1.16 : 1.02), 0, 36);
+      return clampCpuDiscardEval(base * (hasDamaReason ? 0.32 : 1.02), 0, 36);
     }
     if (tenpai.isPenchanOnlyWait){
-      return clampCpuDiscardEval(base * (hasDamaReason ? 0.98 : 0.84), 0, 30);
+      return clampCpuDiscardEval(base * (hasDamaReason ? 0.28 : 0.84), 0, 30);
     }
     if (context.openThreatCount > 0 && context.phase === "end" && !context.isLast && !tenpai.isExcellentWait){
       return clampCpuDiscardEval(base * (tenpai.isBadWait ? 1.08 : 0.82), 0, 34);
@@ -1031,7 +1066,7 @@ function getCpuDiscardTenpaiBreakPenalty(snapshot, candidate, profile){
       return clampCpuDiscardEval(base * 0.88, 0, 30);
     }
     if (tenpai.isUglyWait && hasDamaReason){
-      return clampCpuDiscardEval(base * (tenpai.isVeryBadWait ? 1.02 : 0.82), 0, 34);
+      return clampCpuDiscardEval(base * (tenpai.isVeryBadWait ? 0.34 : 0.22), 0, 34);
     }
     if (tenpai.isVeryBadWait && Number(candidate.improveCount) >= 16){
       return clampCpuDiscardEval(base * 0.92, 0, 32);
