@@ -174,7 +174,7 @@
         </label>
         <label>
           同時卓数
-          <input id="parallelCountInput" type="number" min="1" max="6" step="1" value="3" />
+          <input id="parallelCountInput" type="number" min="1" max="12" step="1" value="6" />
         </label>
         <label>
           ルール
@@ -369,7 +369,7 @@
         }
         const parallel = parseInt(params.get("parallel") || params.get("workers") || "", 10);
         if (Number.isFinite(parallel) && parallel > 0 && els.parallelCount){
-          els.parallelCount.value = String(Math.max(1, Math.min(6, parallel)));
+          els.parallelCount.value = String(Math.max(1, Math.min(12, parallel)));
         }
         const preset = String(params.get("preset") || params.get("rule") || "");
         if (preset && els.rulePreset){
@@ -587,7 +587,7 @@
         const noProgressSec = state.lastProgressAt ? Math.round((Date.now() - state.lastProgressAt) / 1000) : 0;
         setMessage("warn", [
           `実CPU対局を実行中です。${completed} / ${Math.max(0, state.targetBatchCount - state.startBatchCount)} 半荘（${state.parallelCount}卓並列）`,
-          details.slice(0, 6).join("\n"),
+          details.slice(0, 12).join("\n"),
           state.lastRunnerError ? `runner error: ${state.lastRunnerError}` : "",
           noProgressSec >= 20 ? `半荘保存待ち ${noProgressSec} 秒` : ""
         ].filter(Boolean).join("\n"));
@@ -686,7 +686,7 @@
       async function startRunner(){
         if (state.active) return;
         const target = Math.max(1, Math.min(10000, parseInt(els.targetCount && els.targetCount.value, 10) || 1000));
-        const parallel = Math.max(1, Math.min(6, parseInt(els.parallelCount && els.parallelCount.value, 10) || 1));
+        const parallel = Math.max(1, Math.min(12, parseInt(els.parallelCount && els.parallelCount.value, 10) || 1));
         if (els.targetCount) els.targetCount.value = String(target);
         if (els.parallelCount) els.parallelCount.value = String(parallel);
         const logs = await getStoredLogsAsync();
